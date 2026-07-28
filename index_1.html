@@ -1,0 +1,3448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fable Trader">
+<meta name="theme-color" content="#0d1117">
+<title>Fable Trader — Binance Futures</title>
+<style>
+:root{
+  --bg:#0d1117; --card:#161b22; --card2:#1c2330; --border:#2a3038;
+  --text:#e6edf3; --muted:#8b949e; --green:#26a69a; --red:#ef5350;
+  --yellow:#f0b90b; --blue:#58a6ff; --purple:#bc8cff;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  padding-top:env(safe-area-inset-top);}
+body{padding-bottom:40px;}
+.wrap{max-width:760px;margin:0 auto;padding:12px;}
+header{display:flex;align-items:center;gap:10px;padding:8px 0 4px;}
+header h1{font-size:20px;margin:0;font-weight:700;}
+header h1 span{color:var(--yellow);}
+.sub{color:var(--muted);font-size:12px;margin:2px 0 10px;line-height:1.5;}
+.searchbox{position:relative;}
+.searchbox input{width:100%;padding:14px 16px;font-size:16px;border-radius:12px;
+  border:1px solid var(--border);background:var(--card);color:var(--text);outline:none;}
+.searchbox input:focus{border-color:var(--yellow);}
+.dropdown{position:absolute;top:52px;left:0;right:0;background:var(--card2);
+  border:1px solid var(--border);border-radius:12px;max-height:320px;overflow-y:auto;
+  z-index:50;display:none;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+.dropdown .item{padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;}
+.dropdown .item:last-child{border-bottom:none;}
+.dropdown .item:active{background:var(--card);}
+.dropdown .sym{font-weight:600;}
+.dropdown .base{color:var(--muted);font-size:12px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px;margin-top:12px;}
+.card h2{font-size:14px;margin:0 0 10px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;font-weight:600;display:flex;align-items:center;gap:8px;}
+.hidden{display:none !important;}
+#status{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:14px;display:none;}
+#status.info{display:block;background:#1a2733;border:1px solid #2b4a63;color:var(--blue);}
+#status.error{display:block;background:#2d1a1c;border:1px solid #5c2b2e;color:var(--red);}
+.pricebar{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+.pricebar .p{font-size:28px;font-weight:700;}
+.pricebar .chg{font-size:15px;font-weight:600;}
+.up{color:var(--green);} .down{color:var(--red);} .neutral{color:var(--muted);}
+.tfrow{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap;}
+.tfbtn{flex:1;min-width:44px;padding:8px 0;border-radius:8px;border:1px solid var(--border);
+  background:var(--card2);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;}
+.tfbtn.active{background:var(--yellow);color:#000;border-color:var(--yellow);}
+.tfbtn.rec::after{content:"★";margin-left:3px;color:inherit;font-size:10px;vertical-align:top;}
+#chart{width:100%;height:340px;border-radius:8px;overflow:hidden;}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap;}
+.legend b{font-weight:600;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.kv{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;}
+.kv .k{font-size:11px;color:var(--muted);margin-bottom:3px;}
+.kv .v{font-size:15px;font-weight:700;}
+.kv .s{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35;}
+.warn{margin-top:10px;padding:10px 12px;background:#332701;border:1px solid #6b5405;
+  border-radius:10px;color:var(--yellow);font-size:13px;line-height:1.5;}
+.reasons{margin:10px 0 0;padding:0;list-style:none;}
+.reasons li{padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;
+  display:flex;gap:8px;align-items:flex-start;line-height:1.45;}
+.reasons li:last-child{border-bottom:none;}
+.dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.dot.g{background:var(--green);} .dot.r{background:var(--red);} .dot.n{background:var(--muted);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{color:var(--muted);font-weight:600;text-align:left;padding:6px 4px;font-size:11px;
+  text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);}
+td{padding:8px 4px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr.reco td{background:rgba(240,185,11,.06);}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.pill.long{background:rgba(38,166,154,.15);color:var(--green);}
+.pill.short{background:rgba(239,83,80,.15);color:var(--red);}
+.pill.neutro{background:rgba(139,148,158,.15);color:var(--muted);}
+.tfreco{background:linear-gradient(135deg,#1c2330,#20242c);border:1px solid var(--yellow);
+  border-radius:12px;padding:12px;margin-top:10px;}
+.tfreco .big{font-size:20px;font-weight:800;color:var(--yellow);}
+.tfreco p{margin:6px 0 0;font-size:13px;color:var(--text);line-height:1.45;}
+.desc{font-size:13px;color:var(--muted);line-height:1.55;margin-top:10px;}
+.src{font-size:10px;color:#586069;margin-top:8px;line-height:1.5;}
+.btn{width:100%;padding:13px;border-radius:12px;border:none;background:var(--yellow);
+  color:#000;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px;}
+.btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+.btn.red{background:var(--red);color:#fff;}
+.disclaimer{margin-top:16px;padding:12px;border:1px dashed var(--border);border-radius:12px;
+  font-size:11px;color:var(--muted);line-height:1.55;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);
+  border-top-color:var(--yellow);border-radius:50%;animation:spin .8s linear infinite;
+  vertical-align:-2px;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.updated{font-size:11px;color:var(--muted);text-align:right;margin-top:6px;}
+.btnrow{display:flex;gap:8px;}
+.btnrow .btn{margin-top:10px;font-size:13px;padding:10px;}
+#alertBanner{position:fixed;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;
+  z-index:100;background:#2d1a1c;border:1px solid var(--red);color:var(--text);padding:12px 14px;
+  border-radius:12px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none;line-height:1.45;}
+.chips{display:flex;gap:6px;margin:10px 0 2px;align-items:center;flex-wrap:wrap;}
+.chips small{color:var(--muted);font-size:11px;margin-right:2px;}
+.chip{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card2);
+  color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;}
+.chip.on{background:var(--yellow);color:#000;border-color:var(--yellow);}
+#liveDot{font-size:11px;font-weight:700;margin-left:auto;}
+#liveDot.live{color:var(--green);} #liveDot.poll{color:var(--muted);}
+.calcrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.calcrow label{flex:1;min-width:90px;font-size:11px;color:var(--muted);}
+.calcrow input,.calcrow select{width:100%;margin-top:4px;padding:10px;border-radius:10px;
+  border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;
+  font-weight:600;outline:none;}
+.calcrow input:focus{border-color:var(--yellow);}
+.winner{background:linear-gradient(135deg,#1a2a1e,#1c2330);border:1px solid var(--green);
+  border-radius:12px;padding:12px;margin-bottom:10px;}
+.winner .big{font-size:16px;font-weight:800;color:var(--green);}
+.winner p{margin:5px 0 0;font-size:12px;color:var(--text);line-height:1.45;}
+
+/* ---------- v4: pestañas del radar ---------- */
+.tabs{display:flex;gap:6px;margin-bottom:10px;}
+.tab{flex:1;padding:11px 0;border-radius:10px;border:1px solid var(--border);background:var(--card2);
+  color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;}
+.tab.on[data-side="-1"]{background:rgba(239,83,80,.16);color:var(--red);border-color:var(--red);}
+.tab.on[data-side="1"]{background:rgba(38,166,154,.16);color:var(--green);border-color:var(--green);}
+
+/* ---------- v4: fila del radar ---------- */
+.mrow{background:var(--card2);border:1px solid var(--border);border-left-width:4px;
+  border-radius:12px;padding:12px;margin-top:10px;cursor:pointer;}
+.mrow.sostenido{border-left-color:var(--yellow);}
+.mrow.medio{border-left-color:var(--blue);}
+.mrow.rapido{border-left-color:var(--muted);}
+.mrow .top{display:flex;align-items:flex-start;gap:10px;}
+.mrow .sym{font-size:17px;font-weight:800;}
+.mrow .px{font-size:11px;color:var(--muted);display:block;margin-top:2px;}
+.mrow .kind{margin-left:auto;text-align:right;}
+.mrow .kind b{display:block;font-size:15px;font-weight:800;letter-spacing:.02em;}
+.mrow.sostenido .kind b{color:var(--yellow);}
+.mrow.medio .kind b{color:var(--blue);}
+.mrow.rapido .kind b{color:var(--muted);}
+.mrow .kind small{font-size:10px;color:var(--muted);}
+.verdictline{margin-top:9px;font-size:13px;font-weight:700;line-height:1.4;}
+.verdictline.ok{color:var(--yellow);} .verdictline.no{color:var(--muted);}
+.gauges{display:flex;gap:10px;margin-top:9px;}
+.gauge{flex:1;}
+.gauge .gl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px;}
+.gauge .gl b{color:var(--text);font-size:11px;}
+.gtrack{height:7px;background:#0d1117;border-radius:4px;overflow:hidden;}
+.gtrack i{display:block;height:100%;border-radius:4px;}
+.gtrack i.t{background:linear-gradient(90deg,#f0b90b,#ef5350);}
+.gtrack i.p{background:linear-gradient(90deg,#58a6ff,#26a69a);}
+.hist{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.45;
+  background:#0d1117;border-radius:8px;padding:7px 9px;}
+.hist b{color:var(--text);}
+.why{margin-top:7px;font-size:11px;color:var(--muted);line-height:1.45;}
+
+/* ---------- v4: tarjeta de veredicto ---------- */
+.vcard{border-radius:14px;padding:16px;border:2px solid var(--border);background:var(--card2);}
+.vcard.long{border-color:var(--green);background:linear-gradient(160deg,rgba(38,166,154,.12),var(--card2));}
+.vcard.short{border-color:var(--red);background:linear-gradient(160deg,rgba(239,83,80,.12),var(--card2));}
+.vcard.esperar{border-color:var(--muted);}
+.vcard .act{font-size:34px;font-weight:900;letter-spacing:.02em;line-height:1.05;}
+.vcard.long .act{color:var(--green);} .vcard.short .act{color:var(--red);}
+.vcard.esperar .act{color:var(--muted);font-size:28px;}
+.vcard .sub2{font-size:13px;color:var(--text);margin-top:6px;line-height:1.5;}
+.vmeta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.vtag{padding:5px 11px;border-radius:18px;font-size:11px;font-weight:700;
+  background:#0d1117;border:1px solid var(--border);color:var(--text);}
+.vtag.hi{border-color:var(--yellow);color:var(--yellow);}
+.steps{margin:10px 0 0;padding:0;list-style:none;}
+.steps li{background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;margin-top:7px;font-size:13px;line-height:1.55;}
+.steps li b{color:var(--text);}
+.steps.green li{border-left:3px solid var(--green);}
+.steps.red li{border-left:3px solid var(--red);}
+/* ---------- v5: momento de entrada ---------- */
+.entrybox{margin-top:10px;border-radius:12px;padding:12px;border:1px solid var(--border);
+  background:var(--card2);}
+.entrybox.go{border-left:4px solid var(--green);}
+.entrybox.wait{border-left:4px solid var(--yellow);}
+.entrybox.late{border-left:4px solid var(--red);}
+.entrybox .et{font-size:15px;font-weight:800;line-height:1.35;}
+.entrybox.go .et{color:var(--green);}
+.entrybox.wait .et{color:var(--yellow);}
+.entrybox.late .et{color:var(--red);}
+.entrybox .eo{margin-top:9px;font-size:13px;line-height:1.55;background:#0d1117;
+  border-radius:9px;padding:10px 11px;}
+.entrybox ul{margin:9px 0 0;padding:0;list-style:none;}
+.entrybox li{font-size:12px;color:var(--muted);line-height:1.5;margin-top:5px;}
+.entrybox li b{color:var(--text);}
+.entrybox .cad{margin-top:9px;font-size:12px;color:var(--yellow);line-height:1.5;}
+.blk{margin-top:14px;}
+.blk h3{font-size:13px;margin:0 0 2px;font-weight:800;letter-spacing:.02em;}
+.blk .h{font-size:11px;color:var(--muted);}
+.layer{background:var(--card2);border:1px solid var(--border);border-radius:10px;
+  padding:10px;margin-top:7px;}
+.layer .lh{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;}
+.layer .lh span:last-child{white-space:nowrap;}
+.mixtrack{height:8px;background:#0d1117;border-radius:4px;position:relative;overflow:hidden;margin-top:6px;}
+.mixtrack i{position:absolute;top:0;bottom:0;border-radius:4px;}
+.mixtrack .mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--border);}
+.layer .lt{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.45;}
+
+/* ---------- v4: monitor de posición ---------- */
+.posbig{font-size:24px;font-weight:900;letter-spacing:.02em;}
+.posbig.keep{color:var(--green);} .posbig.out{color:var(--red);} .posbig.warnc{color:var(--yellow);}
+
+/* ---------- v4: ayuda desplegable ---------- */
+.q{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
+  border-radius:50%;border:1px solid var(--muted);color:var(--muted);font-size:11px;
+  font-weight:700;cursor:pointer;vertical-align:1px;margin-left:5px;flex-shrink:0;}
+.q.open{background:var(--yellow);color:#000;border-color:var(--yellow);}
+.qbox{margin-top:8px;padding:10px 12px;background:#0d1117;border:1px dashed var(--border);
+  border-radius:10px;font-size:12px;color:var(--muted);line-height:1.6;}
+details.ex{margin-top:10px;border:1px solid var(--border);border-radius:10px;background:var(--card2);}
+details.ex>summary{padding:11px 13px;font-size:13px;font-weight:600;color:var(--muted);
+  cursor:pointer;list-style:none;}
+details.ex>summary::-webkit-details-marker{display:none;}
+details.ex>summary::before{content:"▸ ";color:var(--yellow);}
+details.ex[open]>summary::before{content:"▾ ";}
+details.ex>div{padding:0 13px 13px;}
+details.ex[open]{border-color:#3a424d;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Fable <span>Trader</span></h1></header>
+  <div class="sub">Futuros de Binance. Te dice <b>qué hacer</b>, <b>cuánto tiempo aguantar</b> y <b>cuándo cerrar</b>. No es asesoría financiera.</div>
+
+  <div class="searchbox">
+    <input id="search" type="text" placeholder="Busca una cripto (BTC, ETH, SOL...)" autocomplete="off" autocorrect="off" autocapitalize="characters">
+    <div class="dropdown" id="dropdown"></div>
+  </div>
+
+  <div id="status"></div>
+
+  <!-- ===================== MONITOR DE POSICIÓN ABIERTA ===================== -->
+  <div class="card hidden" id="posCard">
+    <h2>📌 Mi operación abierta</h2>
+    <div id="posBody"></div>
+    <div class="btnrow">
+      <button class="btn ghost" id="posCloseBtn">✔️ Ya la cerré</button>
+    </div>
+  </div>
+
+  <!-- ===================== RADAR ===================== -->
+  <div class="card" id="radarCard">
+    <h2>📡 Radar de movimientos<span class="q" data-h="Aquí busco monedas a punto de moverse fuerte. Cada una lleva dos números que NO significan lo mismo. GATILLO: cuánto empuja el movimiento para empezar ahora mismo. AGUANTE: cuánto combustible tiene para seguir durante horas. Un gatillo alto con aguante bajo es una sacudida: baja de golpe y rebota enseguida (eso fue lo que hizo perder dinero antes). Un gatillo alto CON aguante alto es la que puedes dejar corriendo. Por eso cada fila te dice además si es CORTA, MEDIA o LARGA.">?</span>
+      <span id="radarNext" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;"></span>
+    </h2>
+    <div class="tabs" id="radarTabs">
+      <button class="tab on" data-side="-1">🔻 Van a CAER</button>
+      <button class="tab" data-side="1">🔺 Van a SUBIR</button>
+    </div>
+    <div id="radarList" class="desc">Esperando conexión con Binance…</div>
+
+    <div class="chips"><small>Escanear cada:</small>
+      <button class="chip" data-min="10">10 min</button>
+      <button class="chip" data-min="20">20 min</button>
+      <button class="chip on" data-min="30">30 min</button>
+    </div>
+    <div class="btnrow">
+      <button class="btn ghost" id="alertBtn">🔔 Activar alertas</button>
+      <button class="btn ghost" id="radarRefresh">↻ Escanear ahora</button>
+    </div>
+
+    <details class="ex"><summary>¿Cómo leo el radar? (importante)</summary><div>
+      <div class="desc">Cada moneda trae <b>dos números distintos</b>, y ésa es la parte clave:</div>
+      <div class="desc"><b style="color:var(--red)">GATILLO</b> — si el movimiento está empezando <i>ahora</i>.
+        Un gatillo alto sólo dice «esto se está moviendo ya», no dice cuánto va a durar.</div>
+      <div class="desc"><b style="color:var(--green)">AGUANTE</b> — si tiene combustible para seguir horas.
+        Éste es el que decide si puedes dejar la operación corriendo o tienes que salir en minutos.</div>
+      <div class="desc">De ahí salen las tres etiquetas:</div>
+      <div class="desc">🟡 <b style="color:var(--yellow)">CAÍDA / SUBIDA LARGA</b> — va a favor de la tendencia
+        de fondo y tiene sitio por delante. Se puede dejar operando y revisar de vez en cuando.</div>
+      <div class="desc">🔵 <b style="color:var(--blue)">MEDIA</b> — puede durar un rato, pero sin confirmación.
+        Trátala como corta y vigílala.</div>
+      <div class="desc">⚪ <b style="color:var(--muted)">CORTA</b> — es una sacudida. Se cae un poco y rebota.
+        <b>Éste es exactamente el tipo de señal que hay que entrar y salir rápido</b>, no dejarla abierta esperando más.</div>
+      <div class="desc">Debajo de cada moneda verás cuántas veces se dio ese mismo perfil en su propio
+        historial reciente y qué pasó después. Esos porcentajes están medidos sobre sus velas reales,
+        no son una estimación inventada. Cuando dice «pocos casos», fíate menos.</div>
+    </div></details>
+
+    <div class="src">Se escanea con la app abierta. Toca una moneda para analizarla a fondo. Ningún número aquí es una promesa: son condiciones medidas, y el mercado puede hacer lo contrario.</div>
+  </div>
+
+  <!-- ===================== ANÁLISIS DE UNA MONEDA ===================== -->
+  <div id="content" class="hidden">
+
+    <!-- ¿QUÉ HAGO? -->
+    <div class="card" id="verdictCard">
+      <h2>🎯 ¿Qué hago con <span id="vSym"></span>?<span class="q" data-h="Ésta es la ÚNICA recomendación de la app. Todo lo que ves más abajo (gráfico, indicadores, estrategias medidas) son las piezas con las que se construye esta tarjeta, no consejos aparte. Si alguna vez el gráfico parece decir otra cosa, manda esta tarjeta. Y si las piezas se contradicen entre ellas, aquí pondrá ESPERAR: eso también es una decisión, significa no operar esta moneda ahora.">?</span></h2>
+      <div class="vcard esperar" id="vBox">
+        <div class="act" id="vAction">—</div>
+        <div class="sub2" id="vSummary"></div>
+        <div class="vmeta" id="vMeta"></div>
+      </div>
+
+      <div id="vConflicts"></div>
+      <div class="grid3" id="vLevels"></div>
+
+      <div class="blk" id="vTimeBlk">
+        <h3>⏱️ ¿Entro AHORA o espero?<span class="q" data-h="Una señal buena entrando tarde es una señal mala: el stop mide lo mismo pero el premio que queda es menor. Aquí la app simula sobre el pasado de esta misma moneda tres formas de entrar — de mercado ya, con orden límite esperando un pequeño retroceso, y entrando una hora tarde — y te dice cuál salió mejor. Si dice ESPERA UN RETROCESO, pon una orden límite en el precio que te indica y cancélala si en una hora no entra: perseguir un precio que ya se escapó es la forma más rápida de perder. Si dice que se te pasó, no entres; habrá otra señal.">?</span></h3>
+        <div id="vTime"></div>
+      </div>
+
+      <div class="blk" id="vHoldBlk">
+        <h3>✅ Cuándo MANTENERLA abierta<span class="q" data-h="Aquí se decide lo que te costó dinero la vez pasada: si la señal es de las cortas, cerrar en el primer objetivo es lo correcto aunque parezca que va a seguir. Si es de las largas, aguantar es lo correcto aunque haya un susto por el camino.">?</span></h3>
+        <ul class="steps green" id="vHold"></ul>
+      </div>
+
+      <div class="blk" id="vCloseBlk">
+        <h3>🛑 Cuándo CERRARLA<span class="q" data-h="Pon el stop loss en Binance en el momento de abrir, no después. Es lo único que garantiza que una operación mala no se convierta en una pérdida enorme mientras no miras el móvil. El «precio que invalida» es distinto del stop: es el nivel en el que la razón por la que entraste deja de ser cierta, aunque todavía no hayas perdido mucho. Si lo toca, sal aunque no haya llegado al stop.">?</span></h3>
+        <ul class="steps red" id="vClose"></ul>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn" id="markBtn">📌 Ya entré: vigílala por mí</button>
+      </div>
+
+      <details class="ex"><summary>¿De dónde sale esta decisión? (las 4 capas)</summary><div>
+        <div class="desc">La app mira cuatro cosas, en este orden de importancia. Si las dos primeras
+          se contradicen, la respuesta es <b>ESPERAR</b> — nunca te va a dar dos consejos opuestos a la vez.</div>
+        <div id="vLayers"></div>
+      </div></details>
+    </div>
+
+    <!-- GRÁFICO -->
+    <div class="card">
+      <div class="pricebar">
+        <div id="symTitle" style="font-size:16px;font-weight:700;"></div>
+        <div class="p" id="lastPrice"></div>
+        <div class="chg" id="chg24"></div>
+        <div id="liveDot" class="poll">◌ conectando…</div>
+      </div>
+      <h2 style="margin:0 0 8px;">Gráfico<span class="q" data-h="Toca cualquier punto del gráfico con el dedo y te muestro el precio exacto de ese punto. Arrastra para moverte en el tiempo y pellizca con dos dedos para acercar o alejar. Las flechas que aparecen sobre las velas son señales de estrategia, y desde esta versión SÓLO se dibujan las que van en la misma dirección que la tarjeta verde de arriba: el gráfico ya no puede contradecir a la recomendación. Las líneas de puntos son tu entrada, tu stop y tus objetivos.">?</span></h2>
+      <div class="tfrow" id="tfrow"></div>
+      <div id="chart"></div>
+      <div class="legend">
+        <span style="color:#f0b90b">━ <b>EMA 20</b></span>
+        <span style="color:#58a6ff">━ <b>EMA 50</b></span>
+        <span style="color:#bc8cff">━ <b>EMA 200</b></span>
+        <span style="color:#ff8a65">━ <b>FRAMA</b></span>
+        <span>┄ Entrada / Stop / Objetivos</span>
+      </div>
+      <div class="desc" id="chartNote" style="margin-top:8px;"></div>
+      <div class="updated" id="updated"></div>
+    </div>
+
+    <!-- CALCULADORA -->
+    <div class="card" id="calcCard">
+      <h2>🧮 Cuánto abrir<span class="q" data-h="Regla de supervivencia: el tamaño no se elige por cuánto quieres ganar, se elige para que una operación perdedora no te haga daño. Si arriesgas 1% por operación, necesitas fallar 10 veces seguidas para perder el 10%. Si arriesgas 20%, tres fallos seguidos te dejan casi sin cuenta.">?</span></h2>
+      <div class="calcrow">
+        <label>Capital (USDT)<input type="number" id="calcCap" value="100" inputmode="decimal"></label>
+        <label>Riesgo por operación<select id="calcRisk">
+          <option value="0.5">0.5% (muy prudente)</option>
+          <option value="1" selected>1% (recomendado)</option>
+          <option value="2">2% (máximo sensato)</option>
+        </select></label>
+        <label>Apalancamiento<select id="calcLev">
+          <option>2</option><option>3</option><option selected>5</option>
+          <option>10</option><option>15</option><option>20</option>
+        </select></label>
+      </div>
+      <div class="grid2" id="calcOut" style="margin-top:12px;"></div>
+      <div id="calcWarn"></div>
+      <div class="src">El tamaño se calcula para que, si el precio toca tu stop loss, pierdas exactamente el % elegido y nada más. El precio de liquidación es aproximado (margen aislado, sin comisiones de funding).</div>
+    </div>
+
+    <!-- SECCIONES AVANZADAS -->
+    <details class="ex" id="advWrap"><summary>📊 Detalle técnico y fundamental (para cuando quieras profundizar)</summary><div>
+
+      <div class="card" style="margin-top:4px">
+        <h2>Radar de esta moneda<span class="q" data-h="El mismo motor del radar de arriba, pero aplicado sólo a la moneda que tienes abierta. Sirve para ver si en este momento está en zona de caída o de subida y con cuánto aguante.">?</span></h2>
+        <div id="ownProf"></div>
+      </div>
+
+      <div class="card">
+        <h2>Análisis fundamental y sentimiento<span class="q" data-h="Esto no mira el dibujo del gráfico, mira el dinero real: cuántos contratos abiertos hay (interés abierto), quién paga a quién por mantener la posición (funding), si los compradores o los vendedores están siendo más agresivos, y hacia dónde están posicionados los traders grandes (ballenas). Es la parte que más peso tiene en la recomendación, porque el dibujo se puede repetir sin que haya dinero detrás; el dinero no.">?</span></h2>
+        <div id="fundDeriv" class="grid2"></div>
+        <div class="src">Fuente: Binance Futures (funding, interés abierto, ratio long/short, libro de órdenes)</div>
+        <div id="fundCG" style="margin-top:14px;"></div>
+      </div>
+
+      <div class="card">
+        <h2>Indicadores del gráfico · <span id="techTf"></span><span class="q" data-h="Los indicadores son cuentas hechas sobre el precio pasado: medias, fuerza de la subida o bajada, volatilidad. Son útiles como confirmación, pero pesan poco en la recomendación final (menos que el dinero real de la sección de arriba) precisamente porque solos no fueron rentables. Si los ves apuntando a un lado y la tarjeta verde dice otra cosa, hazle caso a la tarjeta.">?</span></h2>
+        <div class="grid2" id="techGrid"></div>
+        <ul class="reasons" id="techReasons"></ul>
+        <div class="src">Cálculos sobre velas cerradas de Binance Futures. Los indicadores <b>confirman</b>, no deciden la dirección.</div>
+      </div>
+
+      <div class="card" id="btCard">
+        <h2>🏆 Estrategias medidas · <span id="btTf"></span><span class="q" data-h="Aquí cojo cuatro estrategias conocidas y las hago operar sobre el pasado real de esta misma moneda, descontando las comisiones de Binance y el deslizamiento. Sirve para saber si esta moneda es de las que se dejan operar o de las que engañan siempre. NO es una orden de compra ni de venta: es historia. Lo que hay que hacer hoy está arriba, en la tarjeta verde.">?</span></h2>
+        <div id="btBest"></div>
+        <div style="overflow-x:auto;">
+          <table id="btTable">
+            <thead><tr><th>Estrategia</th><th>Trades</th><th>Aciertos</th><th>PF</th><th>Neto</th><th>DD máx</th><th>Ahora</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="src" id="btNote"></div>
+      </div>
+
+      <div class="card">
+        <h2>Temporalidad con la señal más limpia<span class="q" data-h="Cada marco temporal (1 minuto, 5 minutos, 1 hora…) cuenta una historia distinta de la misma moneda. Aquí comparo los seis y te digo en cuál la señal está más limpia ahora mismo. Los marcos cortos dan muchas señales pero también mucho ruido y muchas comisiones; los largos dan pocas pero más fiables. Si no vas a estar mirando el móvil, usa uno largo.">?</span></h2>
+        <div class="tfreco" id="tfReco"></div>
+        <div style="margin-top:12px;overflow-x:auto;">
+          <table id="tfTable">
+            <thead><tr><th>Marco</th><th>Sesgo</th><th>Puntaje</th><th>ADX</th><th>RSI</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div></details>
+
+    <button class="btn" id="refreshBtn">↻ Actualizar análisis</button>
+
+    <div class="disclaimer">
+      ⚠️ <b>Aviso importante.</b> Esta herramienta calcula señales a partir de datos públicos de Binance
+      y CoinGecko. Ninguna estrategia garantiza ganancias y ningún porcentaje de esta pantalla es una
+      promesa: son medidas del pasado reciente de cada moneda, y el mercado puede comportarse distinto.
+      Los futuros con apalancamiento pueden liquidar tu posición y hacerte perder todo el margen.
+      No es asesoría financiera. Nunca arriesgues más del 1–2% de tu capital por operación y comprueba
+      los datos en Binance antes de operar.
+    </div>
+  </div>
+
+  <div id="hint" class="card">
+    <h2>Cómo usar esto en 4 pasos</h2>
+    <div class="desc">
+      <b>1.</b> Mira el <b>radar</b> de arriba. Te muestra monedas que se están moviendo y, sobre todo,
+      si el movimiento es de los que <b>duran horas</b> o de los que <b>rebotan en minutos</b>.<br><br>
+      <b>2.</b> Toca una moneda (o búscala arriba). Se abre la ficha con la pregunta que importa:
+      <b>¿qué hago?</b> — LONG, SHORT o ESPERAR. Una sola respuesta, sin contradicciones.<br><br>
+      <b>3.</b> Usa la <b>calculadora</b> para saber cuánto abrir. Arriesga como máximo el 1–2% de tu
+      cuenta en cada operación.<br><br>
+      <b>4.</b> Cuando entres, pulsa <b>«Ya entré: vigílala por mí»</b>. La app te dirá en todo momento
+      si toca <b>MANTENER</b> o <b>CERRAR YA</b>.<br><br>
+      💡 En Safari: <b>Compartir → Agregar a pantalla de inicio</b> para usarla como app.
+    </div>
+  </div>
+
+</div>
+<div id="alertBanner"></div>
+<script>
+/* ================= MOTOR DE GRÁFICO (canvas, autocontenido) =================
+   Velas + volumen + líneas EMA + niveles (entrada/SL/TP) + crosshair,
+   con pan (arrastrar), zoom (rueda / pellizco) y tap para inspeccionar velas. */
+class CandleChart {
+  constructor(container) {
+    this.box = container;
+    this.box.style.position = 'relative';
+    this.info = document.createElement('div');
+    this.info.style.cssText = 'position:absolute;top:4px;left:6px;z-index:5;font-size:10px;color:#8b949e;background:rgba(13,17,23,.75);padding:2px 6px;border-radius:4px;pointer-events:none;max-width:95%;';
+    this.canvas = document.createElement('canvas');
+    this.canvas.style.cssText = 'width:100%;height:100%;display:block;touch-action:none;cursor:crosshair;';
+    this.box.appendChild(this.canvas);
+    this.box.appendChild(this.info);
+    this.ctx = this.canvas.getContext('2d');
+    this.candles = []; this.overlays = []; this.levels = []; this.tf = '1h';
+    this.start = 0; this.count = 90; this.cross = null;
+    this._pointers = new Map(); this._pinch = null; this._drag = null;
+    this._bind();
+    new ResizeObserver(() => this.render()).observe(this.box);
+  }
+  setAll({ candles, overlays, levels, markers, tf }) {
+    this.candles = candles || [];
+    this.overlays = overlays || [];
+    this.levels = levels || [];
+    this.markers = markers || [];
+    this.tf = tf || '1h';
+    this.cross = null;
+    const vis = Math.min(90, this.candles.length);
+    this.count = Math.max(10, vis);
+    this.start = this.candles.length - this.count;
+    this.render();
+  }
+  _clamp() {
+    const len = this.candles.length;
+    this.count = Math.min(Math.max(this.count, 10), Math.max(20, len * 1.2));
+    this.start = Math.min(Math.max(this.start, -(this.count - 5)), Math.max(0, len - 5));
+  }
+  _bind() {
+    const cv = this.canvas;
+    cv.addEventListener('pointerdown', e => {
+      cv.setPointerCapture(e.pointerId);
+      this._pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
+      if (this._pointers.size === 2) {
+        const [a, b] = [...this._pointers.values()];
+        this._pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y), count0: this.count,
+                        midIdx: this._idxAt((a.x + b.x) / 2), midX: (a.x + b.x) / 2 };
+        this._drag = null;
+      } else {
+        this._drag = { x: e.offsetX, start0: this.start, moved: false };
+      }
+    });
+    cv.addEventListener('pointermove', e => {
+      const p = this._pointers.get(e.pointerId);
+      if (p) { p.x = e.offsetX; p.y = e.offsetY; }
+      if (this._pinch && this._pointers.size === 2) {
+        const [a, b] = [...this._pointers.values()];
+        const d1 = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+        this.count = this._pinch.count0 * (this._pinch.d0 / d1);
+        this._clamp();
+        this.start = this._pinch.midIdx - (this._pinch.midX / this._plotW()) * this.count;
+        this._clamp(); this.render();
+      } else if (this._drag && this._pointers.size === 1) {
+        const dx = e.offsetX - this._drag.x;
+        if (Math.abs(dx) > 3) this._drag.moved = true;
+        this.start = this._drag.start0 - dx / (this._plotW() / this.count);
+        this._clamp(); this.render();
+      } else if (this._pointers.size === 0 && e.pointerType === 'mouse') {
+        this.cross = { x: e.offsetX, y: e.offsetY }; this.render();
+      }
+    });
+    const up = e => {
+      const wasDrag = this._drag && this._drag.moved;
+      this._pointers.delete(e.pointerId);
+      if (this._pointers.size < 2) this._pinch = null;
+      if (this._pointers.size === 0) {
+        if (this._drag && !wasDrag) { this.cross = { x: e.offsetX, y: e.offsetY }; this.render(); }
+        this._drag = null;
+      }
+    };
+    cv.addEventListener('pointerup', up);
+    cv.addEventListener('pointercancel', up);
+    cv.addEventListener('mouseleave', () => { if (!this._drag) { this.cross = null; this.render(); } });
+    cv.addEventListener('wheel', e => {
+      e.preventDefault();
+      const f = Math.pow(1.15, e.deltaY / 100);
+      const idx = this._idxAt(e.offsetX), frac = e.offsetX / this._plotW();
+      this.count *= f; this._clamp();
+      this.start = idx - frac * this.count;
+      this._clamp(); this.render();
+    }, { passive: false });
+  }
+  _plotW() { return Math.max(50, this.box.clientWidth - 56); }
+  _idxAt(x) { return this.start + (x / this._plotW()) * this.count; }
+  _niceStep(range, target) {
+    const raw = range / target, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / mag;
+    return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
+  }
+  _fmtTime(ts) {
+    const d = new Date(ts * 1000);
+    if (this.tf === '1d') return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+    if (this.tf === '4h') return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) + ' ' + d.toTimeString().slice(0, 5);
+    return d.toTimeString().slice(0, 5);
+  }
+  render() {
+    const W = this.box.clientWidth, H = this.box.clientHeight;
+    if (!W || !H) return;
+    const dpr = window.devicePixelRatio || 1;
+    if (this.canvas.width !== W * dpr) { this.canvas.width = W * dpr; this.canvas.height = H * dpr; }
+    const ctx = this.ctx;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#131722'; ctx.fillRect(0, 0, W, H);
+    const axisW = 56, axisH = 20, plotW = W - axisW, plotH = H - axisH;
+    const len = this.candles.length;
+    if (!len) { this.info.textContent = 'Sin datos'; return; }
+    this._clamp();
+    const i0 = Math.max(0, Math.floor(this.start)), i1 = Math.min(len - 1, Math.ceil(this.start + this.count));
+    const cw = plotW / this.count;
+
+    // rango Y con velas visibles
+    let mn = Infinity, mx = -Infinity, vMax = 0;
+    for (let i = i0; i <= i1; i++) {
+      const k = this.candles[i];
+      if (k.low < mn) mn = k.low; if (k.high > mx) mx = k.high;
+      if (k.volume > vMax) vMax = k.volume;
+    }
+    if (!isFinite(mn)) return;
+    let rng = (mx - mn) || mx * 0.01 || 1;
+    for (const lv of this.levels) { // incluye niveles cercanos sin romper la escala
+      if (lv.price > mn - rng * 0.7 && lv.price < mx + rng * 0.7) {
+        mn = Math.min(mn, lv.price); mx = Math.max(mx, lv.price);
+      }
+    }
+    rng = (mx - mn) || 1; mn -= rng * 0.06; mx += rng * 0.06; rng = mx - mn;
+    const pTop = 6, pBot = plotH * 0.8;
+    const yFor = p => pTop + (mx - p) / rng * (pBot - pTop);
+    const xFor = i => (i - this.start + 0.5) * cw;
+
+    // rejilla + eje de precios
+    ctx.strokeStyle = '#1e242c'; ctx.fillStyle = '#8b949e'; ctx.font = '10px -apple-system,sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const step = this._niceStep(rng, 5);
+    for (let p = Math.ceil(mn / step) * step; p <= mx; p += step) {
+      const y = yFor(p);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(plotW, y); ctx.stroke();
+      ctx.fillText(fmtNum(p), plotW + 4, y);
+    }
+    // eje de tiempo
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    const tEvery = Math.max(1, Math.round(this.count / 5));
+    for (let i = i0; i <= i1; i++) {
+      if (i % tEvery !== 0) continue;
+      const x = xFor(i);
+      ctx.strokeStyle = '#1a2028';
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, plotH); ctx.stroke();
+      ctx.fillStyle = '#8b949e';
+      ctx.fillText(this._fmtTime(this.candles[i].time), Math.min(Math.max(x, 18), plotW - 18), plotH + 4);
+    }
+    // volumen
+    for (let i = i0; i <= i1; i++) {
+      const k = this.candles[i], x = xFor(i);
+      const vh = vMax ? (k.volume / vMax) * (plotH - pBot - 6) : 0;
+      ctx.fillStyle = k.close >= k.open ? 'rgba(38,166,154,.35)' : 'rgba(239,83,80,.35)';
+      ctx.fillRect(x - Math.max(cw * 0.35, 0.5), plotH - vh, Math.max(cw * 0.7, 1), vh);
+    }
+    // velas
+    const bw = Math.min(Math.max(cw * 0.7, 1), 13);
+    for (let i = i0; i <= i1; i++) {
+      const k = this.candles[i], x = xFor(i);
+      const up = k.close >= k.open;
+      ctx.strokeStyle = ctx.fillStyle = up ? '#26a69a' : '#ef5350';
+      ctx.beginPath(); ctx.moveTo(x, yFor(k.high)); ctx.lineTo(x, yFor(k.low)); ctx.stroke();
+      const yO = yFor(k.open), yC = yFor(k.close);
+      ctx.fillRect(x - bw / 2, Math.min(yO, yC), bw, Math.max(Math.abs(yC - yO), 1));
+    }
+    // overlays (EMAs, FRAMA)
+    for (const ov of this.overlays) {
+      ctx.strokeStyle = ov.color; ctx.lineWidth = ov.width || 1.2; ctx.beginPath();
+      let started = false;
+      for (let i = i0; i <= i1; i++) {
+        const v = ov.data[i];
+        if (v === null || v === undefined) continue;
+        const x = xFor(i), y = yFor(v);
+        if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke(); ctx.lineWidth = 1;
+    }
+    // marcas BUY / SELL (SuperTrend)
+    ctx.font = 'bold 8px -apple-system,sans-serif'; ctx.textAlign = 'center';
+    for (const m of (this.markers || [])) {
+      if (m.i < i0 || m.i > i1) continue;
+      const k = this.candles[m.i]; if (!k) continue;
+      const x = xFor(m.i);
+      if (m.dir > 0) {
+        const y = yFor(k.low) + 6;
+        ctx.fillStyle = '#26a69a';
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 5, y + 8); ctx.lineTo(x + 5, y + 8); ctx.closePath(); ctx.fill();
+        ctx.textBaseline = 'top'; ctx.fillText('BUY', x, y + 10);
+      } else {
+        const y = yFor(k.high) - 6;
+        ctx.fillStyle = '#ef5350';
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 5, y - 8); ctx.lineTo(x + 5, y - 8); ctx.closePath(); ctx.fill();
+        ctx.textBaseline = 'bottom'; ctx.fillText('SELL', x, y - 10);
+      }
+    }
+    // chip auxiliar en el eje de precio (siempre dentro del área visible)
+    const chip = (price, color, yRaw, textColor) => {
+      const y = Math.min(Math.max(yRaw, 9), plotH - 9); // nunca desaparece: se ancla al borde
+      ctx.font = '9px -apple-system,sans-serif';
+      const txt = fmtNum(price), tw = axisW - 2;
+      ctx.fillStyle = color;
+      ctx.fillRect(plotW + 1, y - 8, tw, 15);
+      ctx.fillStyle = textColor || '#0d1117';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText((yRaw < 0 ? '▲ ' : yRaw > plotH ? '▼ ' : '') + txt, plotW + 4, y);
+      return y;
+    };
+    // niveles (entrada / SL / TP): línea si está en rango, chip SIEMPRE
+    ctx.font = '9px -apple-system,sans-serif';
+    for (const lv of this.levels) {
+      const y = yFor(lv.price);
+      if (lv.price >= mn && lv.price <= mx) {
+        ctx.strokeStyle = lv.color; ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(plotW, y); ctx.stroke();
+        ctx.setLineDash([]);
+        const txt = lv.label + ' ' + fmtNum(lv.price);
+        const tw = ctx.measureText(txt).width + 8;
+        ctx.fillStyle = lv.color;
+        ctx.fillRect(plotW - tw - 2, y - 8, tw, 15);
+        ctx.fillStyle = '#0d1117'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillText(txt, plotW - tw + 2, y);
+      }
+    }
+    // último precio: línea si está en rango, chip anclado SIEMPRE visible
+    const lastK = this.candles[len - 1];
+    if (lastK) {
+      const y = yFor(lastK.close);
+      const up = lastK.close >= lastK.open;
+      if (y > 0 && y < plotH) {
+        ctx.strokeStyle = up ? '#26a69a' : '#ef5350'; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(plotW, y); ctx.stroke(); ctx.setLineDash([]);
+      }
+      chip(lastK.close, up ? '#26a69a' : '#ef5350', y);
+    }
+    // crosshair: precio exacto donde tocas + lectura de la vela
+    if (this.cross) {
+      const idx = Math.round(this._idxAt(this.cross.x) - 0.5);
+      const cy = Math.min(Math.max(this.cross.y, pTop), pBot);
+      const priceAt = mx - (cy - pTop) / (pBot - pTop) * rng;
+      ctx.strokeStyle = 'rgba(139,148,158,.6)'; ctx.setLineDash([3, 3]);
+      if (idx >= 0 && idx < len) {
+        const x = xFor(idx);
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, plotH); ctx.stroke();
+      }
+      ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(plotW, cy); ctx.stroke();
+      ctx.setLineDash([]);
+      chip(priceAt, '#e6edf3', cy); // precio del punto tocado, en el eje
+      if (idx >= 0 && idx < len) {
+        const k = this.candles[idx];
+        const chg = (k.close / k.open - 1) * 100;
+        this.info.innerHTML = `<b style="color:#e6edf3">Precio: ${fmtNum(priceAt)}</b> · ${this._fmtTime(k.time)} · O ${fmtNum(k.open)} · H ${fmtNum(k.high)} · L ${fmtNum(k.low)} · C ${fmtNum(k.close)} <span style="color:${chg >= 0 ? '#26a69a' : '#ef5350'}">${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%</span> · Vol ${fmtNum(k.volume, 0)}`;
+      } else {
+        this.info.innerHTML = `<b style="color:#e6edf3">Precio: ${fmtNum(priceAt)}</b>`;
+      }
+    } else {
+      this.info.textContent = 'Arrastra para mover · pellizca para zoom · toca el gráfico para ver el precio de ese punto';
+    }
+  }
+}
+'use strict';
+/* ================= CONFIG ================= */
+const FAPI = 'https://fapi.binance.com';
+const CG = 'https://api.coingecko.com/api/v3';
+const TFS = ['1m','5m','15m','1h','4h','1d'];
+const TF_LABEL = {'1m':'1 minuto','5m':'5 minutos','15m':'15 minutos','1h':'1 hora','4h':'4 horas','1d':'1 día'};
+const TF_STYLE = {
+  '1m':'scalping (muy rápido, mucho ruido y comisiones)',
+  '5m':'scalping (rápido, requiere atención constante)',
+  '15m':'intradía corto',
+  '1h':'intradía',
+  '4h':'swing corto (horas a días)',
+  '1d':'swing (días a semanas)'
+};
+const KLIMIT = 1000; // suficiente historia para gráfico + backtest
+
+const state = {
+  symbols: [], symbol: null, meta: null,
+  klines: {}, analyses: {}, recTf: null, curTf: null,
+  ticker: null, premium: null, oi: null, oiHist: null, lsRatio: null,
+  taker: null, topPos: null, topPos15: null, oiHist15: null, depth: null,
+  cg: null, fundamental: null,
+  profDump: null, profBump: null,      // perfil de caída / subida del símbolo abierto
+  verdict: null, plan: null, exitPlan: null, entryPlan: null, backtest: null,
+  chart: null, series: {}, priceLines: [],
+};
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+
+async function fetchJSON(url, timeoutMs = 15000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    if (!r.ok) { const e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+function fmtNum(x, digits) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  if (digits !== undefined) return Number(x).toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  const a = Math.abs(x);
+  const d = a >= 1000 ? 2 : a >= 1 ? 4 : a >= 0.001 ? 6 : 8;
+  return Number(x).toLocaleString('en-US', { maximumFractionDigits: d });
+}
+function fmtUSD(x) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  const a = Math.abs(x);
+  if (a >= 1e12) return '$' + (x/1e12).toFixed(2) + ' billones';
+  if (a >= 1e9)  return '$' + (x/1e9).toFixed(2) + ' mil M';
+  if (a >= 1e6)  return '$' + (x/1e6).toFixed(2) + ' M';
+  if (a >= 1e3)  return '$' + (x/1e3).toFixed(1) + ' K';
+  return '$' + fmtNum(x);
+}
+function pct(x, d=2) { return (x>=0?'+':'') + Number(x).toFixed(d) + '%'; }
+function roundToTick(price, tick) {
+  if (!tick || !isFinite(tick) || tick <= 0) return price;
+  if (!isFinite(price)) return price;
+  const r = Math.round(price / tick) * tick;
+  // Los decimales NO se pueden sacar siempre de String(tick): un tick de 1e-7
+  // se escribe "1e-7", que no tiene punto, así que el conteo daba 0 y
+  // toFixed(0) convertía en CERO el precio de cualquier moneda barata. El
+  // usuario veía "Entrar a 0 / Stop 0 / Objetivo 0" sin ningún aviso.
+  const s = String(tick);
+  const dec = /e/i.test(s)
+    ? Math.min(12, Math.max(0, Math.ceil(-Math.log10(tick))))
+    : (s.split('.')[1] || '').length;
+  return Number(r.toFixed(dec));
+}
+function showStatus(msg, type) {
+  const el = $('status');
+  el.style.display = '';
+  el.className = type || 'info';
+  el.innerHTML = msg;
+}
+function hideStatus() { $('status').className = ''; $('status').style.display = 'none'; }
+
+/* ================= INDICADORES =================
+   Implementaciones estándar (Wilder para RSI/ATR/ADX).
+   Devuelven arrays alineados con la entrada; null donde no hay dato. */
+function smaArr(v, p) {
+  const out = new Array(v.length).fill(null); let s = 0;
+  for (let i = 0; i < v.length; i++) {
+    s += v[i]; if (i >= p) s -= v[i-p];
+    if (i >= p-1) out[i] = s / p;
+  }
+  return out;
+}
+function emaArr(v, p) {
+  const out = new Array(v.length).fill(null);
+  if (v.length < p) return out;
+  const k = 2 / (p + 1);
+  let seed = 0; for (let i = 0; i < p; i++) seed += v[i];
+  seed /= p; out[p-1] = seed;
+  for (let i = p; i < v.length; i++) out[i] = v[i]*k + out[i-1]*(1-k);
+  return out;
+}
+function rsiArr(c, p = 14) {
+  const out = new Array(c.length).fill(null);
+  if (c.length < p+1) return out;
+  let g = 0, l = 0;
+  for (let i = 1; i <= p; i++) { const d = c[i]-c[i-1]; if (d>0) g+=d; else l-=d; }
+  let ag = g/p, al = l/p;
+  out[p] = al === 0 ? 100 : 100 - 100/(1 + ag/al);
+  for (let i = p+1; i < c.length; i++) {
+    const d = c[i]-c[i-1];
+    ag = (ag*(p-1) + (d>0?d:0)) / p;
+    al = (al*(p-1) + (d<0?-d:0)) / p;
+    out[i] = al === 0 ? 100 : 100 - 100/(1 + ag/al);
+  }
+  return out;
+}
+function macdArr(c, fast=12, slow=26, sig=9) {
+  const ef = emaArr(c, fast), es = emaArr(c, slow);
+  const line = c.map((_,i) => (ef[i]!==null && es[i]!==null) ? ef[i]-es[i] : null);
+  const start = slow - 1;
+  const vals = line.slice(start);
+  const sigVals = emaArr(vals, sig);
+  const signal = new Array(c.length).fill(null);
+  for (let i = 0; i < sigVals.length; i++) if (sigVals[i] !== null) signal[start+i] = sigVals[i];
+  const hist = c.map((_,i) => (line[i]!==null && signal[i]!==null) ? line[i]-signal[i] : null);
+  return { line, signal, hist };
+}
+function atrArr(h, l, c, p = 14) {
+  const n = c.length, out = new Array(n).fill(null);
+  if (n < p+1) return out;
+  const tr = new Array(n).fill(null);
+  for (let i = 1; i < n; i++)
+    tr[i] = Math.max(h[i]-l[i], Math.abs(h[i]-c[i-1]), Math.abs(l[i]-c[i-1]));
+  let s = 0; for (let i = 1; i <= p; i++) s += tr[i];
+  out[p] = s / p;
+  for (let i = p+1; i < n; i++) out[i] = (out[i-1]*(p-1) + tr[i]) / p;
+  return out;
+}
+function adxArr(h, l, c, p = 14) {
+  const n = c.length;
+  const adx = new Array(n).fill(null), pdi = new Array(n).fill(null), mdi = new Array(n).fill(null);
+  if (n < 2*p+1) return { adx, pdi, mdi };
+  const trA = [], pdmA = [], mdmA = [];
+  for (let i = 1; i < n; i++) {
+    const up = h[i]-h[i-1], dn = l[i-1]-l[i];
+    pdmA.push(up > dn && up > 0 ? up : 0);
+    mdmA.push(dn > up && dn > 0 ? dn : 0);
+    trA.push(Math.max(h[i]-l[i], Math.abs(h[i]-c[i-1]), Math.abs(l[i]-c[i-1])));
+  }
+  let trS = 0, pS = 0, mS = 0;
+  for (let i = 0; i < p; i++) { trS += trA[i]; pS += pdmA[i]; mS += mdmA[i]; }
+  const dxs = [];
+  for (let i = p; i <= trA.length; i++) {
+    const P = trS === 0 ? 0 : 100 * pS / trS;
+    const M = trS === 0 ? 0 : 100 * mS / trS;
+    pdi[i] = P; mdi[i] = M;
+    const dx = (P+M) === 0 ? 0 : 100 * Math.abs(P-M) / (P+M);
+    dxs.push(dx);
+    if (dxs.length === p) adx[i] = dxs.reduce((a,b)=>a+b,0) / p;
+    else if (dxs.length > p) adx[i] = (adx[i-1]*(p-1) + dx) / p;
+    if (i < trA.length) {
+      trS = trS - trS/p + trA[i]; pS = pS - pS/p + pdmA[i]; mS = mS - mS/p + mdmA[i];
+    }
+  }
+  return { adx, pdi, mdi };
+}
+function last(arr) { for (let i = arr.length-1; i >= 0; i--) if (arr[i] !== null && arr[i] !== undefined && !isNaN(arr[i])) return arr[i]; return null; }
+
+/* Pivotes (swing highs/lows): máximo/mínimo local con k velas a cada lado.
+   Se usan como soportes/resistencias reales para anclar los take profit. */
+function findSwings(h, l, k = 3) {
+  const highs = [], lows = [];
+  for (let i = k; i < h.length - k; i++) {
+    let isH = true, isL = true;
+    for (let j = 1; j <= k; j++) {
+      if (h[i] < h[i-j] || h[i] < h[i+j]) isH = false;
+      if (l[i] > l[i-j] || l[i] > l[i+j]) isL = false;
+      if (!isH && !isL) break;
+    }
+    if (isH) highs.push({ i, v: h[i] });
+    if (isL) lows.push({ i, v: l[i] });
+  }
+  return { highs, lows };
+}
+
+/* FRAMA (Fractal Adaptive Moving Average, John Ehlers). N par, típicamente 16. */
+function framaArr(h, l, c, N = 16) {
+  const n = c.length, out = new Array(n).fill(null);
+  if (n < N + 1) return out;
+  const half = N / 2;
+  let prev = 0;
+  for (let i = 0; i < N; i++) prev += c[i];
+  prev /= N;
+  out[N - 1] = prev;
+  for (let i = N; i < n; i++) {
+    let hh1 = -Infinity, ll1 = Infinity, hh2 = -Infinity, ll2 = Infinity, hh3 = -Infinity, ll3 = Infinity;
+    for (let j = i - half + 1; j <= i; j++) { if (h[j] > hh1) hh1 = h[j]; if (l[j] < ll1) ll1 = l[j]; }
+    for (let j = i - N + 1; j <= i - half; j++) { if (h[j] > hh2) hh2 = h[j]; if (l[j] < ll2) ll2 = l[j]; }
+    for (let j = i - N + 1; j <= i; j++) { if (h[j] > hh3) hh3 = h[j]; if (l[j] < ll3) ll3 = l[j]; }
+    const n1 = (hh1 - ll1) / half, n2 = (hh2 - ll2) / half, n3 = (hh3 - ll3) / N;
+    let D = 1;
+    if (n1 > 0 && n2 > 0 && n3 > 0) D = (Math.log(n1 + n2) - Math.log(n3)) / Math.log(2);
+    let alpha = Math.exp(-4.6 * (D - 1));
+    alpha = Math.min(1, Math.max(0.01, alpha));
+    prev = alpha * c[i] + (1 - alpha) * prev;
+    out[i] = prev;
+  }
+  return out;
+}
+
+/* SuperTrend (periodo ATR, multiplicador). Devuelve línea, tendencia (+1/-1)
+   y señales BUY/SELL en los cambios de tendencia. */
+function supertrendArr(h, l, c, p = 10, mult = 3) {
+  const n = c.length;
+  const line = new Array(n).fill(null), trend = new Array(n).fill(null), signals = [];
+  const atr = atrArr(h, l, c, p);
+  if (n < p + 2) return { line, trend, signals };
+  let fu = null, fl = null, tr = 1;
+  for (let i = p; i < n; i++) {
+    const hl2 = (h[i] + l[i]) / 2;
+    const ub = hl2 + mult * atr[i], lb = hl2 - mult * atr[i];
+    fu = (fu === null || ub < fu || c[i - 1] > fu) ? ub : fu;
+    fl = (fl === null || lb > fl || c[i - 1] < fl) ? lb : fl;
+    let newTr = tr;
+    if (i === p) newTr = c[i] >= hl2 ? 1 : -1;
+    else if (tr === 1 && c[i] < fl) newTr = -1;
+    else if (tr === -1 && c[i] > fu) newTr = 1;
+    if (newTr !== tr && i > p) signals.push({ i, dir: newTr });
+    tr = newTr;
+    trend[i] = tr;
+    line[i] = tr === 1 ? fl : fu;
+  }
+  return { line, trend, signals };
+}
+/* ================= DATOS BINANCE ================= */
+async function loadSymbols() {
+  const info = await fetchJSON(FAPI + '/fapi/v1/exchangeInfo');
+  state.symbols = info.symbols
+    .filter(s => s.contractType === 'PERPETUAL' && s.status === 'TRADING' && s.quoteAsset === 'USDT')
+    .map(s => {
+      const pf = (s.filters || []).find(f => f.filterType === 'PRICE_FILTER');
+      return { symbol: s.symbol, base: s.baseAsset, tick: pf ? parseFloat(pf.tickSize) : null,
+               pricePrecision: s.pricePrecision };
+    })
+    .sort((a,b) => a.symbol.localeCompare(b.symbol));
+}
+
+function parseKlines(raw) {
+  return raw.map(k => ({
+    time: Math.floor(k[0]/1000), open:+k[1], high:+k[2], low:+k[3], close:+k[4], volume:+k[5]
+  }));
+}
+
+async function loadAll(sym) {
+  const kReqs = TFS.map(tf =>
+    fetchJSON(`${FAPI}/fapi/v1/klines?symbol=${sym}&interval=${tf}&limit=${KLIMIT}`).then(parseKlines));
+  const [kls, ticker, premium, oi, oiHist, lsRatio, taker, topPos, depth, oiHist15, topPos15] = await Promise.all([
+    Promise.all(kReqs),
+    fetchJSON(`${FAPI}/fapi/v1/ticker/24hr?symbol=${sym}`),
+    fetchJSON(`${FAPI}/fapi/v1/premiumIndex?symbol=${sym}`),
+    fetchJSON(`${FAPI}/fapi/v1/openInterest?symbol=${sym}`).catch(()=>null),
+    fetchJSON(`${FAPI}/futures/data/openInterestHist?symbol=${sym}&period=1h&limit=25`).catch(()=>null),
+    fetchJSON(`${FAPI}/futures/data/globalLongShortAccountRatio?symbol=${sym}&period=1h&limit=1`).catch(()=>null),
+    fetchJSON(`${FAPI}/futures/data/takerlongshortRatio?symbol=${sym}&period=1h&limit=1`).catch(()=>null),
+    fetchJSON(`${FAPI}/futures/data/topLongShortPositionRatio?symbol=${sym}&period=1h&limit=25`).catch(()=>null),
+    fetchJSON(`${FAPI}/fapi/v1/depth?symbol=${sym}&limit=100`).catch(()=>null),
+    // ventana corta (≈4 h) — es la que distingue una caída con dinero nuevo
+    // de una simple cascada de liquidaciones que rebota enseguida
+    fetchJSON(`${FAPI}/futures/data/openInterestHist?symbol=${sym}&period=15m&limit=17`).catch(()=>null),
+    fetchJSON(`${FAPI}/futures/data/topLongShortPositionRatio?symbol=${sym}&period=15m&limit=17`).catch(()=>null),
+  ]);
+  state.klines = {}; TFS.forEach((tf,i) => state.klines[tf] = kls[i]);
+  state.ticker = ticker; state.premium = premium; state.oi = oi;
+  state.tickerAt = Date.now();   // para poder decir si el precio está viejo
+  state.oiHist = oiHist; state.lsRatio = (lsRatio && lsRatio[0]) || null;
+  state.taker = (taker && taker[0]) || null;
+  state.topPos = Array.isArray(topPos) && topPos.length ? topPos : null;
+  state.depth = depth || null;
+  state.oiHist15 = Array.isArray(oiHist15) && oiHist15.length ? oiHist15 : null;
+  state.topPos15 = Array.isArray(topPos15) && topPos15.length ? topPos15 : null;
+}
+
+/* Contexto de flujos "de ahora mismo" para el motor de movimientos (part3c).
+   Se separa del fundamental general porque aquí interesa la ventana corta. */
+function currentCtx() {
+  let funding = null;
+  if (state.premium && state.premium.lastFundingRate !== undefined)
+    funding = parseFloat(state.premium.lastFundingRate) * 100;
+  let oiChg = null;
+  const oh = state.oiHist15;
+  if (oh && oh.length > 1) {
+    const a = parseFloat(oh[0].sumOpenInterest), b = parseFloat(oh[oh.length-1].sumOpenInterest);
+    if (a > 0) oiChg = (b/a - 1) * 100;
+  }
+  let priceChg4h = null;
+  const k = state.klines['15m'];
+  if (k && k.length > 18) {
+    const cl = k.slice(0, -1);
+    priceChg4h = (cl[cl.length-1].close / cl[cl.length-17].close - 1) * 100;
+  }
+  let whaleNow = null, whalePrev = null;
+  const tp = state.topPos15 || state.topPos;
+  if (tp && tp.length) {
+    whaleNow = parseFloat(tp[tp.length-1].longShortRatio);
+    whalePrev = tp.length > 1 ? parseFloat(tp[0].longShortRatio) : null;
+  }
+  return { funding, oiChg, priceChg4h, whaleNow, whalePrev };
+}
+
+/* Perfil de caída y de subida del símbolo abierto (mismo motor que el radar). */
+function computeOwnProfiles() {
+  const k = state.klines['15m'];
+  if (!k) { state.profDump = null; state.profBump = null; return; }
+  const ctx = currentCtx();
+  state.profDump = moveProfile(k, -1, ctx, true);
+  state.profBump = moveProfile(k, +1, ctx, true);
+}
+
+/* ================= MOTOR FUNDAMENTAL =================
+   Puntúa el contexto fundamental/sentimiento con datos verificables:
+   funding, interés abierto, ratio long/short, flujo taker, basis y
+   métricas de CoinGecko. Devuelve score en [-1, +1]. */
+function computeFundamental() {
+  const factors = [];
+  const add = (dir, w, name, text) => factors.push({ dir, w, name, text });
+  const p = state.premium, t = state.ticker;
+
+  if (p && p.lastFundingRate !== undefined) {
+    const fr = parseFloat(p.lastFundingRate) * 100; // % por 8h
+    if (fr >= 0.05) add(-1, 1.2, 'Funding extremo', `Funding ${pct(fr,3)}: los longs pagan carísimo; mercado saturado de largos → riesgo de long squeeze (bajista contrario)`);
+    else if (fr >= 0.012) add(0.5, 0.5, 'Funding positivo', `Funding ${pct(fr,3)}: sesgo alcista moderado del mercado de futuros`);
+    else if (fr <= -0.05) add(1, 1.2, 'Funding muy negativo', `Funding ${pct(fr,3)}: shorts saturados pagando; combustible para short squeeze (alcista contrario)`);
+    else if (fr <= -0.012) add(-0.5, 0.5, 'Funding negativo', `Funding ${pct(fr,3)}: sesgo bajista moderado del mercado`);
+    else add(0, 0.5, 'Funding neutro', `Funding ${pct(fr,3)}: sin presión relevante de ningún lado`);
+  }
+  if (p && p.markPrice && p.indexPrice) {
+    const basis = (parseFloat(p.markPrice) / parseFloat(p.indexPrice) - 1) * 100;
+    if (basis >= 0.4) add(-0.7, 0.6, 'Basis sobrecalentado', `Futuro ${pct(basis,2)} sobre el spot: euforia en derivados, terreno de corrección`);
+    else if (basis >= 0.05) add(0.6, 0.6, 'Basis positivo', `Futuro ${pct(basis,2)} sobre el spot: demanda sana en derivados`);
+    else if (basis <= -0.05) add(-0.6, 0.6, 'Basis negativo', `Futuro ${pct(basis,2)} bajo el spot: pesimismo en derivados`);
+  }
+  if (state.lsRatio) {
+    const r = parseFloat(state.lsRatio.longShortRatio);
+    if (r >= 2.2) add(-1, 0.9, 'Multitud en long', `Ratio L/S ${r.toFixed(2)}: demasiadas cuentas en long; históricamente terreno de caídas (contrario)`);
+    else if (r >= 1.5) add(-0.4, 0.9, 'Mayoría long', `Ratio L/S ${r.toFixed(2)}: sesgo largo del público, precaución con longs`);
+    else if (r <= 0.6) add(1, 0.9, 'Multitud en short', `Ratio L/S ${r.toFixed(2)}: exceso de shorts; posible short squeeze (contrario alcista)`);
+    else if (r <= 0.8) add(0.4, 0.9, 'Mayoría short', `Ratio L/S ${r.toFixed(2)}: sesgo corto del público`);
+    else add(0, 0.9, 'Posicionamiento equilibrado', `Ratio L/S ${r.toFixed(2)}: sin extremos de multitud`);
+  }
+  // ===== BALLENAS: posicionamiento de los top traders de Binance (top 20% por margen) =====
+  if (state.topPos && state.topPos.length) {
+    const rw = parseFloat(state.topPos[state.topPos.length - 1].longShortRatio);
+    const rw0 = parseFloat(state.topPos[0].longShortRatio);
+    if (rw >= 1.6) add(1, 1.3, '🐋 Ballenas muy largas', `Top traders con ratio ${rw.toFixed(2)} (posiciones): el dinero grande está posicionado al alza`);
+    else if (rw >= 1.15) add(0.5, 1.3, '🐋 Ballenas largas', `Top traders con ratio ${rw.toFixed(2)}: sesgo alcista del dinero grande`);
+    else if (rw <= 0.65) add(-1, 1.3, '🐋 Ballenas muy cortas', `Top traders con ratio ${rw.toFixed(2)}: el dinero grande está posicionado a la baja`);
+    else if (rw <= 0.9) add(-0.5, 1.3, '🐋 Ballenas cortas', `Top traders con ratio ${rw.toFixed(2)}: sesgo bajista del dinero grande`);
+    else add(0, 1.3, '🐋 Ballenas neutrales', `Top traders con ratio ${rw.toFixed(2)}: sin sesgo claro del dinero grande`);
+    if (rw0 > 0) {
+      const chg = (rw / rw0 - 1) * 100;
+      if (chg >= 12) add(0.6, 0.7, '🐋 Ballenas acumulando', `El ratio de posiciones de top traders subió ${pct(chg,0)} en 24h: están construyendo largos`);
+      else if (chg <= -12) add(-0.6, 0.7, '🐋 Ballenas distribuyendo', `El ratio de posiciones de top traders cayó ${pct(chg,0)} en 24h: están soltando largos / abriendo cortos`);
+    }
+    if (state.lsRatio) {
+      const rr = parseFloat(state.lsRatio.longShortRatio);
+      if (rw >= 1.15 && rr <= 0.9) add(1, 1, '🐋 Ballenas contra retail (alcista)', `Top traders largos (${rw.toFixed(2)}) mientras el público está corto (${rr.toFixed(2)}): históricamente gana el dinero grande`);
+      else if (rw <= 0.9 && rr >= 1.4) add(-1, 1, '🐋 Ballenas contra retail (bajista)', `Top traders cortos (${rw.toFixed(2)}) mientras el público está largo (${rr.toFixed(2)}): el retail suele ser la liquidez de salida`);
+    }
+  }
+  // Muro de órdenes: desequilibrio del libro en ±2% del precio
+  if (state.depth && state.depth.bids && state.depth.asks && state.premium) {
+    const mid = parseFloat(state.premium.markPrice);
+    let bid = 0, ask = 0;
+    state.depth.bids.forEach(([p, q]) => { const P = parseFloat(p); if (P >= mid * 0.98) bid += P * parseFloat(q); });
+    state.depth.asks.forEach(([p, q]) => { const P = parseFloat(p); if (P <= mid * 1.02) ask += P * parseFloat(q); });
+    if (bid + ask > 0) {
+      const imb = (bid - ask) / (bid + ask);
+      if (imb >= 0.25) add(0.7, 0.7, 'Muro comprador', `Libro de órdenes: ${pct(imb*100,0)} más demanda que oferta en ±2% (${fmtUSD(bid)} vs ${fmtUSD(ask)})`);
+      else if (imb <= -0.25) add(-0.7, 0.7, 'Muro vendedor', `Libro de órdenes: ${pct(imb*100,0).replace('+','')} más oferta que demanda en ±2% (${fmtUSD(ask)} vs ${fmtUSD(bid)})`);
+      else add(0, 0.4, 'Libro equilibrado', `Sin muros dominantes en ±2% del precio (${fmtUSD(bid)} compra vs ${fmtUSD(ask)} venta)`);
+    }
+  }
+  if (state.taker && state.taker.buySellRatio) {
+    const b = parseFloat(state.taker.buySellRatio);
+    if (b >= 1.08) add(1, 0.8, 'Flujo comprador agresivo', `Taker buy/sell ${b.toFixed(2)}: las órdenes de mercado están comprando con agresividad (flujo real alcista)`);
+    else if (b <= 0.92) add(-1, 0.8, 'Flujo vendedor agresivo', `Taker buy/sell ${b.toFixed(2)}: las órdenes de mercado están vendiendo con agresividad (flujo real bajista)`);
+    else add(0, 0.8, 'Flujo taker equilibrado', `Taker buy/sell ${b.toFixed(2)}: sin dominio claro de compras o ventas de mercado`);
+  }
+  if (state.oiHist && state.oiHist.length > 1 && t) {
+    const first = parseFloat(state.oiHist[0].sumOpenInterest);
+    const lastV = parseFloat(state.oiHist[state.oiHist.length-1].sumOpenInterest);
+    const chg = first > 0 ? (lastV/first - 1) * 100 : 0;
+    const pchg = parseFloat(t.priceChangePercent);
+    if (chg > 1.5 && pchg > 0.5) add(1, 1, 'OI confirma la subida', `Interés abierto ${pct(chg,1)} con precio subiendo: entra dinero nuevo al alza (alcista)`);
+    else if (chg > 1.5 && pchg < -0.5) add(-1, 1, 'OI confirma la caída', `Interés abierto ${pct(chg,1)} con precio cayendo: se están abriendo shorts con convicción (bajista)`);
+    else if (chg < -1.5) add(0, 1, 'OI cayendo', `Interés abierto ${pct(chg,1)}: se cierran posiciones; el movimiento actual tiene poca convicción`);
+    else add(0, 0.5, 'OI estable', `Interés abierto ${pct(chg,1)} en 24h: sin cambios relevantes de posicionamiento`);
+  }
+  if (state.cg && state.cg.market_data) {
+    const m = state.cg.market_data;
+    const p30 = m.price_change_percentage_30d, p7 = m.price_change_percentage_7d;
+    if (p30 !== null && p30 !== undefined) {
+      if (p30 >= 20) add(0.6, 0.6, 'Momentum 30d fuerte', `${pct(p30,1)} en 30 días: flujo de capital sostenido hacia el activo`);
+      else if (p30 <= -25) add(-0.6, 0.6, 'Sangría de 30 días', `${pct(p30,1)} en 30 días: salida sostenida de capital`);
+      else add(0, 0.3, 'Momentum 30d moderado', `${pct(p30,1)} en 30 días`);
+    }
+    const mc = m.market_cap && m.market_cap.usd, fdv = m.fully_diluted_valuation && m.fully_diluted_valuation.usd;
+    if (mc && fdv && fdv/mc >= 3) add(-0.5, 0.5, 'Dilución alta', `FDV ${(fdv/mc).toFixed(1)}× el market cap: quedan muchos tokens por desbloquear, presión vendedora estructural`);
+    const athChg = m.ath_change_percentage && m.ath_change_percentage.usd;
+    if (athChg !== null && athChg !== undefined && athChg <= -85) add(-0.3, 0.4, 'Muy lejos del ATH', `${pct(athChg,1)} desde su máximo: el mercado le ha retirado la confianza (o es muy especulativo)`);
+  }
+  if (!factors.length) return null;
+  const wSum = factors.reduce((a,f) => a + f.w, 0);
+  const score = factors.reduce((a,f) => a + f.dir * f.w, 0) / wSum;
+  return { score, factors, hasCG: !!(state.cg && state.cg.market_data) };
+}
+
+/* ================= MOTOR DE SEÑALES =================
+   Confluencia: tendencia (EMA20/50/200) + momentum (RSI, MACD)
+   + fuerza (ADX) + volumen. Solo velas CERRADAS. */
+function analyzeTF(candles) {
+  if (!candles || candles.length < 60) return null;
+  const closed = candles.slice(0, -1); // descarta la vela en curso
+  const c = closed.map(x=>x.close), h = closed.map(x=>x.high),
+        l = closed.map(x=>x.low), v = closed.map(x=>x.volume);
+  const n = c.length;
+  const emaLongP = n >= 210 ? 200 : 100; // pares nuevos con poco historial
+  const e20 = emaArr(c,20), e50 = emaArr(c,50), eL = emaArr(c,emaLongP);
+  const rsi = rsiArr(c,14), macd = macdArr(c), atr = atrArr(h,l,c,14);
+  const { adx, pdi, mdi } = adxArr(h,l,c,14);
+  const volS = smaArr(v,20);
+  const frama = framaArr(h,l,c,16);
+  const st = supertrendArr(h,l,c,10,3);
+
+  const L = { close: c[n-1], e20: last(e20), e50: last(e50), eL: last(eL),
+    rsi: last(rsi), macdLine: last(macd.line), macdSig: last(macd.signal),
+    hist: macd.hist[n-1], histPrev: macd.hist[n-2],
+    atr: last(atr), adx: last(adx), pdi: last(pdi), mdi: last(mdi),
+    vol: v[n-1], volAvg: volS[n-1], candleDir: Math.sign(c[n-1] - closed[n-1].open),
+    frama: last(frama), stTrend: last(st.trend), stLine: last(st.line) };
+
+  // ATR 0 (moneda parada, o con todas las velas idénticas) no es un dato
+  // válido: el stop saldría pegado a la entrada, el riesgo sería 0 y todo lo
+  // que se divide por él daría NaN o Infinity. Se descarta como dato ausente.
+  if (L.e20 === null || L.rsi === null || !L.atr || !isFinite(L.atr)) return null;
+
+  const votes = [];
+  const add = (dir, w, name, text) => votes.push({ dir, w, name, text });
+
+  if (L.eL !== null) {
+    const d = L.close > L.eL ? 1 : -1;
+    add(d, 1, `Precio vs EMA ${emaLongP}`,
+      d>0 ? `El precio está ARRIBA de la EMA ${emaLongP} → tendencia de fondo alcista`
+          : `El precio está ABAJO de la EMA ${emaLongP} → tendencia de fondo bajista`);
+  }
+  {
+    const d = L.e20 > L.e50 ? 1 : -1;
+    add(d, 1, 'EMA 20 vs EMA 50',
+      d>0 ? 'EMA 20 por encima de EMA 50 → impulso de corto plazo alcista'
+          : 'EMA 20 por debajo de EMA 50 → impulso de corto plazo bajista');
+  }
+  if (L.macdLine !== null && L.macdSig !== null) {
+    const d = L.macdLine > L.macdSig ? 1 : -1;
+    add(d, 1, 'MACD',
+      d>0 ? 'Línea MACD sobre su señal → momentum alcista' : 'Línea MACD bajo su señal → momentum bajista');
+    if (L.hist !== null && L.histPrev !== null) {
+      const hd = L.hist > L.histPrev ? 1 : -1;
+      add(hd, 0.5, 'Histograma MACD',
+        hd>0 ? 'Histograma creciendo → el momentum se acelera al alza' : 'Histograma cayendo → el momentum se debilita');
+    }
+  }
+  {
+    const d = L.rsi > 55 ? 1 : L.rsi < 45 ? -1 : 0;
+    add(d, 1, `RSI 14 = ${L.rsi.toFixed(1)}`,
+      d>0 ? 'RSI > 55 → compradores en control' : d<0 ? 'RSI < 45 → vendedores en control' : 'RSI en zona neutra (45–55)');
+  }
+  if (L.stTrend !== null) {
+    add(L.stTrend, 1, 'SuperTrend (10, 3)',
+      L.stTrend > 0 ? 'SuperTrend en modo COMPRA: el precio sostiene su banda de volatilidad inferior'
+                    : 'SuperTrend en modo VENTA: el precio sostiene su banda de volatilidad superior');
+  }
+  if (L.frama !== null) {
+    const d = L.close > L.frama ? 1 : -1;
+    add(d, 0.5, 'FRAMA 16',
+      d > 0 ? 'Precio sobre la media adaptativa fractal → impulso alcista filtrado de ruido'
+            : 'Precio bajo la media adaptativa fractal → impulso bajista filtrado de ruido');
+  }
+  if (L.volAvg) {
+    const conf = L.vol > L.volAvg;
+    const d = conf ? L.candleDir : 0;
+    add(d, 0.5, 'Volumen',
+      conf ? `Última vela cerró ${L.candleDir>0?'alcista':'bajista'} con volumen sobre su promedio de 20 → movimiento con respaldo`
+           : 'Volumen por debajo del promedio → sin confirmación de volumen');
+  }
+
+  const score = votes.reduce((a,x) => a + x.dir*x.w, 0);
+  const maxScore = votes.reduce((a,x) => a + x.w, 0);
+  const adxV = L.adx ?? 0;
+  const regime = adxV >= 25 ? 'tendencia definida' : adxV >= 20 ? 'tendencia débil' : 'rango / sin tendencia';
+
+  let dir = 'NEUTRO';
+  if (score >= 1.5 && adxV >= 20) dir = 'LONG';
+  else if (score <= -1.5 && adxV >= 20) dir = 'SHORT';
+
+  const confidence = Math.round(Math.min(0.95,
+    (Math.abs(score)/maxScore) * (0.55 + 0.45*Math.min(adxV,50)/50)) * 100);
+
+  const warnings = [];
+  if (dir === 'LONG' && L.rsi > 70) warnings.push(`RSI en ${L.rsi.toFixed(0)} (sobrecompra): la señal es alcista pero entrar aquí es perseguir el precio; considera esperar un retroceso.`);
+  if (dir === 'SHORT' && L.rsi < 30) warnings.push(`RSI en ${L.rsi.toFixed(0)} (sobreventa): la señal es bajista pero puede rebotar; considera esperar un pullback.`);
+  if (adxV < 20) warnings.push(`ADX ${adxV.toFixed(0)} < 20: el mercado está en rango en este marco; las señales de tendencia fallan más aquí.`);
+  if (n < 210) warnings.push(`Historial limitado (${n} velas): se usó EMA ${emaLongP} en lugar de EMA 200.`);
+
+  const swings = findSwings(h, l, 3);
+  return { votes, score, maxScore, dir, confidence, regime, warnings, L, emaLongP,
+           e20, e50, eL, frama, st, swings, atrLast: L.atr };
+}
+
+function buildPlan(analysis, entryPrice, tick, dirOverride) {
+  const dir = dirOverride || (analysis && analysis.dir);
+  if (!analysis || !dir || dir === 'NEUTRO') return null;
+  const atr = analysis.atrLast;
+  const s = dir === 'LONG' ? 1 : -1;
+  // SL: 1.5×ATR, pero respetando el último swing (no dejar el stop dentro del ruido)
+  let slRaw = entryPrice - s * 1.5 * atr;
+  const sw = analysis.swings || { highs: [], lows: [] };
+  if (s > 0 && sw.lows.length) {
+    const lastLow = sw.lows[sw.lows.length - 1].v;
+    if (lastLow < entryPrice && lastLow > slRaw && (entryPrice - lastLow) >= 0.6 * atr)
+      slRaw = lastLow - 0.25 * atr; // debajo del soporte, no dentro
+  } else if (s < 0 && sw.highs.length) {
+    const lastHigh = sw.highs[sw.highs.length - 1].v;
+    if (lastHigh > entryPrice && lastHigh < slRaw && (lastHigh - entryPrice) >= 0.6 * atr)
+      slRaw = lastHigh + 0.25 * atr;
+  }
+  const sl = roundToTick(slRaw, tick);
+  const risk = Math.abs(entryPrice - sl);
+  // Sin distancia al stop no hay plan: todo lo que sigue divide por `risk`, y
+  // con risk = 0 la tarjeta salía con "1:NaN" y aun así con confianza alta.
+  // Mejor no dar plan que dar uno con números inventados.
+  if (!atr || !isFinite(atr) || !risk || !isFinite(risk)) return null;
+  // TP por ESTRUCTURA: anclado a soportes/resistencias reales (pivotes),
+  // con límites de cordura para que sean objetivos REALISTAS:
+  //   TP1 debe estar entre 0.8R y 2.5R (si no hay estructura ahí → 1.5R fijo)
+  //   TP2 debe estar al menos 0.5R más allá de TP1 y máximo 4R (si no → 2.5R o TP1+1R)
+  const rr = p => Math.abs(p - entryPrice) / risk;
+  const candidates = (s > 0 ? sw.highs : sw.lows)
+    .map(x => x.v)
+    .filter(v => s > 0 ? v > entryPrice : v < entryPrice)
+    .sort((a, b) => s > 0 ? a - b : b - a); // del más cercano al más lejano
+  const uniq = [];
+  for (const v of candidates) {
+    if (!uniq.length || Math.abs(v - uniq[uniq.length - 1]) > 0.3 * atr) uniq.push(v);
+  }
+  let tp1Raw = null, tp2Raw = null, tpNote;
+  const near = uniq.find(v => rr(v) >= 0.8 && rr(v) <= 2.5);
+  if (near !== undefined) { tp1Raw = near; tpNote = s > 0 ? 'resistencia real' : 'soporte real'; }
+  else { tp1Raw = entryPrice + s * 1.5 * risk; tpNote = 'sin estructura cercana: 1.5R'; }
+  const far = uniq.find(v => rr(v) >= rr(tp1Raw) + 0.5 && rr(v) <= 4);
+  if (far !== undefined) tp2Raw = far;
+  else tp2Raw = entryPrice + s * Math.max(2.5, rr(tp1Raw) + 1) * risk;
+  const tp1 = roundToTick(tp1Raw, tick), tp2 = roundToTick(tp2Raw, tick);
+  return { entry: roundToTick(entryPrice, tick), sl, tp1, tp2, risk,
+           riskPct: risk/entryPrice*100, atr, tpNote,
+           rr1: rr(tp1Raw), rr2: rr(tp2Raw) };
+}
+
+function rankTimeframes() {
+  const daily = state.analyses['1d'];
+  let best = null, bestQ = -1;
+  const rows = [];
+  for (const tf of TFS) {
+    const a = state.analyses[tf];
+    if (!a) { rows.push({ tf, a: null, q: 0 }); continue; }
+    let q = (Math.abs(a.score)/a.maxScore)*0.6 + (Math.min(a.L.adx ?? 0,50)/50)*0.4;
+    if (a.dir === 'NEUTRO') q *= 0.35;
+    if (daily && a.dir !== 'NEUTRO' && daily.dir !== 'NEUTRO' && a.dir === daily.dir) q += 0.08;
+    rows.push({ tf, a, q });
+    if (q > bestQ) { bestQ = q; best = tf; }
+  }
+  return { best, rows };
+}
+
+/* ================= COINGECKO (fundamental) ================= */
+function cgBaseName(base) { return base.replace(/^1000000|^1000|^1M/, ''); }
+
+async function loadFundamentals(base) {
+  const q = cgBaseName(base);
+  const search = await fetchJSON(`${CG}/search?query=${encodeURIComponent(q)}`);
+  const matches = (search.coins || []).filter(c => c.symbol && c.symbol.toLowerCase() === q.toLowerCase());
+  if (!matches.length) throw new Error('Sin coincidencia en CoinGecko');
+  matches.sort((a,b) => (a.market_cap_rank ?? 1e9) - (b.market_cap_rank ?? 1e9));
+  const id = matches[0].id;
+  return await fetchJSON(`${CG}/coins/${id}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`);
+}
+/* ================= MOTOR DE BACKTEST =================
+   Prueba 4 estrategias clásicas sobre las velas reales descargadas
+   (hasta ~1000), con comisiones taker (0.05%/lado) y slippage (0.02%).
+   Entrada en la apertura de la vela siguiente a la señal. SL 1.5×ATR,
+   TP 2R, o salida al girar la señal. Elige la más rentable AHORA para
+   este par y marco. Pasado ≠ futuro: es una medición, no una promesa. */
+const FEE = 0.0005, SLIP = 0.0002; // por lado
+const STRATS = [
+  { key: 'supertrend', name: 'SuperTrend (10,3)',
+    desc: 'Sigue la tendencia según las bandas de volatilidad',
+    pos: (i, S) => S.stTrend[i] },
+  { key: 'emacross', name: 'Cruce EMA 20/50 + filtro EMA larga',
+    desc: 'Solo opera a favor de la tendencia de fondo',
+    pos: (i, S) => (S.e20[i] !== null && S.e50[i] !== null && S.eL[i] !== null)
+      ? (S.e20[i] > S.e50[i] && S.c[i] > S.eL[i] ? 1 : (S.e20[i] < S.e50[i] && S.c[i] < S.eL[i] ? -1 : 0)) : 0 },
+  { key: 'frama', name: 'FRAMA + filtro ADX',
+    desc: 'Media adaptativa fractal, opera solo con tendencia (ADX>20)',
+    pos: (i, S) => (S.frama[i] !== null && S.adx[i] !== null && S.adx[i] > 20)
+      ? (S.c[i] > S.frama[i] ? 1 : -1) : 0 },
+  { key: 'donchian', name: 'Ruptura Donchian 20',
+    desc: 'Entra en rupturas del rango de 20 velas (estilo turtle)',
+    pos: (i, S) => {
+      if (i < 21) return 0;
+      if (S.c[i] > S.donHi[i]) return 1;
+      if (S.c[i] < S.donLo[i]) return -1;
+      return null; // mantiene la posición anterior
+    } },
+];
+
+function prepSeries(candles) {
+  const closed = candles.slice(0, -1);
+  const c = closed.map(x => x.close), h = closed.map(x => x.high),
+        l = closed.map(x => x.low), o = closed.map(x => x.open);
+  const n = c.length;
+  const emaLongP = n >= 210 ? 200 : 100;
+  const st = supertrendArr(h, l, c, 10, 3);
+  const donHi = new Array(n).fill(null), donLo = new Array(n).fill(null);
+  for (let i = 20; i < n; i++) {
+    let mx = -Infinity, mn = Infinity;
+    for (let j = i - 20; j < i; j++) { if (h[j] > mx) mx = h[j]; if (l[j] < mn) mn = l[j]; }
+    donHi[i] = mx; donLo[i] = mn;
+  }
+  return { c, h, l, o, n, donHi, donLo,
+    e20: emaArr(c, 20), e50: emaArr(c, 50), eL: emaArr(c, emaLongP),
+    frama: framaArr(h, l, c, 16), adx: adxArr(h, l, c, 14).adx,
+    atr: atrArr(h, l, c, 14), stTrend: st.trend };
+}
+
+function backtestOne(S, strat) {
+  const { c, h, l, o, n } = S;
+  const warm = Math.min(220, Math.floor(n * 0.3));
+  let pos = 0, entry = 0, sl = 0, tp = 0;
+  let equity = 1, peak = 1, maxDD = 0, wins = 0, losses = 0, gw = 0, gl = 0;
+  const trades = [];
+  const cost = FEE + SLIP;
+  const closeTrade = (exitPx) => {
+    const r = pos > 0 ? (exitPx * (1 - cost)) / (entry * (1 + cost)) - 1
+                      : (entry * (1 - cost)) / (exitPx * (1 + cost)) - 1;
+    equity *= (1 + r);
+    if (equity > peak) peak = equity;
+    const dd = 1 - equity / peak;
+    if (dd > maxDD) maxDD = dd;
+    if (r > 0) { wins++; gw += r; } else { losses++; gl -= r; }
+    trades.push(r);
+    pos = 0;
+  };
+  for (let i = warm; i < n - 1; i++) {
+    // 1) gestionar posición abierta contra la vela i+1
+    if (pos !== 0) {
+      const hitSL = pos > 0 ? l[i + 1] <= sl : h[i + 1] >= sl;
+      const hitTP = pos > 0 ? h[i + 1] >= tp : l[i + 1] <= tp;
+      if (hitSL) { closeTrade(sl); continue; }         // SL primero (conservador)
+      else if (hitTP) { closeTrade(tp); continue; }
+    }
+    // 2) leer señal al cierre de i
+    let want = strat.pos(i, S);
+    if (want === null) want = pos; // "mantener"
+    if (want !== pos) {
+      const px = o[i + 1];
+      if (pos !== 0) closeTrade(px);
+      if (want !== 0 && S.atr[i]) {
+        pos = want; entry = px;
+        sl = entry - want * 1.5 * S.atr[i];
+        tp = entry + want * 3.0 * S.atr[i]; // 2R
+      }
+    }
+  }
+  if (pos !== 0) closeTrade(c[n - 1]);
+  const total = wins + losses;
+  return {
+    key: strat.key, name: strat.name, desc: strat.desc,
+    trades: total, winRate: total ? wins / total * 100 : 0,
+    pf: gl > 0 ? gw / gl : (gw > 0 ? 99 : 0),
+    net: (equity - 1) * 100, maxDD: maxDD * 100,
+    valid: total >= 6,
+  };
+}
+
+function runBacktest(tf) {
+  const candles = state.klines[tf];
+  if (!candles || candles.length < 120) return null;
+  const S = prepSeries(candles);
+  const results = STRATS.map(st => {
+    const r = backtestOne(S, st);
+    let cur = st.pos(S.n - 1, S);
+    if (cur === null) cur = 0; // para mostrar: sin señal nueva
+    r.current = cur > 0 ? 'LONG' : cur < 0 ? 'SHORT' : 'NEUTRO';
+    return r;
+  });
+  const valid = results.filter(r => r.valid && r.pf > 0);
+  const ranked = [...results].sort((a, b) => {
+    if (a.valid !== b.valid) return a.valid ? -1 : 1;
+    if (Math.abs(b.pf - a.pf) > 0.05) return b.pf - a.pf;
+    return b.net - a.net;
+  });
+  const best = ranked[0] && ranked[0].valid && ranked[0].pf >= 1.1 && ranked[0].net > 0 ? ranked[0] : null;
+  return { results: ranked, best, tf, candles: S.n };
+}/* =====================================================================
+   MOTOR DE MOVIMIENTOS v4 — dumps y bumps con clasificación de duración
+   =====================================================================
+   Problema que resuelve: la versión anterior sólo medía "sobrecalentamiento"
+   (RSI extremo, precio lejos de su media, funding alto). Eso detecta bien el
+   momento en que un precio está tenso, pero ese tipo de tensión se resuelve
+   casi siempre con un movimiento CORTO que después revierte. Por eso el radar
+   mostraba monedas que caían un poco y volvían a subir.
+
+   Ahora se calculan DOS cosas distintas y se muestran por separado:
+
+     GATILLO (0-100)    ¿hay un movimiento a punto de empezar / empezando?
+     AGUANTE (0-100)    si empieza, ¿tiene combustible para durar horas?
+
+   Un gatillo alto con aguante bajo = sacudida rápida (entrar y salir en
+   minutos). Gatillo alto con aguante alto = movimiento de fondo (se puede
+   dejar corriendo). Son cosas independientes: mezclarlas fue el error.
+
+   Además, cada señal se contrasta contra el HISTORIAL REAL de esa misma
+   moneda: se buscan las veces que se dio el mismo perfil en las últimas
+   ~1-2 semanas y se mide qué pasó después (cuánto se movió, cuántas velas
+   duró, cuántas veces habría tocado el objetivo antes que el stop). Los
+   números de "duración esperada" y "% de acierto" salen de ahí — medidos,
+   no inventados.
+   ===================================================================== */
+
+const MV = {
+  H: 32,          // horizonte del estudio: 32 velas de 15m = 8 horas
+  MIN: 15,        // minutos por vela del estudio
+  LB: 96,         // lookback del canal largo (96×15m = 24 h)
+  WARM: 240,      // primera vela utilizable (necesita EMA larga + ADX)
+  COOL: 12,       // separación mínima entre muestras históricas (evita duplicados)
+  SL_ATR: 1.5,    // stop del estudio, en ATR
+  TP_ATR: 3.0,    // objetivo del estudio, en ATR (= 2R)
+};
+
+/* ---------- utilidades estadísticas ---------- */
+function median(a) {
+  if (!a || !a.length) return null;
+  const s = [...a].sort((x, y) => x - y), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+/* ---------- serie preparada (una sola vez por símbolo) ---------- */
+function prepMove(candles) {
+  if (!candles || candles.length < 120) return null;
+  const closed = candles.slice(0, -1);           // sólo velas cerradas
+  const c = closed.map(x => x.close), h = closed.map(x => x.high),
+        l = closed.map(x => x.low),  o = closed.map(x => x.open),
+        v = closed.map(x => x.volume);
+  const n = c.length;
+  const longP = n >= 230 ? 200 : Math.max(60, Math.floor(n / 3));
+  const ema20 = emaArr(c, 20), ema50 = emaArr(c, 50), emaL = emaArr(c, longP);
+  const rsi = rsiArr(c, 14), atr = atrArr(h, l, c, 14), volS = smaArr(v, 20);
+  const di = adxArr(h, l, c, 14);
+  const donLo = new Array(n).fill(null), donHi = new Array(n).fill(null);
+  for (let i = MV.LB; i < n; i++) {
+    let mn = Infinity, mx = -Infinity;
+    for (let j = i - MV.LB; j < i; j++) { if (l[j] < mn) mn = l[j]; if (h[j] > mx) mx = h[j]; }
+    donLo[i] = mn; donHi[i] = mx;
+  }
+  return { c, h, l, o, v, n, longP, ema20, ema50, emaL, rsi, atr, volS,
+           adx: di.adx, pdi: di.pdi, mdi: di.mdi, donLo, donHi };
+}
+
+/* =====================================================================
+   GATILLO — ¿está empezando el movimiento?
+   Sólo usa precio y volumen, para poder calcularlo también en el pasado.
+   side = -1 → caída (dump) · side = +1 → subida (bump)
+   ===================================================================== */
+function structTrigger(S, i, side, quiet) {
+  const { c, h, l, o, v, rsi, ema20, atr, volS } = S;
+  if (i < 40 || rsi[i] === null || ema20[i] === null || !atr[i]) return null;
+  let s = 0; const why = [];
+  const push = t => { if (!quiet) why.push(t); };
+
+  // 1) Tensión: RSI en el extremo del lado contrario al movimiento esperado
+  const R = side < 0 ? rsi[i] : 100 - rsi[i];
+  if (R >= 82)      { s += 30; push(side < 0 ? `RSI ${rsi[i].toFixed(0)}: comprado hasta el extremo` : `RSI ${rsi[i].toFixed(0)}: vendido hasta el extremo`); }
+  else if (R >= 73) { s += 22; push(side < 0 ? `RSI ${rsi[i].toFixed(0)}: sobrecomprado` : `RSI ${rsi[i].toFixed(0)}: sobrevendido`); }
+  else if (R >= 65) { s += 11; push(`RSI ${rsi[i].toFixed(0)}`); }
+
+  // 2) Distancia a su propia media (en ATR): el precio "estirado"
+  const ext = (side < 0 ? 1 : -1) * (c[i] - ema20[i]) / atr[i];
+  if (ext >= 2.5)      { s += 22; push(`precio ${ext.toFixed(1)} ATR ${side < 0 ? 'por encima' : 'por debajo'} de su media`); }
+  else if (ext >= 1.6) { s += 15; push(`precio estirado ${ext.toFixed(1)} ATR de su media`); }
+  else if (ext >= 1.0) { s += 7;  push('precio algo estirado de su media'); }
+
+  // 3) Impulso previo (3 horas): lo que sube deprisa suele corregir
+  if (i >= 12) {
+    const imp = (side < 0 ? 1 : -1) * (c[i] / c[i - 12] - 1) * 100;
+    if (imp >= 6)      { s += 14; push(`${imp.toFixed(1)}% ${side < 0 ? 'de subida' : 'de caída'} en 3 h`); }
+    else if (imp >= 3) { s += 9;  push(`${imp.toFixed(1)}% en 3 h`); }
+  }
+
+  // 4) Vela de rechazo con volumen justo después del extremo
+  let exIdx = i, exVal = side < 0 ? -Infinity : Infinity;
+  for (let k = Math.max(0, i - 11); k <= i; k++) {
+    const val = side < 0 ? h[k] : l[k];
+    if (side < 0 ? val > exVal : val < exVal) { exVal = val; exIdx = k; }
+  }
+  const against = side < 0 ? (c[i] < o[i]) : (c[i] > o[i]);
+  if (exIdx >= i - 5 && against && volS[i] && v[i] > 1.3 * volS[i]) {
+    s += 15; push(`vela de ${side < 0 ? 'rechazo' : 'reacción'} con volumen tras el extremo`);
+  }
+
+  // 5) Giro confirmado: tres cierres seguidos en la dirección del movimiento
+  if (i >= 3 && exIdx >= i - 8) {
+    const turn = side < 0 ? (c[i] < c[i - 1] && c[i - 1] < c[i - 2])
+                          : (c[i] > c[i - 1] && c[i - 1] > c[i - 2]);
+    if (turn) { s += 10; push(`tres cierres seguidos ${side < 0 ? 'a la baja' : 'al alza'}`); }
+  }
+
+  // exIdx/exVal = dónde está el extremo sobre el que se monta la señal.
+  // Ahí nace el movimiento, así que es la referencia para saber cuánto
+  // camino se ha hecho ya y cuánto premio queda (ver moveProfile).
+  return { score: Math.max(0, Math.min(100, s)), why, rsi: rsi[i], ext, exIdx, exVal };
+}
+
+/* =====================================================================
+   AGUANTE — si el movimiento arranca, ¿tiene con qué durar?
+   Esto es lo que separa una caída de 20 minutos de una de 8 horas.
+   ===================================================================== */
+function structPersist(S, i, side, quiet) {
+  const { c, h, l, ema50, emaL, adx, pdi, mdi, atr, rsi, donLo, donHi, longP } = S;
+  if (i < MV.WARM || !atr[i] || emaL[i] === null || ema50[i] === null ||
+      adx[i] === null || rsi[i] === null || donLo[i] === null) return null;
+  let s = 50; const pro = [], con = [];
+  const yes = t => { if (!quiet) pro.push(t); };
+  const no  = t => { if (!quiet) con.push(t); };
+  const down = side < 0;
+
+  // 1) ¿Va a favor o en contra de la tendencia de fondo? (peso máximo)
+  const above = c[i] > emaL[i];
+  if (down ? !above : above) {
+    s += 20;
+    yes(down ? `El precio ya está por debajo de su tendencia de fondo (media de ${longP} velas): la caída va a favor de la corriente.`
+             : `El precio ya está por encima de su tendencia de fondo (media de ${longP} velas): la subida va a favor de la corriente.`);
+  } else {
+    s -= 24;
+    no(down ? 'El precio todavía está POR ENCIMA de su tendencia de fondo: la caída va contra la corriente, y por eso lo más normal es que rebote pronto.'
+            : 'El precio todavía está POR DEBAJO de su tendencia de fondo: la subida va contra la corriente y suele agotarse rápido.');
+  }
+
+  // 2) ¿Hacia dónde apunta ya la media de 50?
+  if (i >= 16 && ema50[i - 16] !== null) {
+    const sl = (ema50[i] - ema50[i - 16]) / atr[i];
+    if ((down && sl <= -0.25) || (!down && sl >= 0.25)) { s += 10; yes(`La media de 50 velas ya apunta ${down ? 'hacia abajo' : 'hacia arriba'}.`); }
+    else if ((down && sl >= 0.25) || (!down && sl <= -0.25)) { s -= 12; no('La media de 50 velas apunta en sentido contrario al movimiento.'); }
+  }
+
+  // 3) Estructura de máximos y mínimos (últimas 40 velas = 10 h)
+  if (i >= 40) {
+    const seg = (a, b) => {
+      let mx = -Infinity, mn = Infinity;
+      for (let k = a; k < b; k++) { if (h[k] > mx) mx = h[k]; if (l[k] < mn) mn = l[k]; }
+      return { mx, mn };
+    };
+    const A = seg(i - 40, i - 20), B = seg(i - 20, i + 1);
+    const lowerH = B.mx < A.mx, lowerL = B.mn < A.mn;
+    if (down && lowerH && lowerL)        { s += 14; yes('Está haciendo máximos y mínimos cada vez más bajos: eso es una tendencia bajista de verdad, no un susto.'); }
+    else if (!down && !lowerH && !lowerL) { s += 14; yes('Está haciendo máximos y mínimos cada vez más altos: tendencia alcista real.'); }
+    else if (down && !lowerH && !lowerL)  { s -= 16; no('Sigue haciendo máximos y mínimos más altos: la estructura todavía es alcista.'); }
+    else if (!down && lowerH && lowerL)   { s -= 16; no('Sigue haciendo máximos y mínimos más bajos: la estructura todavía es bajista.'); }
+  }
+
+  // 4) Fuerza de tendencia (ADX + dirección dominante)
+  const strong = adx[i] >= 22;
+  const dirOk = down ? (mdi[i] > pdi[i]) : (pdi[i] > mdi[i]);
+  if (strong && dirOk)       { s += 14; yes(`Hay tendencia medible (ADX ${adx[i].toFixed(0)}) y la presión dominante es ${down ? 'vendedora' : 'compradora'}.`); }
+  else if (strong && !dirOk) { s -= 14; no(`Hay tendencia medible (ADX ${adx[i].toFixed(0)}) pero manda el lado contrario.`); }
+  else if (adx[i] < 17)      { s -= 10; no(`Sin tendencia (ADX ${adx[i].toFixed(0)}): el precio está en rango y los rangos devuelven el precio al centro.`); }
+
+  // 5) Espacio libre hasta el siguiente nivel importante de las últimas 24 h
+  const room = down ? (c[i] - donLo[i]) / atr[i] : (donHi[i] - c[i]) / atr[i];
+  if (room >= 6)        { s += 14; yes(`Hay ${room.toFixed(1)} ATR de espacio libre hasta el ${down ? 'suelo' : 'techo'} de las últimas 24 h: sitio de sobra para correr.`); }
+  else if (room >= 3)   { s += 6;  yes(`Espacio razonable (${room.toFixed(1)} ATR) hasta el siguiente nivel.`); }
+  else if (room <= 1.2) { s -= 18; no(`Ya está pegado ${down ? 'al suelo' : 'al techo'} de las últimas 24 h (${room.toFixed(1)} ATR): casi todo el movimiento ya ocurrió, ahí es donde suele rebotar.`); }
+
+  // 6) Agotamiento del propio lado
+  const own = down ? rsi[i] : 100 - rsi[i];
+  if (own <= 25)      { s -= 14; no(`El RSI ya está en ${rsi[i].toFixed(0)}: el movimiento ya está muy avanzado y lo que queda suele ser el rebote.`); }
+  else if (own <= 33) { s -= 6;  no('El movimiento ya lleva bastante recorrido.'); }
+
+  return { score: Math.max(0, Math.min(100, s)), pro, con, room, adx: adx[i] };
+}
+
+/* =====================================================================
+   AJUSTES POR FLUJOS (sólo disponibles para AHORA, no para el pasado)
+   Aquí vive la lección más importante de la versión anterior:
+     · interés abierto SUBIENDO mientras cae el precio = cortos nuevos = dura
+     · interés abierto CAYENDO mientras cae el precio  = largos cerrando
+       (liquidaciones) = sacudida rápida que después rebota
+     · funding muy alto = hay mucho largo apalancado que barrer, pero eso
+       produce una caída RÁPIDA, no una tendencia
+   ===================================================================== */
+function flowAdjust(side, ctx) {
+  let t = 0, p = 0; const pro = [], con = [];
+  if (!ctx) return { t, p, pro, con };
+  const down = side < 0;
+
+  // Interés abierto contra precio (últimas ~4 h)
+  if (ctx.oiChg !== null && ctx.oiChg !== undefined && ctx.priceChg4h !== null) {
+    const priceWithUs = down ? ctx.priceChg4h < -0.3 : ctx.priceChg4h > 0.3;
+    if (ctx.oiChg >= 2 && priceWithUs) {
+      p += 16; t += 6;
+      pro.push(`El interés abierto sube ${pct(ctx.oiChg, 1)} mientras el precio ${down ? 'cae' : 'sube'}: está entrando dinero NUEVO ${down ? 'al corto' : 'al largo'}. Eso es lo que sostiene un movimiento largo.`);
+    } else if (ctx.oiChg <= -2.5 && priceWithUs) {
+      p -= 20; t += 8;
+      con.push(`El interés abierto CAE ${pct(ctx.oiChg, 1)} mientras el precio ${down ? 'cae' : 'sube'}: no son ${down ? 'cortos nuevos' : 'compras nuevas'}, son ${down ? 'largos cerrando y liquidándose' : 'cortos cerrando'}. Este tipo de movimiento es rápido y suele darse la vuelta. ⚠️ Éste es exactamente el caso que hay que evitar dejar abierto.`);
+    } else if (ctx.oiChg >= 3 && !priceWithUs) {
+      p -= 8;
+      con.push('El interés abierto sube pero a favor del lado contrario.');
+    }
+  }
+
+  // Funding
+  if (ctx.funding !== null && ctx.funding !== undefined) {
+    const f = ctx.funding;
+    if (down) {
+      if (f >= 0.08)       { t += 18; p -= 12; con.push(`Funding ${pct(f, 3)}: hay muchísimos largos apalancados pagando por estar dentro. Cuando se barren, la caída es fuerte pero CORTA — es una limpieza, no una tendencia.`); }
+      else if (f >= 0.04)  { t += 12; p -= 4;  con.push(`Funding ${pct(f, 3)}: largos cargados, riesgo de limpieza rápida.`); }
+      else if (f <= -0.06) { t -= 12; p -= 18; con.push(`Funding ${pct(f, 3)}: los cortos ya están saturados y son ellos los que pagan. Aquí lo que suele venir es un rebote violento al alza (short squeeze), no más caída.`); }
+      else if (f >= 0 && f <= 0.03) { p += 6; pro.push('Funding tranquilo: todavía queda gente larga por rendirse, la caída tiene recorrido.'); }
+    } else {
+      if (f <= -0.08)      { t += 18; p -= 12; con.push(`Funding ${pct(f, 3)}: hay muchísimos cortos pagando. Cuando se barren la subida es fuerte pero CORTA.`); }
+      else if (f <= -0.04) { t += 12; p -= 4;  con.push(`Funding ${pct(f, 3)}: cortos cargados, posible rebote rápido.`); }
+      else if (f >= 0.06)  { t -= 12; p -= 18; con.push(`Funding ${pct(f, 3)}: los largos ya están saturados y pagan. Riesgo de que la subida se corte de golpe.`); }
+      else if (f <= 0 && f >= -0.03) { p += 6; pro.push('Funding tranquilo: la subida no está sobrecargada de apalancamiento.'); }
+    }
+  }
+
+  // Ballenas (top traders de Binance por margen)
+  if (ctx.whaleNow !== null && ctx.whaleNow !== undefined) {
+    const w = ctx.whaleNow;
+    if (down) {
+      if (w <= 0.75)      { t += 12; p += 10; pro.push(`Los grandes traders están posicionados en corto (ratio ${w.toFixed(2)}).`); }
+      else if (w <= 0.95) { t += 6;  p += 5;  pro.push(`Los grandes traders se inclinan al corto (ratio ${w.toFixed(2)}).`); }
+      else if (w >= 1.7)  { t -= 10; p -= 12; con.push(`Los grandes traders están claramente largos (ratio ${w.toFixed(2)}): apostar a una caída larga es ir contra ellos.`); }
+    } else {
+      if (w >= 1.5)       { t += 12; p += 10; pro.push(`Los grandes traders están posicionados en largo (ratio ${w.toFixed(2)}).`); }
+      else if (w >= 1.1)  { t += 6;  p += 5;  pro.push(`Los grandes traders se inclinan al largo (ratio ${w.toFixed(2)}).`); }
+      else if (w <= 0.7)  { t -= 10; p -= 12; con.push(`Los grandes traders están claramente cortos (ratio ${w.toFixed(2)}).`); }
+    }
+    if (ctx.whalePrev !== null && ctx.whalePrev > 0) {
+      const chg = ctx.whaleNow / ctx.whalePrev - 1;
+      if (down && chg <= -0.08) { t += 8; p += 6; pro.push('Los grandes traders están soltando largos en las últimas horas.'); }
+      if (!down && chg >= 0.08) { t += 8; p += 6; pro.push('Los grandes traders están construyendo largos en las últimas horas.'); }
+    }
+  }
+
+  return { t, p, pro, con };
+}
+
+/* =====================================================================
+   ESTUDIO HISTÓRICO — qué pasó las otras veces que esta misma moneda
+   tuvo este mismo perfil. De aquí salen la duración esperada y el % de
+   acierto que muestra la app. Todo medido sobre sus velas reales.
+   ===================================================================== */
+function moveClass(p) { return p >= 62 ? 2 : p >= 45 ? 1 : 0; }
+
+/* Índices del pasado en los que se dio este mismo tipo de señal.
+   Se comparte entre el estudio de resultados y el estudio del momento de
+   entrada, para que los dos hablen exactamente de las mismas situaciones. */
+function moveSignalIdx(S, side, cls, matchClass) {
+  const out = []; let lastI = -999;
+  for (let i = MV.WARM; i < S.n - MV.H - 1; i++) {
+    const t = structTrigger(S, i, side, true);
+    if (!t || t.score < 45) continue;
+    const p = structPersist(S, i, side, true);
+    if (!p) continue;
+    if (matchClass && moveClass(p.score) !== cls) continue;
+    if (i - lastI < MV.COOL) continue;            // no contar el mismo evento varias veces
+    lastI = i;
+    out.push(i);
+  }
+  return out;
+}
+
+function analogStudy(S, side, persistNow) {
+  const cls = moveClass(persistNow);
+  const collect = (matchClass) => {
+    const out = [];
+    for (const i of moveSignalIdx(S, side, cls, matchClass)) {
+      const a = S.atr[i], entry = S.o[i + 1];
+      if (!a || !entry) continue;
+      const stopPx = side < 0 ? entry + MV.SL_ATR * a : entry - MV.SL_ATR * a;
+      const tpPx   = side < 0 ? entry - MV.TP_ATR * a : entry + MV.TP_ATR * a;
+      /* Aquí se miden DOS cosas distintas que antes se mezclaban:
+           - el resultado de la OPERACIÓN (stop, objetivo o abierta al final)
+           - la vida del MOVIMIENTO (cuánto siguió yendo antes de darse la vuelta)
+         Antes el bucle hacía `break` al tocar objetivo y `life` se quedaba con
+         su valor inicial MV.H, así que una operación que ganaba en 45 minutos
+         se registraba como un movimiento de 8 horas y `sustained` salía true
+         automáticamente. Eso convertía sustainedRate en el % de aciertos
+         disfrazado de duración, y ése era justo el número que hacía a la app
+         decir "CAÍDA LARGA, se puede dejar operando". Ahora el bucle recorre
+         siempre todo el horizonte: la operación se cierra cuando se cierra,
+         pero el movimiento se sigue midiendo. */
+      let res = 'abierta', bars = MV.H, mfe = 0, best = entry;
+      let life = null, done = false, lastK = 0, mfeTrade = null, moveMfe = null;
+      for (let k = 1; k <= MV.H && i + k < S.n; k++) {
+        lastK = k;
+        const hi = S.h[i + k], lo = S.l[i + k], cl = S.c[i + k];
+        const fav = side < 0 ? (entry - lo) / a : (hi - entry) / a;
+        if (fav > mfe) mfe = fav;
+        if (side < 0) { if (lo < best) best = lo; } else { if (hi > best) best = hi; }
+        // ¿se acabó el movimiento? el precio CIERRA 1.2 ATR de vuelta desde su
+        // mejor punto. Se usa el cierre y no la mecha para que una sola vela
+        // ancha no dé por muerto un movimiento que sigue vivo.
+        if (life === null && mfe >= 0.8) {
+          const back = side < 0 ? (cl - best) / a : (best - cl) / a;
+          if (back >= 1.2) { life = k; moveMfe = mfe; }
+        }
+        if (!done) {
+          const stopHit = side < 0 ? hi >= stopPx : lo <= stopPx;
+          const tpHit   = side < 0 ? lo <= tpPx   : hi >= tpPx;
+          if (stopHit) {                                   // stop primero: criterio conservador
+            // Si salta el stop, el movimiento que la señal anunciaba NO ocurrió:
+            // se deja de medir aquí. Seguir midiendo después contaría a favor un
+            // movimiento que llegó cuando ya estábamos fuera.
+            res = 'stop'; bars = k; done = true; mfeTrade = mfe;
+            if (life === null) { life = k; moveMfe = mfe; }
+            break;
+          }
+          if (tpHit) {
+            // Tocar objetivo cierra la OPERACIÓN, no el MOVIMIENTO: el bucle
+            // sigue para medir cuánto duró de verdad. Ahí estaba el fallo que
+            // convertía un acierto de 45 minutos en "un movimiento de 8 horas".
+            res = 'tp'; bars = k; done = true; mfeTrade = mfe;
+          }
+        }
+      }
+      if (mfeTrade === null) mfeTrade = mfe;      // nunca se cerró: lo que llevaba
+      if (moveMfe === null) moveMfe = mfe;        // nunca se dio la vuelta: todo
+      // "went" = el movimiento llegó a arrancar de verdad (0.8 ATR a favor).
+      // Si nunca arrancó, no tiene duración que medir: null, no MV.H. Decir
+      // "duró 8 horas" de algo que se quedó plano fue el error original.
+      const went = moveMfe >= 0.8;
+      const lifeBars = went ? (life === null ? lastK : life) : null;
+      out.push({ res, bars, mfe: mfeTrade, moveMfe, life: lifeBars, went,
+                 sustained: went && lifeBars >= 12 && moveMfe >= 2 });
+    }
+    return out;
+  };
+
+  let sample = collect(true), matched = true;
+  if (sample.length < 6) { sample = collect(false); matched = false; }
+  if (!sample.length) return { n: 0 };
+  const wins = sample.filter(x => x.res === 'tp').length;
+  const stops = sample.filter(x => x.res === 'stop').length;
+  const sust = sample.filter(x => x.sustained).length;
+  const went = sample.filter(x => x.went);
+  return {
+    n: sample.length,
+    matched,
+    winRate: wins / sample.length * 100,
+    stopRate: stops / sample.length * 100,
+    sustainedRate: sust / sample.length * 100,
+    // % de veces que el movimiento llegó a arrancar (se movió 0.8 ATR a favor)
+    wentRate: went.length / sample.length * 100,
+    wentN: went.length,
+    // duración medida SÓLO sobre las veces que arrancó; null si nunca arrancó
+    medLife: went.length ? median(went.map(x => x.life)) : null,
+    medMfe: median(sample.map(x => x.mfe)),
+    // recorrido típico contando SÓLO las veces que el movimiento arrancó, y
+    // medido hasta que el movimiento se dio la vuelta (no hasta que se cerró
+    // la operación): es la vara con la que se mide cuánto del camino ya se ha
+    // hecho, y lo recorrido se mide igual, así que la división tiene sentido.
+    medMfeWent: went.length ? median(went.map(x => x.moveMfe)) : null,
+    medBarsWin: median(sample.filter(x => x.res === 'tp').map(x => x.bars)),
+    expR: (wins * 2 - stops * 1) / sample.length,
+  };
+}
+
+/* =====================================================================
+   MOMENTO DE ENTRADA — ¿entro ya, espero un retroceso, o ya se me pasó?
+   =====================================================================
+   Ésta es la pregunta que la app no contestaba. Los porcentajes de acierto
+   del estudio de arriba suponen entrar de inmediato; si el usuario espera,
+   esos números ya no valen. Así que aquí se mide, sobre las MISMAS
+   situaciones del pasado de esta misma moneda, qué habría pasado con tres
+   formas distintas de entrar:
+
+     AHORA       entrar en la apertura de la vela siguiente a la señal
+     RETROCESO   poner una orden límite a 0.5 ATR en contra y esperar hasta
+                 1 hora; si el precio no vuelve, no se entra (y eso cuenta
+                 como oportunidad perdida, 0 R, no como acierto)
+     TARDE       entrar 1 hora después de la señal, que es lo que pasa
+                 cuando uno duda
+
+   Comparando la R esperada de las tres sale un consejo medido, no una
+   opinión. Si "tarde" pierde dinero y "ahora" lo gana, la señal caduca.
+   ===================================================================== */
+const ET = {
+  PB_ATR: 0.5,    // cuánto tiene que retroceder el precio para la entrada con límite
+  PB_WAIT: 4,     // velas de 15m que se espera ese retroceso (= 1 hora)
+  LATE: 4,        // velas de retraso que simulan "he dudado una hora"
+  MIN_N: 4,       // muestra mínima para dar un consejo
+};
+
+/* Simula una operación con stop y objetivo fijos en ATR.
+   Devuelve el resultado y su R (2 si gana, -1 si salta el stop, y si el
+   horizonte se acaba abierta, la R que llevaba en ese momento). */
+function runTrade(S, side, entry, a, from, until) {
+  const stopPx = side < 0 ? entry + MV.SL_ATR * a : entry - MV.SL_ATR * a;
+  const tpPx   = side < 0 ? entry - MV.TP_ATR * a : entry + MV.TP_ATR * a;
+  let last = from - 1;
+  for (let k = from; k <= until && k < S.n; k++) {
+    last = k;
+    const hi = S.h[k], lo = S.l[k];
+    if (side < 0 ? hi >= stopPx : lo <= stopPx) return { res: 'stop', R: -1 };
+    if (side < 0 ? lo <= tpPx   : hi >= tpPx)   return { res: 'tp',   R: 2 };
+  }
+  if (last < from) return null;
+  const R = (side < 0 ? entry - S.c[last] : S.c[last] - entry) / (MV.SL_ATR * a);
+  return { res: 'abierta', R: Math.max(-1, Math.min(2, R)) };
+}
+
+function entryTiming(S, side, persistNow) {
+  const cls = moveClass(persistNow);
+  let idx = moveSignalIdx(S, side, cls, true), matched = true;
+  if (idx.length < 6) { idx = moveSignalIdx(S, side, cls, false); matched = false; }
+  if (idx.length < ET.MIN_N) return { n: 0 };
+
+  const now = [], pull = [], late = [];
+  let fills = 0, missedGood = 0;
+  for (const i of idx) {
+    const a = S.atr[i], e0 = S.o[i + 1];
+    if (!a || !e0) continue;
+    const end = i + MV.H;
+
+    const rNow = runTrade(S, side, e0, a, i + 1, end);
+    if (!rNow) continue;
+    now.push(rNow);
+
+    // TARDE: la misma señal, pero entrando una hora después.
+    const eLate = S.o[i + 1 + ET.LATE];
+    if (eLate) {
+      const rLate = runTrade(S, side, eLate, a, i + 1 + ET.LATE, end);
+      if (rLate) late.push(rLate);
+    }
+
+    // RETROCESO: orden límite a 0.5 ATR en contra, válida 1 hora.
+    const pbPx = side < 0 ? e0 + ET.PB_ATR * a : e0 - ET.PB_ATR * a;
+    let hit = -1;
+    for (let k = i + 1; k <= i + ET.PB_WAIT && k < S.n; k++) {
+      if (side < 0 ? S.h[k] >= pbPx : S.l[k] <= pbPx) { hit = k; break; }
+    }
+    if (hit >= 0) {
+      // La orden se llena dentro de esa misma vela, así que esa vela ya cuenta:
+      // si el precio siguió hasta el stop en la misma vela, eso pasó de verdad.
+      // Saltársela regalaba R a la opción "esperar" — y como esa opción se
+      // compara cara a cara con "entrar ya" (que sí incluye su vela de entrada),
+      // el regalo torcía el consejo que aparece en pantalla.
+      const rPb = runTrade(S, side, pbPx, a, hit, end);
+      if (rPb) { fills++; pull.push(rPb); }
+      else pull.push({ res: 'nofill', R: 0 });
+    } else {
+      // No entrar también es un resultado: 0 R. Y si esa que se escapó era
+      // ganadora, hay que decirlo, porque es el coste de esperar.
+      if (rNow.res === 'tp') missedGood++;
+      pull.push({ res: 'nofill', R: 0 });
+    }
+  }
+  if (now.length < ET.MIN_N) return { n: 0 };
+
+  const stat = arr => {
+    if (!arr.length) return null;
+    const w = arr.filter(x => x.res === 'tp').length;
+    const f = arr.filter(x => x.res !== 'nofill').length;
+    return {
+      n: arr.length,
+      winRate: f ? w / f * 100 : 0,               // acierto sobre las que sí se entró
+      expR: arr.reduce((s, x) => s + x.R, 0) / arr.length,
+    };
+  };
+  const sNow = stat(now), sPull = stat(pull), sLate = stat(late);
+  const fillRate = fills / now.length * 100;
+  const missRate = 100 - fillRate;
+
+  /* Consejo medido.
+
+     OJO con una trampa aritmética que estuvo aquí: las veces que la orden
+     límite NO se llena puntúan 0 R (no operas, no ganas ni pierdes). Eso es
+     correcto como política, pero significa que si entrar de inmediato PIERDE
+     dinero, "no entrar" gana la comparación por pura aritmética, sin que el
+     retroceso haya demostrado nada. La app acababa diciendo "espera un
+     retroceso" cuando lo medido decía "esta señal no funciona en esta moneda".
+     Por eso esperar sólo se recomienda si el propio retroceso ganó dinero. */
+  let advice = 'ya';
+  if (sPull && sPull.expR > 0.1 && sPull.expR > sNow.expR + 0.15 && fillRate >= 45)
+    advice = 'retroceso';
+  // Si NINGUNA de las tres formas de entrar ganó dinero en el pasado de esta
+  // moneda, el consejo honesto no es "espera": es no tomar esta señal.
+  const bestExp = Math.max(sNow.expR,
+                           sPull ? sPull.expR : -Infinity,
+                           sLate ? sLate.expR : -Infinity);
+  if (advice !== 'retroceso' && bestExp <= 0) advice = 'evitar';
+  // ¿Caduca? Dudar una hora convierte una señal buena en mala.
+  const decays = !!(sLate && sNow.expR > 0 && sLate.expR < sNow.expR - 0.25);
+
+  return {
+    n: now.length, matched,
+    now: sNow, pull: sPull, late: sLate,
+    fillRate, missRate, missedGood, bestExp,
+    pbAtr: ET.PB_ATR, waitBars: ET.PB_WAIT, lateBars: ET.LATE,
+    advice, decays,
+  };
+}
+
+/* ---------- texto de duración legible ---------- */
+function durationText(bars) {
+  if (bars === null || bars === undefined) return null;
+  const m = Math.round(bars * MV.MIN);
+  if (m < 45) return `unos ${Math.max(15, Math.round(m / 5) * 5)} minutos`;
+  if (m < 100) return 'alrededor de 1 hora';
+  const hLo = Math.floor(m / 60), hHi = Math.ceil(m / 60) + 1;
+  if (hLo >= 7) return 'más de 7 horas (todo el horizonte medido)';
+  return `entre ${hLo} y ${hHi} horas`;
+}
+
+/* =====================================================================
+   PERFIL COMPLETO DE UN MOVIMIENTO
+   ===================================================================== */
+function moveProfile(candles, side, ctx, withAnalog) {
+  const S = prepMove(candles);
+  if (!S) return null;
+  const i = S.n - 1;
+  const t = structTrigger(S, i, side, false);
+  const p = structPersist(S, i, side, false);
+  if (!t || !p) return null;
+  const f = flowAdjust(side, ctx);
+  const trigger = Math.max(0, Math.min(100, t.score + f.t));
+  const persist = Math.max(0, Math.min(100, p.score + f.p));
+  const analog = withAnalog ? analogStudy(S, side, p.score) : { n: 0 };
+  const timing = withAnalog ? entryTiming(S, side, p.score) : { n: 0 };
+
+  /* --- ¿la señal acaba de aparecer o el movimiento ya lleva recorrido? ---
+     El gatillo es un detector de agotamiento: se enciende en el extremo y se
+     apaga en cuanto el movimiento arranca de verdad. Por eso contar "velas con
+     el gatillo encendido" no mide nada. Lo que sí lo mide es el extremo mismo:
+     ahí nace el movimiento. Lo recorrido desde entonces es camino gastado — el
+     stop sigue midiendo lo mismo, pero queda menos premio por delante. */
+  const atrNow = S.atr[i];
+  const exIdx = (t.exIdx === undefined || t.exIdx === null) ? i : t.exIdx;
+  const sinceBars = Math.max(0, i - exIdx);
+  // Precio al que se habría entrado tomando la señal en el extremo: es la misma
+  // convención de entrada que usa el estudio histórico, así que las dos cifras
+  // (lo recorrido y el recorrido típico) hablan de lo mismo y se pueden dividir.
+  const refPx = sinceBars > 0 ? S.o[exIdx + 1] : null;
+  /* Lo recorrido hay que medirlo EXACTAMENTE igual que el recorrido típico con
+     el que se va a comparar, o la división no significa nada. El historial mide
+     la excursión MÁXIMA a favor (mechas incluidas) en ATR del momento de la
+     señal. Antes aquí se medía de cierre a cierre y con el ATR de AHORA: tres
+     sesgos distintos, los tres empujando el resultado hacia abajo, así que el
+     freno de "se te pasó el momento" casi nunca llegaba a saltar. */
+  const aRef = S.atr[exIdx] || atrNow;
+  let movedAtr = 0;
+  if (refPx && aRef && sinceBars > 0) {
+    let mx = -Infinity;
+    for (let k = exIdx + 1; k <= i; k++) {
+      const fav = side < 0 ? (refPx - S.l[k]) / aRef : (S.h[k] - refPx) / aRef;
+      if (fav > mx) mx = fav;
+    }
+    if (isFinite(mx)) movedAtr = mx;
+  }
+  /* Vara de medir: el recorrido típico de las veces que el movimiento SÍ
+     arrancó. Sin suelo artificial en 1 ATR — ese suelo inflaba el denominador y
+     hundía el porcentaje.
+     Y hace falta que haya arrancado unas cuantas veces. El apaño de tirar de
+     `medMfe` (la mediana de TODAS las veces, arrancaran o no) cuando no había
+     ninguna que arrancara metía por la puerta de atrás un denominador
+     minúsculo: con medMfe = 0.20 y 3.5 ATR recorridos salía "llevas hecho el
+     1779% del camino". Eso no es una medida, es una división por casi cero.
+     Si en el historial de esta moneda este perfil nunca llegó a moverse, no
+     existe "el recorrido típico" y no se puede decir cuánto llevas hecho: null
+     es la respuesta honesta, y la pantalla ya sabe callarse con null. */
+  const fullMove = (analog.n >= 5 && analog.wentN >= 3 && analog.medMfeWent > 0.2)
+    ? analog.medMfeWent : null;
+  const progress = fullMove ? Math.max(0, movedAtr) / fullMove : null;
+
+  // Clasificación: la duración la deciden el AGUANTE y el historial, no el gatillo
+  let kind, kindLabel, kindWhy;
+  const histSust = analog.n >= 5 ? analog.sustainedRate : null;
+  const histWent = analog.n >= 5 ? analog.wentRate : null;
+  // Si el AGUANTE calculado es alto pero el historial de la propia moneda dice
+  // que ese mismo perfil nunca llegó a nada, manda el historial. Y hay que
+  // decirlo con todas las letras, porque si no el usuario ve AGUANTE 89 junto
+  // a la etiqueta CORTA y no entiende nada.
+  const histVeto = (histSust !== null && histSust < 25) || (histWent !== null && histWent < 35);
+  const vetoNote = (histVeto && persist >= 60)
+    ? ` Ojo: el AGUANTE sale alto por la estructura del precio, pero manda el historial de esta misma moneda, y ahí este perfil no llegó a nada. Por eso la clasifico como corta.`
+    : '';
+  if (trigger < 42) {
+    kind = 'ninguno'; kindLabel = 'sin señal';
+    kindWhy = 'No hay condiciones de movimiento ahora mismo.';
+  } else if (persist >= 60 && !histVeto && (histSust === null || histSust >= 40)) {
+    kind = 'sostenido'; kindLabel = side < 0 ? 'CAÍDA LARGA' : 'SUBIDA LARGA';
+    kindWhy = `El movimiento va a favor de la tendencia de fondo y tiene espacio por delante. ${histSust !== null ? `De las ${analog.n} veces que esta moneda tuvo este mismo perfil, ${Math.round(analog.sustainedRate)}% siguieron ${side < 0 ? 'cayendo' : 'subiendo'} varias horas.` : 'Hay poca muestra histórica para confirmarlo.'}`;
+  } else if (persist <= 42 || histVeto) {
+    kind = 'rapido'; kindLabel = side < 0 ? 'CAÍDA CORTA' : 'SUBIDA CORTA';
+    kindWhy = `Es una sacudida: el movimiento va contra la corriente de fondo o ya no le queda espacio. ${histSust !== null ? `Sólo ${Math.round(analog.sustainedRate)}% de las ${analog.n} veces anteriores duró varias horas.` : ''}${vetoNote} Si entras, entra sabiendo que hay que salir pronto.`;
+  } else {
+    kind = 'medio'; kindLabel = side < 0 ? 'CAÍDA MEDIA' : 'SUBIDA MEDIA';
+    kindWhy = 'Señales mezcladas: puede durar un rato pero no hay confirmación de tendencia de fondo. Trátalo como operación corta y vigílalo.';
+  }
+
+  // Duración: medida del historial cuando hay muestra suficiente, pero SIEMPRE
+  // acotada por la clasificación. Anunciar "7 horas" en una señal etiquetada
+  // como CAÍDA CORTA sería justo la contradicción que hizo perder dinero.
+  const rawHold = (analog.n >= 5 && analog.medLife)
+    ? analog.medLife
+    : (kind === 'sostenido' ? 16 : kind === 'medio' ? 8 : 4);
+  const cap = kind === 'sostenido' ? MV.H : kind === 'medio' ? 12 : 6;
+  const holdBars = Math.max(1, Math.min(rawHold, cap));
+  const holdText = durationText(holdBars);
+  const maxHoldBars = Math.max(4, Math.round(holdBars * 1.6));
+
+  /* --- consejo final sobre el momento de entrar ---
+     Manda lo que ya ocurrió: si el precio ya recorrió casi todo lo que suele
+     recorrer, da igual lo bueno que sea el resto, entrar ahí es pagar el
+     precio caro y quedarse con el poco premio que sobra. */
+  const tooLate = progress !== null && progress >= 0.8;
+  const entryWhen = tooLate ? 'tarde'
+    : (timing.n >= ET.MIN_N && timing.advice === 'evitar') ? 'evitar'
+    : (timing.n >= ET.MIN_N && timing.advice === 'retroceso') ? 'retroceso' : 'ya';
+  const pbPrice = atrNow ? (side < 0 ? S.c[i] + ET.PB_ATR * atrNow : S.c[i] - ET.PB_ATR * atrNow) : null;
+  // ventana antes de que la señal deje de servir
+  const validBars = timing.decays ? ET.LATE : Math.max(ET.PB_WAIT, Math.round(holdBars / 2));
+
+  return {
+    side, trigger, persist, kind, kindLabel, kindWhy,
+    analog, holdBars, holdText, maxHoldBars,
+    timing, sinceBars, movedAtr, progress, entryWhen, pbPrice, validBars,
+    triggerWhy: t.why,
+    pro: [...p.pro, ...f.pro],
+    con: [...p.con, ...f.con],
+    rsi: t.rsi, ext: t.ext, room: p.room, adx: p.adx,
+    atr: S.atr[i], price: S.c[i],
+    estMovePct: analog.n >= 5 && analog.medMfe ? analog.medMfe * S.atr[i] / S.c[i] * 100 : null,
+  };
+}
+
+/* =====================================================================
+   ESCÁNER DEL RADAR (dos etapas para no saturar la API ni los datos)
+     Etapa 1 — barata: 24h ticker + 100 velas de 5m sobre ~40 candidatos
+                       → gatillo aproximado
+     Etapa 2 — profunda: sólo los mejores reciben 700 velas de 15m,
+                       interés abierto y ballenas → aguante + historial
+   ===================================================================== */
+async function scanMoves(side, opts = {}) {
+  const deep = opts.deep ?? 7;
+  const [tickers, premiums] = await Promise.all([
+    fetchJSON(`${FAPI}/fapi/v1/ticker/24hr`),
+    fetchJSON(`${FAPI}/fapi/v1/premiumIndex`).catch(() => []),
+  ]);
+  const valid = new Set(state.symbols.map(s => s.symbol));
+  const fundMap = {};
+  (Array.isArray(premiums) ? premiums : []).forEach(p => {
+    if (p.symbol) fundMap[p.symbol] = parseFloat(p.lastFundingRate) * 100;
+  });
+  const rows = (Array.isArray(tickers) ? tickers : [])
+    .filter(t => valid.has(t.symbol) && parseFloat(t.quoteVolume) > 8e6);
+  const byVol = [...rows].sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)).slice(0, 28);
+  const byMove = [...rows].sort((a, b) => side < 0
+    ? parseFloat(b.priceChangePercent) - parseFloat(a.priceChangePercent)
+    : parseFloat(a.priceChangePercent) - parseFloat(b.priceChangePercent)).slice(0, 14);
+  const cands = [...new Map([...byVol, ...byMove].map(t => [t.symbol, t])).values()];
+
+  // --- Etapa 1 ---
+  const pre = await Promise.all(cands.map(async t => {
+    try {
+      // 200 velas: prepMove necesita al menos 120 cerradas para calcular las medias.
+      const S = prepMove(parseKlines(await fetchJSON(
+        `${FAPI}/fapi/v1/klines?symbol=${t.symbol}&interval=5m&limit=200`)));
+      if (!S) return null;
+      const tr = structTrigger(S, S.n - 1, side, true);
+      if (!tr) return null;
+      return { t, pre: tr.score };
+    } catch (e) { return null; }
+  }));
+  const short = pre.filter(Boolean).sort((a, b) => b.pre - a.pre).slice(0, deep);
+
+  // --- Etapa 2 ---
+  const full = await Promise.all(short.map(async ({ t }) => {
+    try {
+      const [k15, oiH, top] = await Promise.all([
+        fetchJSON(`${FAPI}/fapi/v1/klines?symbol=${t.symbol}&interval=15m&limit=700`).then(parseKlines),
+        fetchJSON(`${FAPI}/futures/data/openInterestHist?symbol=${t.symbol}&period=15m&limit=17`).catch(() => null),
+        fetchJSON(`${FAPI}/futures/data/topLongShortPositionRatio?symbol=${t.symbol}&period=15m&limit=17`).catch(() => null),
+      ]);
+      let oiChg = null;
+      if (Array.isArray(oiH) && oiH.length > 1) {
+        const a = parseFloat(oiH[0].sumOpenInterest), b = parseFloat(oiH[oiH.length - 1].sumOpenInterest);
+        if (a > 0) oiChg = (b / a - 1) * 100;
+      }
+      let whaleNow = null, whalePrev = null;
+      if (Array.isArray(top) && top.length) {
+        whaleNow = parseFloat(top[top.length - 1].longShortRatio);
+        whalePrev = top.length > 1 ? parseFloat(top[0].longShortRatio) : null;
+      }
+      const cl = k15.slice(0, -1);
+      const priceChg4h = cl.length > 17 ? (cl[cl.length - 1].close / cl[cl.length - 17].close - 1) * 100 : null;
+      const ctx = { funding: fundMap[t.symbol] ?? null, oiChg, priceChg4h, whaleNow, whalePrev };
+      const prof = moveProfile(k15, side, ctx, true);
+      if (!prof) return null;
+      return {
+        symbol: t.symbol, price: parseFloat(t.lastPrice),
+        chg24: parseFloat(t.priceChangePercent), ...prof,
+      };
+    } catch (e) { return null; }
+  }));
+
+  const rank = k => k === 'sostenido' ? 2 : k === 'medio' ? 1 : 0;
+  const out = full.filter(Boolean)
+    .filter(r => r.trigger >= 42 && r.kind !== 'ninguno')
+    // primero los que pueden durar (es lo que pidió el usuario), luego los calientes
+    .sort((a, b) => (rank(b.kind) - rank(a.kind)) ||
+      ((b.trigger * 0.55 + b.persist * 0.45) - (a.trigger * 0.55 + a.persist * 0.45)))
+    .slice(0, 5);
+  /* Cuántas monedas se llegaron a analizar de verdad. Cada fetch individual
+     está envuelto en su propio try/catch, así que si fallan TODOS esta función
+     devolvía [] sin lanzar error y la pantalla pintaba un verde tranquilizador
+     ("ninguna moneda cumple, es buena señal") cuando en realidad no se había
+     mirado ninguna. Una lista vacía por no haber mirado no es lo mismo que una
+     lista vacía por no haber encontrado nada. */
+  out.scanned = full.filter(Boolean).length;
+  out.attempted = short.length;
+  out.candidates = cands.length;
+  return out;
+}
+
+/* =====================================================================
+   VEREDICTO ÚNICO
+   Una sola respuesta. Cuatro capas con jerarquía explícita; si las dos
+   primeras se contradicen el resultado es ESPERAR, no dos consejos
+   opuestos. Nada en la pantalla puede decir algo distinto a esto.
+   ===================================================================== */
+function buildVerdict(tf) {
+  const a = state.analyses[tf];
+  if (!a) return null;
+  const layers = [];
+
+  // Capa 1 — tendencia mayor (4 h y 1 día). Manda sobre todo lo demás.
+  let big = 0, bigTxt = 'sin datos de la tendencia mayor';
+  const h4 = state.analyses['4h'], d1 = state.analyses['1d'];
+  const trendOf = x => {
+    if (!x || x.L.eL === null) return null;
+    let v = x.L.close > x.L.eL ? 0.6 : -0.6;
+    if (x.L.e20 !== null && x.L.e50 !== null) v += (x.L.e20 > x.L.e50 ? 0.4 : -0.4);
+    return Math.max(-1, Math.min(1, v));
+  };
+  const t4 = trendOf(h4), td = trendOf(d1);
+  if (t4 !== null || td !== null) {
+    big = ((t4 ?? 0) * 0.6 + (td ?? 0) * 0.4) / ((t4 !== null ? 0.6 : 0) + (td !== null ? 0.4 : 0));
+    bigTxt = big > 0.3 ? 'La tendencia grande (4 h y diario) es ALCISTA'
+           : big < -0.3 ? 'La tendencia grande (4 h y diario) es BAJISTA'
+           : 'La tendencia grande está plana, sin dirección clara';
+  }
+  layers.push({ key: 'tendencia', name: 'Tendencia mayor (4 h y diario)', w: 0.30, v: big, txt: bigTxt,
+    ok: (t4 !== null || td !== null),
+    help: 'Manda sobre todo lo demás. Operar en su contra sólo funciona en operaciones muy cortas.' });
+
+  // Capa 2 — flujos reales: ballenas, funding, interés abierto, libro
+  const f = state.fundamental;
+  const flow = f ? f.score : 0;
+  layers.push({ key: 'flujos', name: 'Dinero real (ballenas, funding, interés abierto, libro)', w: 0.35,
+    v: flow, txt: f ? (flow > 0.15 ? 'El dinero grande y los flujos empujan al ALZA'
+                     : flow < -0.15 ? 'El dinero grande y los flujos empujan a la BAJA'
+                     : 'Los flujos están repartidos, sin bando ganador')
+                   : 'sin datos de flujos — esta capa no cuenta',
+    ok: !!f,
+    help: 'Cómo están posicionados los que mueven el precio de verdad.' });
+
+  // Capa 3 — radar del propio símbolo (dump vs bump)
+  let radar = 0, radarTxt = 'sin señal de movimiento inminente', prof = null;
+  const pd = state.profDump, pb = state.profBump;
+  if (pd && pb) {
+    const dv = pd.trigger >= 42 ? -(pd.trigger / 100) * (0.5 + pd.persist / 200) : 0;
+    const bv = pb.trigger >= 42 ?  (pb.trigger / 100) * (0.5 + pb.persist / 200) : 0;
+    radar = Math.max(-1, Math.min(1, dv + bv));
+    prof = Math.abs(dv) >= Math.abs(bv) ? pd : pb;
+    if (Math.abs(radar) < 0.2) radarTxt = 'sin movimiento inminente detectado';
+    else radarTxt = `${prof.kindLabel} detectada (gatillo ${Math.round(prof.trigger)}, aguante ${Math.round(prof.persist)})`;
+  }
+  layers.push({ key: 'radar', name: 'Radar de movimiento inmediato', w: 0.20, v: radar, txt: radarTxt,
+    ok: !!(pd && pb),
+    help: 'Detecta el momento de entrada. Sirve para el "cuándo", no para el "hacia dónde".' });
+
+  // Capa 4 — técnico del marco elegido (sólo confirma)
+  const tech = a.score / a.maxScore;
+  layers.push({ key: 'tecnico', name: `Indicadores de ${TF_LABEL[tf]}`, w: 0.15, v: tech,
+    txt: tech > 0.2 ? 'Los indicadores del gráfico acompañan al alza'
+       : tech < -0.2 ? 'Los indicadores del gráfico acompañan a la baja'
+       : 'Los indicadores del gráfico están indecisos',
+    ok: true,
+    help: 'Confirmación. Nunca decide la dirección por sí solo.' });
+
+  /* Una capa sin datos NO es una capa neutra. Antes, si fallaba la petición de
+     flujos, esa capa valía 0 y seguía pesando su 35% completo: el dato ausente
+     se convertía en "no hay bando ganador" y arrastraba el resultado hacia el
+     centro con todo su peso. Ahora sólo cuentan las capas con datos, y el
+     total se reparte entre ellas. */
+  const okW = layers.filter(x => x.ok).reduce((s, x) => s + x.w, 0);
+  const total = okW > 0
+    ? layers.filter(x => x.ok).reduce((s, x) => s + x.v * x.w, 0) / okW
+    : 0;
+
+  // ---- Resolución de conflictos: una sola salida ----
+  const conflicts = [];
+  // Con menos de la mitad del análisis disponible no se opina. Un fallo de
+  // datos tiene que FRENAR la app, no soltarle los frenos.
+  if (okW < 0.5) {
+    const faltan = layers.filter(x => !x.ok).map(x => x.name.toLowerCase());
+    return {
+      action: 'ESPERAR', horizon: null, conf: 0, total: 0, layers,
+      conflicts: [`Faltan datos de ${faltan.join(' y ')}. Con menos de la mitad del análisis disponible no se puede dar un veredicto: no es que el mercado esté neutro, es que no se ha podido mirar. Refresca en un momento.`],
+      why: [], prof: null, tf,
+    };
+  }
+  // Aunque quede análisis suficiente, si falta alguna capa hay que decirlo:
+  // el veredicto se ha calculado con menos información de la normal.
+  const faltantes = layers.filter(x => !x.ok);
+  if (faltantes.length)
+    conflicts.push(`No se pudieron traer los datos de ${faltantes.map(x => x.name.toLowerCase()).join(' ni de ')}. El veredicto está calculado sólo con las capas que sí hay, así que fíate menos de lo normal.`);
+  const L1 = layers[0], L2 = layers[1], L4 = layers[3];
+  if (Math.abs(L1.v) >= 0.35 && Math.abs(L2.v) >= 0.30 && Math.sign(L1.v) !== Math.sign(L2.v))
+    conflicts.push(`${L1.txt.toLowerCase()}, pero ${L2.txt.toLowerCase()}. Cuando la tendencia grande y el dinero van en sentidos opuestos, lo rentable es no operar.`);
+  if (prof && prof.trigger >= 55 && Math.abs(total) >= 0.18 &&
+      Math.sign(prof.side) !== Math.sign(total) && prof.kind !== 'ninguno')
+    conflicts.push(`El radar detecta ${prof.kindLabel.toLowerCase()} justo en contra del resto del análisis. Señal cruzada: mejor esperar a que se aclare.`);
+
+  let action, horizon = null, why = [], conf;
+  if (conflicts.length) {
+    action = 'ESPERAR';
+    conf = 0;
+  } else if (Math.abs(total) < 0.18) {
+    action = 'ESPERAR'; conf = 0;
+    conflicts.push('Ninguna capa tiene una ventaja clara: el mercado está indeciso en esta moneda. No operar también es una decisión.');
+  } else {
+    action = total > 0 ? 'LONG' : 'SHORT';
+    conf = Math.min(92, Math.round(35 + Math.abs(total) * 90));
+    const sideNum = total > 0 ? 1 : -1;
+    const own = sideNum < 0 ? pd : pb;
+    // horizonte: sólo es "sostenido" si va con la tendencia mayor Y tiene aguante
+    const withBig = Math.sign(big) === sideNum && Math.abs(big) >= 0.3;
+    if (own && own.trigger >= 42) {
+      // El horizonte no puede contradecir a la etiqueta del radar: si el radar
+      // dice CAÍDA CORTA porque el historial de la moneda lo veta, la tarjeta
+      // no puede decir "se puede dejar corriendo" en la misma pantalla.
+      horizon = (own.kind === 'sostenido' && withBig && own.persist >= 58) ? 'sostenido' : 'rapido';
+    } else {
+      horizon = withBig ? 'sostenido' : 'rapido';
+    }
+    layers.forEach(l => { if (Math.sign(l.v) === sideNum && Math.abs(l.v) > 0.15) why.push(l.txt + '.'); });
+    if (Math.sign(L4.v) === -sideNum && Math.abs(L4.v) > 0.45)
+      why.push(`Aviso: los indicadores de ${TF_LABEL[tf]} van en contra, pero pesan menos que la tendencia y los flujos. Ya está descontado en la confianza (${conf}%).`);
+  }
+
+  // Si lo que justificaba entrar era una sacudida corta y esa sacudida ya
+  // lleva hecho casi todo su recorrido, no queda premio: arriesgarías el
+  // mismo stop por una fracción del objetivo. Eso es ESPERAR, no operar.
+  const ownNow = action === 'SHORT' ? pd : action === 'LONG' ? pb : null;
+  // Freno medido: si en el pasado de esta misma moneda ninguna forma de entrar
+  // con esta señal ganó dinero, no hay consejo de entrada que dar.
+  if (action !== 'ESPERAR' && ownNow && ownNow.entryWhen === 'evitar') {
+    const tt = ownNow.timing;
+    conflicts.push(`En las ${tt.n} veces que esta moneda tuvo esta misma señal, ninguna de las tres formas de entrar (al momento, con orden límite en el retroceso, o una hora más tarde) habría ganado dinero. No es cuestión de esperar mejor momento: esta señal, en esta moneda, no ha funcionado.`);
+    action = 'ESPERAR'; conf = 0; horizon = null; why = [];
+  }
+  if (action !== 'ESPERAR' && horizon === 'rapido' && ownNow && ownNow.entryWhen === 'tarde') {
+    conflicts.push(`Esta era una operación corta y el movimiento ya lleva recorrido alrededor del ${Math.round(ownNow.progress * 100)}% de lo que suele recorrer en esta moneda. El stop seguiría siendo del mismo tamaño, pero el premio que queda es mucho menor. Se te pasó el momento: espera a la siguiente señal.`);
+    action = 'ESPERAR'; conf = 0; horizon = null; why = [];
+  }
+
+  const ownProf = action === 'SHORT' ? pd : action === 'LONG' ? pb : null;
+  return { action, horizon, conf, total, layers, conflicts, why, prof: ownProf, tf };
+}
+
+/* =====================================================================
+   MOMENTO DE ENTRADA — el bloque que responde "¿entro ya o espero?"
+   Todo lo que se afirma aquí sale de entryTiming(), es decir, de simular
+   las tres formas de entrar sobre el pasado real de esta misma moneda.
+   ===================================================================== */
+function buildEntry(v, plan, tf) {
+  if (!v || v.action === 'ESPERAR' || !plan) return null;
+  const prof = v.prof;
+  const T = prof && prof.timing && prof.timing.n >= ET.MIN_N ? prof.timing : null;
+  const down = v.action === 'SHORT';
+  const when = prof ? prof.entryWhen : 'ya';
+  const lines = [];
+  const oneR = x => (x >= 0 ? '+' : '') + x.toFixed(2) + ' R';
+
+  // 1) Estado de la señal ahora mismo
+  if (prof) {
+    const cima = down ? 'el techo' : 'el suelo';
+    if (prof.sinceBars <= 1)
+      lines.push(`🟢 <b>La señal acaba de aparecer</b>: ${cima} desde el que se mide el movimiento se formó hace menos de 30 minutos, así que casi todo el recorrido está por delante.`);
+    else if (prof.movedAtr > 0.05)
+      lines.push(`🕐 <b>Han pasado ${durationText(prof.sinceBars)} desde ${cima}</b> en el que nació este movimiento, y el precio ya ${down ? 'ha bajado' : 'ha subido'} ${prof.movedAtr.toFixed(1)} veces lo que se mueve una vela normal.`);
+    else
+      // movedAtr puede ser cero o negativo: el movimiento aún no ha arrancado.
+      // Antes esto se pasaba por Math.abs() y salía "ya ha bajado 0.4 veces"
+      // justo encima de otra línea diciendo que llevaba hecho el 0%.
+      lines.push(`🕐 <b>Han pasado ${durationText(prof.sinceBars)} desde ${cima}</b> en el que nació este movimiento, pero el precio <b>todavía no ha avanzado</b> ${down ? 'a la baja' : 'al alza'}: la señal está ahí y el recorrido está entero por delante.`);
+    if (prof.progress !== null)
+      lines.push(prof.progress >= 1
+        ? `📏 Eso es <b>más de todo</b> el recorrido que esta moneda suele hacer cuando se mueve de verdad (un ${Math.round(prof.progress * 100)}%). No queda premio por delante, y el stop no se hace más pequeño por haber entrado tarde.`
+        : `📏 Eso es alrededor del <b>${Math.round(prof.progress * 100)}%</b> del recorrido que suele hacer esta moneda cuando se mueve de verdad. Lo que queda por delante es el <b>${Math.round((1 - prof.progress) * 100)}%</b>, y el stop no se hace más pequeño por haber entrado tarde.`);
+  }
+
+  // 2) Qué dice el historial de las tres formas de entrar
+  if (T) {
+    const cmp = [`entrar de inmediato: <b>${Math.round(T.now.winRate)}%</b> de acierto (${oneR(T.now.expR)} por operación)`];
+    if (T.pull) cmp.push(`esperar un retroceso: se llenó la orden el <b>${Math.round(T.fillRate)}%</b> de las veces y dio ${oneR(T.pull.expR)}`);
+    if (T.late) cmp.push(`entrar una hora más tarde: ${oneR(T.late.expR)}`);
+    lines.push(`📊 En las <b>${T.n} veces</b> que esta moneda tuvo esta misma señal${T.matched ? '' : ' (perfil aproximado)'}: ${cmp.join(' · ')}.`);
+    // Si esperar una hora entera salió mejor que las dos formas de entrar, hay
+    // que decirlo en vez de dejar que el usuario vea el número y crea que la
+    // app se contradice. No se convierte en consejo porque dentro de una hora
+    // la señal ya no es ésta: lo que se puede hacer es volver a mirar.
+    if (T.late && T.late.expR > Math.max(T.now.expR, T.pull ? T.pull.expR : -Infinity) + 0.15)
+      lines.push(`🔎 Ojo a ese último número: en esta moneda el movimiento solía <b>seguir yendo</b> después de la señal, no agotarse. Si la orden límite no se llena, no des la señal por muerta — vuelve a mirarla en un rato.`);
+  }
+
+  /* Todo lo de arriba (y las duraciones del plan de salida) se mide sobre velas
+     de 15 minutos, que es donde vive este tipo de señal, y NO cambia con el
+     marco que haya elegido el usuario en el gráfico. Si no se dice, se lee
+     "Marco: 1 día" en la cabecera y se entienden los tiempos en días. */
+  if (tf && tf !== '15m')
+    lines.push(`🕰️ Aviso de lectura: aunque el gráfico esté en <b>${TF_LABEL[tf] || tf}</b>, todos estos números y todos los tiempos están medidos sobre <b>velas de 15 minutos</b>. Los niveles de precio sí son los del marco elegido.`);
+
+  // 3) La instrucción concreta
+  let title, cls, order;
+  if (when === 'tarde') {
+    title = '⏳ NO entres ahora: se te pasó el momento';
+    cls = 'late';
+    order = `El movimiento ya está hecho en su mayor parte. Lo rentable aquí es <b>no hacer nada</b> y esperar a la siguiente señal, o a que el precio vuelva ${down ? 'arriba' : 'abajo'} hasta ${fmtNum(prof.pbPrice)} si es que vuelve. Entrar persiguiendo el precio es exactamente lo que convierte una racha buena en una mala.`;
+  } else if (when === 'retroceso') {
+    title = `⏳ Espera un retroceso hasta ${fmtNum(prof.pbPrice)}`;
+    cls = 'wait';
+    order = `Pon una <b>orden límite</b> de ${v.action} en ${fmtNum(prof.pbPrice)} y déjala puesta <b>1 hora</b>. En el historial de esta moneda entrar ahí salió mejor que entrar de mercado. Si en 1 hora no se ha llenado, <b>cancélala y olvida esta señal</b>: perseguir el precio después de que se ha escapado es donde se pierde.`;
+    if (T) order += T.missRate < 1
+      ? ` En esa muestra el precio <b>siempre</b> volvió a darte la entrada, así que esperar no te dejó fuera ninguna vez.`
+      : ` Aviso honesto: el <b>${Math.round(T.missRate)}%</b> de las veces el precio no volvió y te habrías quedado fuera${T.missedGood ? `, y ${T.missedGood} de ésas habrían sido ganadoras` : ''}. Aun así, contando esas pérdidas de oportunidad, esperar salió mejor.`;
+  } else if (when === 'evitar') {
+    title = '🚫 Esta señal no ha funcionado en esta moneda';
+    cls = 'late';
+    order = `En las <b>${T ? T.n : 0} veces</b> anteriores con este mismo perfil, <b>ninguna</b> de las tres formas de entrar habría ganado dinero: ni entrando al momento, ni con orden límite en el retroceso, ni una hora más tarde. No es que haga falta esperar un momento mejor — es que este patrón, en esta moneda, no ha pagado. Déjala pasar y busca otra.`;
+  } else {
+    title = '✅ Entra AHORA, a precio de mercado';
+    cls = 'go';
+    /* Aquí hay que decir por qué NO se espera, y hay tres razones distintas.
+       Antes se imprimía siempre "esperar salió peor", incluso cuando lo medido
+       decía que salió mejor pero no lo bastante, o mejor pero llenándose pocas
+       veces. Era falso justo en los casos en que más importaba. */
+    let porQue;
+    if (!T || !T.pull) porQue = 'No hay muestra suficiente para justificar esperar un retroceso.';
+    else if (T.pull.expR <= T.now.expR) porQue = 'Esperar un retroceso, en esta moneda y con esta señal, salió peor: el precio no volvía y las buenas se escapaban.';
+    else if (T.fillRate < 45) porQue = `Esperar un retroceso dio algo más por operación, pero la orden sólo se llenó el <b>${Math.round(T.fillRate)}%</b> de las veces: la mayoría de las señales se te habrían escapado sin entrar.`;
+    else porQue = 'Esperar un retroceso salió parecido, y la diferencia es demasiado pequeña para arriesgarse a quedarse fuera.';
+    order = `Entra ya en ${fmtNum(plan.entry)} y pon el stop en ${fmtNum(plan.sl)} en el mismo momento. ${porQue}`;
+  }
+
+  // 4) Caducidad
+  const validText = durationText(prof ? prof.validBars : ET.PB_WAIT);
+  // "es decir, pérdida" sólo si el número es de verdad negativo: caducar
+  // significa perder ventaja, y perder ventaja no es lo mismo que perder dinero.
+  const caduca = (T && T.decays)
+    ? `⌛ <b>Esta señal caduca rápido</b>: en el historial, entrar al momento daba ${oneR(T.now.expR)} y entrar una hora tarde ${oneR(T.late.expR)}${T.late.expR < 0 ? ' — es decir, pérdida' : ', casi toda la ventaja se evapora'}. Si no entras en ${validText}, déjala pasar.`
+    : `⌛ <b>Validez</b>: si dentro de ${validText} no has entrado, vuelve a abrir la app y mira si la señal sigue viva. Los números de arriba se calcularon para entrar ahora, no dentro de un rato.`;
+
+  return { when, title, cls, lines, order, caduca, limitPrice: prof ? prof.pbPrice : null };
+}
+
+/* =====================================================================
+   PLAN DE SALIDA — cuándo cerrar y cuándo dejar correr
+   ===================================================================== */
+function buildExit(v, plan, tf) {
+  if (!v || v.action === 'ESPERAR' || !plan) return null;
+  const down = v.action === 'SHORT';
+  const prof = v.prof;
+  const bars = prof && prof.holdBars ? prof.holdBars : (v.horizon === 'sostenido' ? 16 : 5);
+  const maxBars = prof && prof.maxHoldBars ? prof.maxHoldBars : Math.round(bars * 1.6);
+  const holdText = durationText(bars);
+  const maxText = durationText(maxBars);
+  const a = state.analyses[tf];
+  const atr = a ? a.atrLast : plan.atr;
+  const invalid = roundToTick(down ? plan.entry + 0.9 * atr : plan.entry - 0.9 * atr, state.meta.tick);
+
+  const close = [
+    `🛑 <b>Siempre</b>: deja el stop loss puesto en Binance en ${fmtNum(plan.sl)} desde el primer segundo. Sin excepciones. Es lo único que impide que una operación te borre la cuenta.`,
+    `⏰ <b>Por tiempo</b>: si pasan ${maxText} y no ha llegado al primer objetivo (${fmtNum(plan.tp1)}), ciérrala aunque esté en verde. Los movimientos buenos se mueven rápido; los que se estancan terminan girándose.`,
+    `📉 <b>Por precio</b>: si una vela de 15 minutos cierra ${down ? 'por encima' : 'por debajo'} de ${fmtNum(invalid)}, la idea se rompió. Cierra sin esperar al stop.`,
+  ];
+  if (v.horizon === 'rapido')
+    close.unshift(`⚡ <b>Esto es una operación CORTA</b>: el objetivo es salir en ${holdText}. No la dejes abierta esperando algo más grande — este perfil casi nunca lo da, y ése fue el error que costó dinero.`);
+  close.push(down
+    ? '🔄 <b>Por flujo</b>: si el interés abierto empieza a caer con fuerza mientras el precio sube, son los cortos cerrándose. Sal.'
+    : '🔄 <b>Por flujo</b>: si el interés abierto cae con fuerza mientras el precio baja, son los largos cerrándose. Sal.');
+
+  const hold = [];
+  if (v.horizon === 'sostenido') {
+    hold.push(`✅ Esta operación SÍ se puede dejar correr: va a favor de la tendencia grande y el perfil histórico de esta moneda dice que suele durar ${holdText}.`);
+    hold.push(`✅ Mientras el precio siga ${down ? 'por debajo' : 'por encima'} de ${fmtNum(invalid)}, no toques nada.`);
+    hold.push(`✅ Al llegar a ${fmtNum(plan.tp1)}: cierra la mitad y mueve el stop a tu precio de entrada (${fmtNum(plan.entry)}). A partir de ahí la operación ya no puede darte pérdida.`);
+    hold.push(`✅ Deja correr el resto hasta ${fmtNum(plan.tp2)} o hasta que salte alguna condición de cierre.`);
+  } else {
+    hold.push(`⚠️ Esta operación NO es para dejarla corriendo. Objetivo: ${fmtNum(plan.tp1)} en ${holdText}.`);
+    hold.push('⚠️ Cierra el 100% en el primer objetivo. No busques el segundo.');
+    hold.push('⚠️ Si a mitad de camino se para y empieza a moverse de lado, cierra y no insistas.');
+  }
+  if (prof && prof.analog && prof.analog.n >= 5) {
+    hold.push(`📊 Base del cálculo: ${prof.analog.n} situaciones iguales en el historial reciente de esta moneda. ${Math.round(prof.analog.winRate)}% llegaron al objetivo de 2R antes que al stop, ${Math.round(prof.analog.sustainedRate)}% duraron varias horas.`);
+  } else {
+    hold.push('📊 Aviso: hay pocos casos parecidos en el historial reciente de esta moneda, así que la duración estimada es orientativa.');
+  }
+
+  return { close, hold, bars, maxBars, holdText, maxText, invalid };
+}
+/* =====================================================================
+   INTERFAZ v4
+   Regla de oro de esta versión: en pantalla sólo puede haber UNA
+   recomendación. Todo lo demás (gráfico, indicadores, backtest) es
+   material de apoyo y nunca contradice a la tarjeta de veredicto.
+   ===================================================================== */
+
+/* ================= GRÁFICO ================= */
+function initChart() {
+  const el = $('chart');
+  el.innerHTML = '';
+  state.chart = new CandleChart(el);
+}
+
+function renderChart(tf) {
+  const candles = state.klines[tf];
+  const a = state.analyses[tf];
+  const v = state.verdict;
+  const overlays = [], markers = [];
+  if (a) {
+    overlays.push({ data: a.e20, color: '#f0b90b' });
+    overlays.push({ data: a.e50, color: '#58a6ff' });
+    overlays.push({ data: a.eL, color: '#bc8cff' });
+    overlays.push({ data: a.frama, color: '#ff8a65', width: 2 });
+    // Las flechas SÓLO se dibujan si van en el mismo sentido que el veredicto.
+    // Antes el gráfico marcaba compras mientras el radar avisaba de una caída:
+    // eso es lo que hacía imposible saber qué estaba recomendando la app.
+    const want = v && v.action === 'LONG' ? 1 : v && v.action === 'SHORT' ? -1 : 0;
+    if (want) (a.st.signals || []).forEach(s => { if (s.dir === want) markers.push({ i: s.i, dir: s.dir }); });
+  }
+  const levels = [];
+  const plan = state.plan;
+  if (plan) {
+    levels.push({ price: plan.entry, color: '#e6edf3', label: 'Entrada' });
+    levels.push({ price: plan.sl, color: '#ef5350', label: 'Stop' });
+    levels.push({ price: plan.tp1, color: '#26a69a', label: 'Obj. 1' });
+    levels.push({ price: plan.tp2, color: '#26a69a', label: 'Obj. 2' });
+  }
+  state.chart.setAll({ candles, overlays, levels, markers, tf });
+
+  const note = $('chartNote');
+  if (note) {
+    if (!v || v.action === 'ESPERAR') {
+      note.innerHTML = 'Ahora mismo el veredicto es <b>ESPERAR</b>, así que el gráfico no dibuja ni flechas ni objetivos: no hay operación que enseñar. Las líneas de colores son medias del precio; toca cualquier punto del gráfico para ver el precio de ese momento.';
+    } else {
+      note.innerHTML = `Las líneas horizontales son tu <b>entrada</b>, tu <b>stop</b> y los dos <b>objetivos</b>. Las flechas sólo aparecen cuando coinciden con el veredicto de arriba (<b>${v.action}</b>): el gráfico nunca te va a decir lo contrario que la tarjeta. Toca cualquier punto para ver el precio de ese momento.`;
+    }
+  }
+}
+
+/* ================= CAMBIO DE TEMPORALIDAD ================= */
+function switchTf(tf) {
+  state.curTf = tf;
+  renderTfButtons();
+  renderVerdict(tf);
+  renderChart(tf);
+  renderTech(tf);
+  renderBacktest(tf);
+  startLive(state.symbol, tf);
+}
+
+function renderTfButtons() {
+  const row = $('tfrow'); row.innerHTML = '';
+  TFS.forEach(tf => {
+    const b = document.createElement('button');
+    b.className = 'tfbtn' + (tf === state.curTf ? ' active' : '') + (tf === state.recTf ? ' rec' : '');
+    b.textContent = tf.toUpperCase();
+    b.onclick = () => switchTf(tf);
+    row.appendChild(b);
+  });
+}
+
+/* ================= VEREDICTO ÚNICO ================= */
+function layerRow(l) {
+  const p = Math.min(1, Math.abs(l.v));
+  const w = (p * 50).toFixed(1);
+  const color = l.v >= 0.08 ? 'var(--green)' : l.v <= -0.08 ? 'var(--red)' : 'var(--muted)';
+  const lean = l.v >= 0.08 ? 'al alza' : l.v <= -0.08 ? 'a la baja' : 'neutro';
+  const peso = Math.round(l.w * 100);
+  return `<div class="layer">
+    <div class="lh"><span>${l.name}</span><span style="color:${color}">${lean} · peso ${peso}%</span></div>
+    <div class="mixtrack"><span class="mid"></span><i style="background:${color};${l.v >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`}"></i></div>
+    <div class="lt">${l.txt}. <span style="color:#6e7681">${l.help}</span></div>
+  </div>`;
+}
+
+function renderVerdict(tf) {
+  const a = state.analyses[tf];
+  const box = $('vBox');
+  $('vSym').textContent = state.meta ? state.meta.base : '';
+
+  const v = buildVerdict(tf);
+  state.verdict = v;
+
+  if (!v || !state.ticker) {
+    box.className = 'vcard esperar';
+    $('vAction').textContent = 'SIN DATOS';
+    $('vSummary').textContent = 'No hay suficiente historial de esta moneda para dar una respuesta.';
+    $('vMeta').innerHTML = ''; $('vConflicts').innerHTML = ''; $('vLevels').innerHTML = '';
+    $('vHold').innerHTML = ''; $('vClose').innerHTML = ''; $('vLayers').innerHTML = '';
+    $('vTime').innerHTML = ''; $('vTimeBlk').classList.add('hidden');
+    // Faltaba ocultar estos dos: quedaban los títulos "Cuándo mantener" y
+    // "Cuándo cerrar" flotando encima de listas vacías.
+    $('vHoldBlk').classList.add('hidden'); $('vCloseBlk').classList.add('hidden');
+    state.plan = null; state.exitPlan = null; state.entryPlan = null;
+    $('markBtn').classList.add('hidden');
+    renderCalc();
+    return;
+  }
+
+  const price = parseFloat(state.ticker.lastPrice);
+  // Si el precio lleva parado más de 3 minutos es que se cayó la conexión en
+  // directo. Un plan calculado sobre un precio viejo no sirve, y hay que
+  // decirlo en vez de dejar que parezca actual.
+  const priceAgeMs = state.tickerAt ? Date.now() - state.tickerAt : null;
+  const priceStale = priceAgeMs !== null && priceAgeMs > 180000;
+  const plan = v.action === 'ESPERAR' ? null : buildPlan(a, price, state.meta.tick, v.action);
+  state.plan = plan;
+  const exit = plan ? buildExit(v, plan, tf) : null;
+  state.exitPlan = exit;
+  const entry = plan ? buildEntry(v, plan, tf) : null;
+  state.entryPlan = entry;
+
+  const base = state.meta.base;
+  box.className = 'vcard ' + (v.action === 'LONG' ? 'long' : v.action === 'SHORT' ? 'short' : 'esperar');
+  $('vAction').textContent = v.action === 'LONG' ? 'ABRIR LONG 🔺'
+    : v.action === 'SHORT' ? 'ABRIR SHORT 🔻' : 'ESPERAR · NO OPERAR';
+
+  if (v.action === 'ESPERAR') {
+    $('vSummary').innerHTML = `No hay una operación clara en <b>${base}</b> ahora mismo. Esperar no es perder el tiempo: la mayoría del dinero se pierde en las operaciones que no había que hacer.`;
+  } else {
+    const dirTxt = v.action === 'LONG'
+      ? `Apostar a que <b>${base} sube</b>.`
+      : `Apostar a que <b>${base} baja</b>.`;
+    $('vSummary').innerHTML = dirTxt + ' ' + (v.why.length ? v.why.join(' ') : '');
+  }
+
+  const tags = [];
+  if (v.action !== 'ESPERAR') {
+    tags.push(`<span class="vtag">Confianza ${v.conf}%</span>`);
+    tags.push(v.horizon === 'sostenido'
+      ? '<span class="vtag hi">🕒 Se puede dejar corriendo</span>'
+      : '<span class="vtag hi">⚡ Operación corta</span>');
+    if (entry) tags.push(entry.when === 'ya'
+      ? '<span class="vtag hi">✅ Entrar ahora</span>'
+      : entry.when === 'retroceso'
+        ? '<span class="vtag hi">⏳ Mejor con orden límite</span>'
+        : entry.when === 'evitar'
+          ? '<span class="vtag hi">🚫 Sin historial rentable</span>'
+          : '<span class="vtag hi">⏳ Momento pasado</span>');
+    if (exit) tags.push(`<span class="vtag">Duración esperada: ${exit.holdText}</span>`);
+    tags.push(`<span class="vtag">Marco: ${TF_LABEL[tf]}</span>`);
+  } else {
+    tags.push('<span class="vtag">Vuelve a mirar en un rato</span>');
+  }
+  $('vMeta').innerHTML = tags.join('');
+
+  $('vConflicts').innerHTML = v.conflicts.map(c => `<div class="warn">⚠️ ${c}</div>`).join('');
+
+  const lv = $('vLevels');
+  if (plan) {
+    const cell = (k, val, s, cls = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${cls}">${val}</div><div class="s">${s}</div></div>`;
+    lv.innerHTML =
+      cell('Entrar a', fmtNum(plan.entry), priceStale
+        ? `⚠️ precio de hace ${Math.round(priceAgeMs / 60000)} min — se cortó el directo, refresca antes de operar`
+        : 'precio de ahora') +
+      cell('Stop loss', fmtNum(plan.sl), `si llega aquí, sales perdiendo ${plan.riskPct.toFixed(2)}% del precio`, 'down') +
+      cell('Objetivo 1', fmtNum(plan.tp1), `${plan.tpNote} · ganas ${plan.rr1.toFixed(1)}× lo que arriesgas`, 'up') +
+      cell('Objetivo 2', fmtNum(plan.tp2), `sólo si es de las largas · ${plan.rr2.toFixed(1)}×`, 'up') +
+      cell('Relación', `1:${plan.rr1.toFixed(1)}`, 'arriesgas 1 para ganar ' + plan.rr1.toFixed(1)) +
+      cell('Movimiento típico', fmtNum(plan.atr), `lo que se mueve por vela de ${TF_LABEL[tf]}`);
+  } else {
+    lv.innerHTML = `<div class="kv" style="grid-column:1/-1"><div class="k">Sin niveles</div>
+      <div class="s">No se calculan entrada, stop ni objetivos porque no hay operación recomendada. Busca otra moneda o mira el radar de arriba.</div></div>`;
+  }
+
+  const timeBlk = $('vTimeBlk');
+  if (entry) {
+    timeBlk.classList.remove('hidden');
+    $('vTime').innerHTML = `<div class="entrybox ${entry.cls}">
+      <div class="et">${entry.title}</div>
+      <div class="eo">${entry.order}</div>
+      <ul>${entry.lines.map(x => `<li>${x}</li>`).join('')}</ul>
+      <div class="cad">${entry.caduca}</div>
+    </div>`;
+  } else {
+    timeBlk.classList.add('hidden');
+    $('vTime').innerHTML = '';
+  }
+
+  const holdBlk = $('vHoldBlk'), closeBlk = $('vCloseBlk');
+  if (exit) {
+    holdBlk.classList.remove('hidden'); closeBlk.classList.remove('hidden');
+    $('vHold').innerHTML = exit.hold.map(x => `<li>${x}</li>`).join('');
+    $('vClose').innerHTML = exit.close.map(x => `<li>${x}</li>`).join('');
+    $('markBtn').classList.remove('hidden');
+  } else {
+    holdBlk.classList.add('hidden'); closeBlk.classList.add('hidden');
+    $('vHold').innerHTML = ''; $('vClose').innerHTML = '';
+    $('markBtn').classList.add('hidden');
+  }
+
+  $('vLayers').innerHTML = v.layers.map(layerRow).join('') +
+    `<div class="lt" style="margin-top:8px">Suma ponderada: <b>${(v.total >= 0 ? '+' : '') + (v.total * 100).toFixed(0)}</b> sobre ±100. Por debajo de ±18 la app no opera.</div>`;
+
+  renderCalc();
+}
+
+/* ================= PERFIL DE LA MONEDA ABIERTA ================= */
+function profileBlock(p, title) {
+  if (!p) return `<div class="desc">${title}: sin datos suficientes.</div>`;
+  if (p.kind === 'ninguno')
+    return `<div class="desc"><b>${title}:</b> nada a la vista (gatillo ${Math.round(p.trigger)}/100). No hay condiciones de movimiento inminente por este lado.</div>`;
+  return `<div class="mrow ${p.kind}" style="cursor:default">
+    <div class="top"><div><span class="sym">${title}</span></div>
+      <div class="kind"><b>${p.kindLabel}</b><small>${p.holdText ? 'dura ≈ ' + p.holdText : ''}</small></div></div>
+    ${timingLine(p)}
+    ${gaugesHtml(p)}
+    <div class="why">${p.kindWhy}</div>
+  </div>`;
+}
+
+function renderOwnProfile() {
+  const el = $('ownProf');
+  if (!el) return;
+  el.innerHTML = profileBlock(state.profDump, 'Riesgo de caída') + profileBlock(state.profBump, 'Opción de subida');
+}
+
+/* ================= TEMPORALIDAD RECOMENDADA ================= */
+function renderTfReco() {
+  const { best, rows } = rankTimeframes();
+  state.recTf = best;
+  const a = state.analyses[best];
+  const box = $('tfReco');
+  if (!a) { box.innerHTML = 'Sin datos suficientes.'; return; }
+  box.innerHTML = `<div class="big">${TF_LABEL[best].toUpperCase()}</div>
+    <p>Es el marco donde los indicadores están más de acuerdo entre sí ahora mismo: ADX ${a.L.adx ? a.L.adx.toFixed(0) : '—'} (${a.regime}),
+    puntaje de confluencia ${a.score >= 0 ? '+' : ''}${a.score.toFixed(1)} de ±${a.maxScore.toFixed(1)}.
+    Estilo de operación: <b>${TF_STYLE[best]}</b>.</p>`;
+  const tb = $('tfTable').querySelector('tbody'); tb.innerHTML = '';
+  rows.forEach(({ tf, a }) => {
+    const tr = document.createElement('tr');
+    if (tf === best) tr.className = 'reco';
+    const d = a ? a.dir : '—';
+    tr.innerHTML = `<td><b>${tf.toUpperCase()}</b>${tf === best ? ' ★' : ''}</td>
+      <td><span class="pill ${d.toLowerCase()}">${d}</span></td>
+      <td>${a ? (a.score >= 0 ? '+' : '') + a.score.toFixed(1) : '—'}</td>
+      <td>${a && a.L.adx ? a.L.adx.toFixed(0) : '—'}</td>
+      <td>${a && a.L.rsi ? a.L.rsi.toFixed(0) : '—'}</td>`;
+    tr.style.cursor = 'pointer';
+    tr.onclick = () => switchTf(tf);
+    tb.appendChild(tr);
+  });
+}
+
+/* ================= INDICADORES ================= */
+function renderTech(tf) {
+  const a = state.analyses[tf];
+  $('techTf').textContent = TF_LABEL[tf];
+  const g = $('techGrid'), r = $('techReasons');
+  if (!a) { g.innerHTML = '<div class="kv"><div class="k">Sin datos</div></div>'; r.innerHTML = ''; return; }
+  const L = a.L;
+  const cell = (k, v, s, cls = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  g.innerHTML =
+    cell('RSI 14', L.rsi.toFixed(1), L.rsi > 70 ? 'muy comprado' : L.rsi < 30 ? 'muy vendido' : L.rsi > 55 ? 'mandan los compradores' : L.rsi < 45 ? 'mandan los vendedores' : 'empatados', L.rsi > 55 ? 'up' : L.rsi < 45 ? 'down' : '') +
+    cell('ADX 14', L.adx ? L.adx.toFixed(1) : '—', L.adx >= 25 ? 'hay tendencia clara' : L.adx >= 20 ? 'tendencia floja' : 'sin tendencia, precio en rango') +
+    cell('MACD', L.macdLine !== null ? L.macdLine.toFixed(6).replace(/0+$/, '').replace(/\.$/, '') : '—', L.macdLine > L.macdSig ? 'impulso al alza' : 'impulso a la baja', L.macdLine > L.macdSig ? 'up' : 'down') +
+    cell('ATR 14', fmtNum(L.atr), 'se mueve ' + pct(L.atr / L.close * 100, 2).replace('+', '') + ' por vela') +
+    cell('EMA 20', fmtNum(L.e20), L.close > L.e20 ? 'precio por encima' : 'precio por debajo', L.close > L.e20 ? 'up' : 'down') +
+    cell('EMA 50', fmtNum(L.e50), L.close > L.e50 ? 'precio por encima' : 'precio por debajo', L.close > L.e50 ? 'up' : 'down') +
+    cell('EMA ' + a.emaLongP, fmtNum(L.eL), L.close > L.eL ? 'tendencia de fondo al alza' : 'tendencia de fondo a la baja', L.close > L.eL ? 'up' : 'down') +
+    cell('+DI / −DI', (L.pdi ? L.pdi.toFixed(0) : '—') + ' / ' + (L.mdi ? L.mdi.toFixed(0) : '—'), L.pdi > L.mdi ? 'presión compradora' : 'presión vendedora', L.pdi > L.mdi ? 'up' : 'down');
+  r.innerHTML = a.votes.map(v =>
+    `<li><span class="dot ${v.dir > 0 ? 'g' : v.dir < 0 ? 'r' : 'n'}"></span><span><b>${v.name}</b>: ${v.text}</span></li>`).join('') +
+    a.warnings.map(w => `<li><span class="dot n"></span><span>⚠️ ${w}</span></li>`).join('');
+}
+
+/* ================= FUNDAMENTAL ================= */
+function renderDerivatives() {
+  const g = $('fundDeriv');
+  const t = state.ticker, p = state.premium;
+  const cell = (k, v, s, cls = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  let html = '';
+  if (p && p.lastFundingRate !== undefined) {
+    const fr = parseFloat(p.lastFundingRate) * 100;
+    const interp = fr > 0.05 ? 'muy positivo: hay demasiada gente en largo pagando por estar dentro. Suele terminar en una caída rápida de limpieza'
+      : fr > 0.01 ? 'positivo: los que están en largo pagan a los que están en corto'
+      : fr < -0.01 ? 'negativo: los que están en corto pagan a los que están en largo'
+      : 'tranquilo, sin presión de ningún lado';
+    html += cell('Funding (cada 8 h)', pct(fr, 4), interp, fr > 0.01 ? 'up' : fr < -0.01 ? 'down' : '');
+    if (p.nextFundingTime) {
+      const mins = Math.max(0, Math.round((p.nextFundingTime - Date.now()) / 60000));
+      html += cell('Próximo cobro', `${Math.floor(mins / 60)}h ${mins % 60}m`, 'tiempo restante');
+    }
+  }
+  if (state.lsRatio) {
+    const r = parseFloat(state.lsRatio.longShortRatio);
+    const lp = parseFloat(state.lsRatio.longAccount) * 100;
+    html += cell('Público long/short', r.toFixed(2), `${lp.toFixed(0)}% de las cuentas están en largo · ${r > 1.5 ? 'demasiados largos: es combustible para una caída' : r < 0.7 ? 'demasiados cortos: puede haber rebote violento' : 'bastante equilibrado'}`);
+  }
+  if (state.topPos && state.topPos.length) {
+    const rw = parseFloat(state.topPos[state.topPos.length - 1].longShortRatio);
+    html += cell('🐋 Ballenas', rw.toFixed(2), rw >= 1.15 ? 'el dinero grande está posicionado al alza' : rw <= 0.9 ? 'el dinero grande está posicionado a la baja' : 'el dinero grande no toma bando', rw >= 1.15 ? 'up' : rw <= 0.9 ? 'down' : '');
+  }
+  if (state.oi && p) {
+    const oiUsd = parseFloat(state.oi.openInterest) * parseFloat(p.markPrice);
+    let chg = null;
+    if (state.oiHist && state.oiHist.length > 1) {
+      const first = parseFloat(state.oiHist[0].sumOpenInterest);
+      const lastV = parseFloat(state.oiHist[state.oiHist.length - 1].sumOpenInterest);
+      if (first > 0) chg = (lastV / first - 1) * 100;
+    }
+    const priceChg = parseFloat(t.priceChangePercent);
+    let interp = 'dinero total apostado en este contrato';
+    if (chg !== null) {
+      interp = chg > 1 && priceChg > 0 ? 'sube el dinero apostado y sube el precio → entra dinero nuevo comprando, el movimiento tiene fondo'
+        : chg > 1 && priceChg < 0 ? 'sube el dinero apostado y baja el precio → se están abriendo cortos nuevos, la caída tiene fondo'
+        : chg < -1 ? 'el dinero apostado está saliendo → esto es gente cerrando, no convicción: los movimientos así se dan la vuelta'
+        : 'estable';
+    }
+    html += cell('Dinero apostado (OI)', fmtUSD(oiUsd), (chg !== null ? `${pct(chg, 1)} en 24 h · ` : '') + interp);
+  }
+  if (t) {
+    html += cell('Volumen 24 h', fmtUSD(parseFloat(t.quoteVolume)), `${fmtNum(parseFloat(t.volume), 0)} ${state.meta.base}`);
+    html += cell('Rango 24 h', `${fmtNum(parseFloat(t.lowPrice))} – ${fmtNum(parseFloat(t.highPrice))}`, 'mínimo – máximo');
+  }
+  g.innerHTML = html || '<div class="kv"><div class="k">Sin datos de derivados</div></div>';
+
+  let ul = $('fundFactors');
+  if (!ul) {
+    ul = document.createElement('ul');
+    ul.id = 'fundFactors'; ul.className = 'reasons';
+    g.parentNode.insertBefore(ul, g.nextSibling);
+  }
+  const f = state.fundamental;
+  ul.innerHTML = f ? f.factors.map(v =>
+    `<li><span class="dot ${v.dir > 0.05 ? 'g' : v.dir < -0.05 ? 'r' : 'n'}"></span><span><b>${v.name}</b>: ${v.text}</span></li>`).join('') : '';
+}
+
+function renderCoinGecko(cg) {
+  const el = $('fundCG');
+  if (!cg) {
+    el.innerHTML = `<div class="warn">No se pudieron cargar los datos de CoinGecko (su API pública limita las consultas, o no hay coincidencia para este símbolo). Los datos de Binance de arriba sí están en vivo. <br><button class="btn ghost" id="cgRetry" style="margin-top:8px">Reintentar CoinGecko</button></div>`;
+    const b = $('cgRetry'); if (b) b.onclick = () => fetchCG();
+    return;
+  }
+  const m = cg.market_data || {};
+  const cur = v => (v && v.usd !== undefined) ? v.usd : null;
+  const cell = (k, v, s, cls = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  const mc = cur(m.market_cap), fdv = cur(m.fully_diluted_valuation);
+  const athChg = m.ath_change_percentage ? m.ath_change_percentage.usd : null;
+  const supplyPct = (m.circulating_supply && m.max_supply) ? m.circulating_supply / m.max_supply * 100 : null;
+  let html = '<div class="grid2">';
+  html += cell('Ranking', cg.market_cap_rank ? '#' + cg.market_cap_rank : '—', 'por tamaño');
+  html += cell('Capitalización', fmtUSD(mc), 'cuánto vale todo lo que circula');
+  if (fdv) html += cell('FDV', fmtUSD(fdv), mc && fdv / mc > 3 ? `${(fdv / mc).toFixed(1)}× su tamaño actual → quedan muchas monedas por soltar al mercado` : mc ? (fdv / mc).toFixed(2) + '× su tamaño actual' : 'valor con todas las monedas emitidas');
+  html += cell('Monedas en circulación', fmtNum(m.circulating_supply, 0), supplyPct !== null ? `${supplyPct.toFixed(0)}% del máximo (${fmtNum(m.max_supply, 0)})` : m.max_supply === null ? 'sin tope: se pueden emitir más' : '');
+  if (athChg !== null) html += cell('Desde su máximo', pct(athChg, 1), `máximo: ${fmtNum(m.ath ? m.ath.usd : null)}${m.ath_date && m.ath_date.usd ? ' (' + m.ath_date.usd.slice(0, 10) + ')' : ''}`, athChg > -15 ? 'up' : 'down');
+  const p7 = m.price_change_percentage_7d, p30 = m.price_change_percentage_30d;
+  if (p7 !== null && p7 !== undefined) html += cell('7 días / 30 días', `${pct(p7, 1)} / ${p30 !== null && p30 !== undefined ? pct(p30, 1) : '—'}`, 'cambio de precio', p7 >= 0 ? 'up' : 'down');
+  html += '</div>';
+  if (cg.categories && cg.categories.length)
+    html += `<div class="desc"><b>Categorías:</b> ${cg.categories.filter(Boolean).slice(0, 5).join(' · ')}</div>`;
+  const desc = (cg.description && (cg.description.es || cg.description.en)) || '';
+  if (desc) {
+    const clean = desc.replace(/<[^>]*>/g, '').replace(/\r?\n+/g, ' ').trim();
+    if (clean) html += `<div class="desc">${clean.slice(0, 420)}${clean.length > 420 ? '…' : ''}</div>`;
+  }
+  html += `<div class="src">Fuente: CoinGecko (${cg.id}) · datos reales, no generados por IA</div>`;
+  el.innerHTML = html;
+}
+
+async function fetchCG() {
+  const el = $('fundCG');
+  el.innerHTML = '<div class="desc"><span class="spinner"></span>Cargando datos de CoinGecko…</div>';
+  try {
+    const cg = await loadFundamentals(state.meta.base);
+    state.cg = cg;
+    renderCoinGecko(cg);
+  } catch (e) { state.cg = null; renderCoinGecko(null); }
+  state.fundamental = computeFundamental();
+  renderDerivatives();
+  if (state.curTf) { renderVerdict(state.curTf); renderChart(state.curTf); }
+}
+
+/* ================= FLUJO PRINCIPAL ================= */
+async function selectSymbol(meta) {
+  state.symbol = meta.symbol; state.meta = meta;
+  $('search').value = meta.symbol;
+  $('dropdown').style.display = 'none';
+  $('hint').classList.add('hidden');
+  showStatus('<span class="spinner"></span>Descargando velas y datos de ' + meta.symbol + '…', 'info');
+  try {
+    await loadAll(meta.symbol);
+  } catch (e) {
+    const geo = e.status === 451 || e.status === 403;
+    showStatus(geo
+      ? '<b>Binance rechazó la conexión (error ' + e.status + ').</b> Binance Futures no acepta conexiones desde EE.UU. ni desde algunas VPN. Desactiva la VPN o usa una red de un país donde Binance opere.'
+      : '<b>Error al conectar con Binance:</b> ' + (e.message || e) + '. Revisa tu conexión e inténtalo de nuevo.', 'error');
+    return;
+  }
+  hideStatus();
+  state.cg = null;
+  state.analyses = {};
+  TFS.forEach(tf => state.analyses[tf] = analyzeTF(state.klines[tf]));
+  state.fundamental = computeFundamental();
+  computeOwnProfiles();
+
+  $('content').classList.remove('hidden');
+  $('symTitle').textContent = meta.symbol + ' Perp';
+  $('lastPrice').textContent = fmtNum(parseFloat(state.ticker.lastPrice));
+  const ch = parseFloat(state.ticker.priceChangePercent);
+  const chgEl = $('chg24');
+  chgEl.textContent = pct(ch) + ' 24h';
+  chgEl.className = 'chg ' + (ch >= 0 ? 'up' : 'down');
+
+  renderTfReco();
+  state.curTf = state.recTf || '1h';
+  if (!state.chart) initChart();
+  renderTfButtons();
+  renderVerdict(state.curTf);
+  renderChart(state.curTf);
+  renderTech(state.curTf);
+  renderDerivatives();
+  renderOwnProfile();
+  renderBacktest(state.curTf);
+  startLive(meta.symbol, state.curTf);
+  $('updated').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+  fetchCG();
+}
+
+/* ================= BÚSQUEDA ================= */
+function setupSearch() {
+  const inp = $('search'), dd = $('dropdown');
+  inp.addEventListener('input', () => {
+    const q = inp.value.trim().toUpperCase();
+    if (!q) { dd.style.display = 'none'; return; }
+    const hits = state.symbols.filter(s => s.symbol.includes(q) || s.base.includes(q)).slice(0, 15);
+    if (!hits.length) { dd.innerHTML = '<div class="item"><span class="base">Sin resultados en futuros USDT</span></div>'; dd.style.display = 'block'; return; }
+    dd.innerHTML = hits.map((s, i) => `<div class="item" data-i="${i}"><span class="sym">${s.symbol}</span><span class="base">${s.base} / USDT Perp</span></div>`).join('');
+    dd.style.display = 'block';
+    dd.querySelectorAll('.item').forEach((el) => {
+      el.onclick = () => selectSymbol(hits[parseInt(el.dataset.i)]);
+    });
+  });
+  document.addEventListener('click', (e) => { if (!e.target.closest('.searchbox')) dd.style.display = 'none'; });
+  $('refreshBtn').onclick = () => state.meta && selectSymbol(state.meta);
+}
+
+/* ================= BACKTEST ================= */
+function renderBacktest(tf) {
+  $('btTf').textContent = TF_LABEL[tf];
+  const bt = runBacktest(tf);
+  const bestEl = $('btBest'), tb = $('btTable').querySelector('tbody');
+  if (!bt) { bestEl.innerHTML = '<div class="desc">Historial insuficiente para medir estrategias.</div>'; tb.innerHTML = ''; $('btNote').textContent = ''; return; }
+  state.backtest = bt;
+  if (bt.best) {
+    const b = bt.best;
+    // Nota: aquí NO se compara con el veredicto. El veredicto ya está decidido
+    // arriba y es el único que manda; esto es sólo una medición del pasado.
+    bestEl.innerHTML = `<div class="winner"><div class="big">🏆 ${b.name}</div>
+      <p>La más rentable en las últimas ${bt.candles} velas de ${TF_LABEL[tf]}: <b>${b.trades} operaciones</b>,
+      <b>${b.winRate.toFixed(0)}% de aciertos</b>, factor de beneficio <b>${b.pf.toFixed(2)}</b>, resultado neto <b>${pct(b.net, 1)}</b>
+      (comisiones incluidas), peor racha ${b.maxDD.toFixed(1)}%.<br>
+      Esto mide <b>el pasado de esta estrategia en esta moneda</b>, no lo que hay que hacer ahora. La decisión de hoy está arriba, en la tarjeta de veredicto.</p></div>`;
+  } else {
+    bestEl.innerHTML = `<div class="warn">⚠️ Ninguna estrategia automática fue rentable en las últimas ${bt.candles} velas de ${TF_LABEL[tf]} (después de comisiones). Eso también es información: este par y este marco están difíciles ahora mismo.</div>`;
+  }
+  tb.innerHTML = bt.results.map(r => `
+    <tr${bt.best && r.key === bt.best.key ? ' class="reco"' : ''}>
+      <td><b>${r.name}</b><br><small style="color:var(--muted)">${r.desc}</small></td>
+      <td>${r.trades}</td><td>${r.winRate.toFixed(0)}%</td>
+      <td style="color:${r.pf >= 1.2 ? 'var(--green)' : r.pf < 1 ? 'var(--red)' : 'var(--text)'}">${r.pf >= 99 ? '∞' : r.pf.toFixed(2)}</td>
+      <td style="color:${r.net >= 0 ? 'var(--green)' : 'var(--red)'}">${pct(r.net, 1)}</td>
+      <td>${r.maxDD.toFixed(0)}%</td>
+      <td><span class="pill ${r.current.toLowerCase()}">${r.current}</span></td>
+    </tr>`).join('');
+  $('btNote').textContent = `Medido sobre las últimas ${bt.candles} velas cerradas con comisión taker 0.05% por lado más deslizamiento. El factor de beneficio es ganancia bruta ÷ pérdida bruta: por encima de 1 es rentable. Que algo haya funcionado antes no significa que vaya a funcionar ahora.`;
+}
+
+/* ================= CALCULADORA DE POSICIÓN ================= */
+function renderCalc() {
+  const out = $('calcOut'), warnEl = $('calcWarn');
+  if (!out) return;
+  const cap = parseFloat($('calcCap').value) || 0;
+  const riskPct = parseFloat($('calcRisk').value) || 1;
+  const lev = parseFloat($('calcLev').value) || 5;
+
+  // Aviso de supervivencia: siempre visible, haya plan o no.
+  const loss5 = (1 - Math.pow(1 - riskPct / 100, 5)) * 100;
+  const loss10 = (1 - Math.pow(1 - riskPct / 100, 10)) * 100;
+  const recover = p => (1 / (1 - p / 100) - 1) * 100;
+  let warnHtml = `<div class="qbox">Con <b>${riskPct}%</b> de riesgo por operación: 5 fallos seguidos te cuestan <b>${loss5.toFixed(1)}%</b> de la cuenta y 10 fallos seguidos <b>${loss10.toFixed(1)}%</b>. Sigues vivo y puedes recuperarlo.<br>
+    Compara: perder el <b>50%</b> obliga a ganar <b>+${recover(50).toFixed(0)}%</b> sólo para volver al punto de partida, y perder el <b>90%</b> obliga a ganar <b>+${recover(90).toFixed(0)}%</b>. Por eso el tamaño pequeño no es prudencia, es lo que permite seguir jugando.</div>`;
+  if (lev >= 15) warnHtml += `<div class="warn">⚠️ ${lev}× es mucho apalancamiento. No cambia cuánto arriesgas (eso lo fija el stop), pero deja el precio de liquidación muy cerca y cualquier mecha te saca antes de tiempo. Con 5× o menos duermes mejor.</div>`;
+
+  const plan = state.plan;
+  if (!plan) {
+    out.innerHTML = '<div class="kv" style="grid-column:1/-1"><div class="k">Sin operación activa</div><div class="s">Cuando el veredicto sea LONG o SHORT, aquí te digo exactamente cuánto abrir.</div></div>';
+    warnEl.innerHTML = warnHtml;
+    return;
+  }
+  const riskUSD = cap * riskPct / 100;
+  const slDist = Math.abs(plan.entry - plan.sl) / plan.entry;
+  if (!cap || !slDist) { out.innerHTML = ''; warnEl.innerHTML = warnHtml; return; }
+  const notional = riskUSD / slDist;
+  const qty = notional / plan.entry;
+  const margin = notional / lev;
+  const isLong = plan.tp1 > plan.entry;
+  const mmr = 0.005;
+  const liq = isLong ? plan.entry * (1 - 1 / lev + mmr) : plan.entry * (1 + 1 / lev - mmr);
+  const liqDanger = isLong ? liq >= plan.sl : liq <= plan.sl;
+  const cell = (k, v, s, cls = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  out.innerHTML =
+    cell('Tamaño de la posición', fmtUSD(notional), `${fmtNum(qty)} ${state.meta ? state.meta.base : ''}`) +
+    cell('Margen que necesitas', fmtUSD(margin), `con ${lev}× de apalancamiento`) +
+    cell('Si toca el stop pierdes', '−' + fmtUSD(riskUSD), `el ${riskPct}% de tu cuenta, ni un dólar más`) +
+    cell('Si llega al objetivo ganas', `+${fmtUSD(riskUSD * plan.rr1)} / +${fmtUSD(riskUSD * plan.rr2)}`, 'objetivo 1 / objetivo 2, aprox.') +
+    cell('Te liquidarían en ≈', fmtNum(liq), liqDanger ? 'está ANTES que tu stop' : 'queda más lejos que tu stop ✅', liqDanger ? 'down' : 'up') +
+    cell('Margen necesario vs capital', ((margin / cap) * 100).toFixed(1) + '%', margin > cap ? 'no te alcanza: baja el tamaño o sube el apalancamiento' : 'de tu cuenta queda comprometido', margin > cap ? 'down' : '');
+  if (liqDanger)
+    warnHtml = `<div class="warn">⚠️ Con ${lev}× te liquidarían en ${fmtNum(liq)}, <b>antes</b> de que el precio llegue a tu stop loss (${fmtNum(plan.sl)}). Perderías todo el margen sin que el stop llegue a activarse. Baja el apalancamiento.</div>` + warnHtml;
+  warnEl.innerHTML = warnHtml;
+}
+
+function setupCalc() {
+  ['calcCap', 'calcRisk', 'calcLev'].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener('input', renderCalc);
+  });
+  renderCalc();
+}
+
+/* ================= DATOS EN VIVO ================= */
+const live = { ws: null, poll: null, tf: null, sym: null, retries: 0 };
+
+function setLiveDot(mode) {
+  const el = $('liveDot');
+  if (!el) return;
+  if (mode === 'live') { el.className = 'live'; el.textContent = '● EN VIVO'; }
+  else if (mode === 'poll') { el.className = 'poll'; el.textContent = '◌ cada 20 s'; }
+  else { el.className = 'poll'; el.textContent = '◌ conectando…'; }
+}
+
+function stopLive() {
+  if (live.ws) { try { live.ws.onclose = null; live.ws.close(); } catch (e) {} live.ws = null; }
+  if (live.poll) { clearInterval(live.poll); live.poll = null; }
+}
+
+function applyCandle(candle, closed) {
+  const arr = state.klines[live.tf];
+  if (!arr || !arr.length) return;
+  const lastC = arr[arr.length - 1];
+  if (candle.time === lastC.time) arr[arr.length - 1] = candle;
+  else if (candle.time > lastC.time) { arr.push(candle); if (arr.length > KLIMIT + 20) arr.shift(); }
+  else return;
+  $('lastPrice').textContent = fmtNum(candle.close);
+  /* El precio de entrada de todos los planes sale de state.ticker.lastPrice,
+     que se pedía UNA vez al cargar la moneda y nunca se refrescaba, aunque la
+     etiqueta dijera "precio de ahora". Con la app abierta un rato, el plan
+     entero (entrada, stop y objetivos) quedaba anclado a un precio viejo.
+     El WebSocket ya trae el precio real: se aprovecha. */
+  if (state.ticker && state.symbol === live.sym) {
+    state.ticker.lastPrice = String(candle.close);
+    state.tickerAt = Date.now();
+  }
+  if (posState.pos && posState.pos.symbol === state.symbol) renderPos(candle.close);
+  if (state.curTf === live.tf) {
+    if (!applyCandle._raf) {
+      applyCandle._raf = true;
+      requestAnimationFrame(() => { applyCandle._raf = false; if (state.chart) renderChart(state.curTf); });
+    }
+  }
+  if (closed) {
+    state.analyses[live.tf] = analyzeTF(state.klines[live.tf]);
+    if (live.tf === '15m') { computeOwnProfiles(); renderOwnProfile(); }
+    if (state.curTf === live.tf) { renderVerdict(live.tf); renderTech(live.tf); renderBacktest(live.tf); }
+  }
+}
+
+function startPolling() {
+  if (live.poll) return;
+  setLiveDot('poll');
+  live.poll = setInterval(async () => {
+    try {
+      const raw = await fetchJSON(`${FAPI}/fapi/v1/klines?symbol=${live.sym}&interval=${live.tf}&limit=2`);
+      const ks = parseKlines(raw);
+      ks.forEach((k, i) => applyCandle(k, i < ks.length - 1));
+    } catch (e) {}
+  }, 20000);
+}
+
+function startLive(sym, tf) {
+  stopLive();
+  live.sym = sym; live.tf = tf;
+  setLiveDot('connecting');
+  try {
+    const ws = new WebSocket(`wss://fstream.binance.com/ws/${sym.toLowerCase()}@kline_${tf}`);
+    live.ws = ws;
+    const timeout = setTimeout(() => { if (ws.readyState !== 1) { try { ws.close(); } catch (e) {} } }, 8000);
+    ws.onopen = () => { clearTimeout(timeout); live.retries = 0; setLiveDot('live'); };
+    ws.onmessage = ev => {
+      try {
+        const k = JSON.parse(ev.data).k;
+        if (!k) return;
+        applyCandle({ time: Math.floor(k.t / 1000), open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v }, !!k.x);
+      } catch (e) {}
+    };
+    ws.onerror = () => {};
+    ws.onclose = () => {
+      live.ws = null;
+      if (live.retries < 2) { live.retries++; setTimeout(() => { if (!live.ws && live.sym === sym && live.tf === tf) startLive(sym, tf); }, 2500); }
+      else startPolling();
+    };
+  } catch (e) { startPolling(); }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state.symbol && !live.ws && state.curTf) {
+    live.retries = 0;
+    startLive(state.symbol, state.curTf);
+  }
+});
+
+/* =====================================================================
+   RADAR DE MOVIMIENTOS (caídas y subidas)
+   ===================================================================== */
+const radarState = {
+  side: -1, data: { '-1': null, '1': null },
+  nextScanAt: 0, scanning: false, intervalMin: 30,
+  alertsOn: false, audio: null, notified: new Set(),
+};
+
+function beep() {
+  try {
+    if (!radarState.audio) return;
+    const ctx = radarState.audio;
+    [0, 0.25].forEach(t0 => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.setValueAtTime(0.15, ctx.currentTime + t0);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t0 + 0.2);
+      o.start(ctx.currentTime + t0); o.stop(ctx.currentTime + t0 + 0.22);
+    });
+  } catch (e) {}
+}
+
+function showBanner(html) {
+  const b = $('alertBanner');
+  b.innerHTML = html + '<div style="font-size:10px;color:var(--muted);margin-top:4px;">Toca para cerrar</div>';
+  b.style.display = 'block';
+  b.onclick = () => b.style.display = 'none';
+  clearTimeout(showBanner._t);
+  showBanner._t = setTimeout(() => b.style.display = 'none', 14000);
+}
+
+function gaugesHtml(r) {
+  return `<div class="gauges">
+    <div class="gauge">
+      <div class="gl"><span>GATILLO · ¿empieza ya?</span><b>${Math.round(r.trigger)}</b></div>
+      <div class="gtrack"><i class="t" style="width:${Math.round(r.trigger)}%"></i></div>
+    </div>
+    <div class="gauge">
+      <div class="gl"><span>AGUANTE · ¿durará?</span><b>${Math.round(r.persist)}</b></div>
+      <div class="gtrack"><i class="p" style="width:${Math.round(r.persist)}%"></i></div>
+    </div>
+  </div>`;
+}
+
+function radarVerdictLine(r) {
+  const dir = r.side < 0 ? 'la caída' : 'la subida';
+  if (r.kind === 'sostenido')
+    return `<div class="verdictline ok">✅ Se puede <b>dejar operando</b>. Según su propio historial, ${dir} suele durar <b>${r.holdText}</b>.</div>`;
+  if (r.kind === 'medio')
+    return `<div class="verdictline">🔵 Puede durar <b>${r.holdText}</b>, pero sin confirmación. Trátala como corta y vigílala.</div>`;
+  return `<div class="verdictline no">⚡ <b>Entrar y salir en ${r.holdText}.</b> Es una sacudida: ${dir} rebota enseguida. No la dejes abierta esperando más — esto es exactamente lo que hacía perder dinero.</div>`;
+}
+
+/* Momento de entrada, resumido para el radar y para el perfil de la moneda.
+   Sólo afirma "salió mejor/peor" cuando hay muestra medida detrás. */
+function timingLine(r) {
+  if (!r || r.kind === 'ninguno' || r.entryWhen === undefined) return '';
+  const T = r.timing && r.timing.n >= ET.MIN_N ? r.timing : null;
+  if (r.entryWhen === 'tarde')
+    return `<div class="verdictline no">⏳ <b>Se te pasó el momento</b>: lleva hecho ${r.progress >= 1 ? 'más del <b>100%</b>' : `alrededor del <b>${Math.round(r.progress * 100)}%</b>`} del recorrido que suele hacer. El stop sería igual de grande y el premio que queda, mucho menor. Déjala pasar.</div>`;
+  if (r.entryWhen === 'evitar')
+    return `<div class="verdictline no">🚫 <b>Señal sin historial rentable</b>: en las ${T ? T.n : 0} veces anteriores con este perfil, ninguna forma de entrar habría ganado dinero en esta moneda. No es cuestión de esperar: déjala pasar.</div>`;
+  if (r.entryWhen === 'retroceso')
+    return `<div class="verdictline">⏳ <b>No entres de mercado</b>: en el historial de esta moneda salió mejor poner una <b>orden límite en ${fmtNum(r.pbPrice)}</b> y esperar hasta 1 hora. Si no se llena, se cancela y se olvida.</div>`;
+  const fresh = r.sinceBars <= 1
+    ? 'la señal acaba de aparecer'
+    : `el movimiento nació hace ${durationText(r.sinceBars)} y aún queda recorrido`;
+  /* Sólo se puede decir "esperar salió peor" si esperar salió peor de verdad.
+     Se llega aquí también cuando esperar salió MEJOR pero por poco margen, o
+     mejor pero llenándose pocas veces — y entonces la frase era falsa. */
+  const espera = !T || !T.pull ? ''
+    : T.pull.expR <= T.now.expR ? ', y esperar un retroceso salió peor en su propio historial'
+    : T.fillRate < 45 ? `, y esperar un retroceso sólo se habría llenado el ${Math.round(T.fillRate)}% de las veces`
+    : ', y la ventaja de esperar un retroceso es demasiado pequeña para arriesgarse a quedarse fuera';
+  return `<div class="verdictline ok">✅ <b>Buen momento para entrar ya</b>: ${fresh}${espera}.</div>`;
+}
+
+function histLine(r) {
+  const A = r.analog;
+  if (!A || A.n < 5)
+    return `<div class="hist">Hay <b>pocos casos parecidos</b> en el historial reciente de esta moneda (${A ? A.n : 0}), así que la duración es orientativa. Fíate menos de esta señal.</div>`;
+  const extra = r.estMovePct ? ` · recorrido típico <b>${r.estMovePct.toFixed(1)}%</b>` : '';
+  // La duración sólo se anuncia si el movimiento llegó a arrancar alguna vez.
+  // Si no arrancó nunca, decir "duró 8 horas" sería falso: lo que pasó es que
+  // no pasó nada. Y nunca se anuncia más de lo que permite la clasificación.
+  const shownBars = A.medLife ? Math.min(A.medLife, r.holdBars) : null;
+  const mid = shownBars
+    ? ` · <b>${Math.round(A.wentRate)}%</b> llegaron a moverse de verdad y, cuando lo hicieron, duraron <b>${durationText(shownBars)}</b>`
+    : ` · <b>ninguna llegó a moverse de verdad</b>: se quedaron planas`;
+  const aviso = (A.wentRate !== undefined && A.wentRate < 35)
+    ? `<br>⚠️ Con este historial la señal es <b>poco fiable</b>: en el pasado casi nunca fue a ningún sitio. Si no la ves clara, sáltatela.`
+    : '';
+  return `<div class="hist">Historial de esta misma moneda: <b>${A.n} veces</b> con este mismo perfil${A.matched ? '' : ' (muestra ampliada, perfil aproximado)'} →
+    <b>${Math.round(A.winRate)}%</b> llegaron al objetivo antes que al stop ·
+    <b>${Math.round(A.sustainedRate)}%</b> aguantaron varias horas${mid}${extra}.${aviso}</div>`;
+}
+
+function renderRadar() {
+  const el = $('radarList');
+  const side = radarState.side;
+  const rows = radarState.data[String(side)];
+  if (rows === null) { el.innerHTML = '<div class="desc"><span class="spinner"></span>Escaneando los futuros más activos…</div>'; return; }
+  if (!rows.length) {
+    // Vacío por no haber encontrado nada ≠ vacío por no haber podido mirar.
+    // Sólo lo primero es una buena noticia.
+    const scanned = rows.scanned;
+    const attempted = rows.attempted;
+    if (rows.failed)
+      el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ <b>El escaneo falló</b>: no se pudieron traer los datos de Binance. El radar está vacío porque no ha podido mirar, no porque no haya nada. Vuelve a intentarlo en un momento.</div>`;
+    else if (scanned === 0 && attempted > 0)
+      el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ <b>El radar no pudo analizar ninguna moneda</b> (fallaron las ${attempted} peticiones de datos a Binance). Esto <b>no</b> significa que no haya oportunidades: significa que no se ha podido mirar. Vuelve a escanear en un momento.</div>`;
+    else if (scanned !== undefined && attempted && scanned < attempted)
+      el.innerHTML = `<div class="desc">✅ Ninguna de las <b>${scanned}</b> monedas analizadas cumple ahora mismo las condiciones de ${side < 0 ? 'caída' : 'subida'}. Que el radar esté vacío es buena señal: no hay que forzar ninguna operación.<br><small style="opacity:.75">Nota: ${attempted - scanned} de ${attempted} monedas no se pudieron analizar por fallos de datos, así que la lista puede estar incompleta.</small></div>`;
+    else
+      el.innerHTML = `<div class="desc">✅ Ninguna moneda cumple ahora mismo las condiciones de ${side < 0 ? 'caída' : 'subida'} entre las más negociadas. Que el radar esté vacío es buena señal: significa que no hay que forzar ninguna operación.</div>`;
+    return;
+  }
+  el.innerHTML = rows.map(r => `
+    <div class="mrow ${r.kind}" data-sym="${r.symbol}">
+      <div class="top">
+        <div><span class="sym">${r.symbol.replace('USDT', '')}</span>
+          <span class="px">${fmtNum(r.price)} · ${pct(r.chg24, 1)} en 24 h</span></div>
+        <div class="kind"><b>${r.kindLabel}</b><small>${r.kind === 'sostenido' ? 'se puede dejar correr' : r.kind === 'medio' ? 'vigílala' : 'entrar y salir rápido'}</small></div>
+      </div>
+      ${radarVerdictLine(r)}
+      ${timingLine(r)}
+      ${gaugesHtml(r)}
+      ${histLine(r)}
+      <div class="why">${r.kindWhy}${r.con && r.con.length ? '<br>⚠️ ' + r.con[0] : ''}</div>
+      <div class="why" style="color:var(--yellow)">Toca para ver el plan completo de ${r.symbol.replace('USDT', '')} →</div>
+    </div>`).join('');
+  el.querySelectorAll('.mrow').forEach(row => {
+    row.onclick = () => {
+      const meta = state.symbols.find(s => s.symbol === row.dataset.sym);
+      if (meta) { selectSymbol(meta); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    };
+  });
+}
+
+function triggerRadarAlert(rows, side) {
+  const stamp = Math.floor(Date.now() / 18e5);
+  const fresh = rows.filter(r => !radarState.notified.has(r.symbol + '|' + side + '|' + stamp));
+  if (!fresh.length) return;
+  fresh.forEach(r => radarState.notified.add(r.symbol + '|' + side + '|' + stamp));
+  const txt = fresh.map(r => `${r.symbol.replace('USDT', '')} (${r.kindLabel.toLowerCase()}, ≈${r.holdText})`).join(', ');
+  const icon = side < 0 ? '🔻' : '🔺';
+  showBanner(`${icon} <b>Movimiento con aguante detectado:</b> ${txt}<br><span style="color:var(--muted);font-size:11px;">Abre la app y mira el plan antes de operar.</span>`);
+  if (radarState.alertsOn) {
+    beep();
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      try { new Notification(icon + ' Fable Trader', { body: txt }); } catch (e) {}
+    }
+  }
+}
+
+async function runRadarScan() {
+  if (radarState.scanning || !state.symbols.length) return;
+  radarState.scanning = true;
+  radarState.data['-1'] = null; radarState.data['1'] = null;
+  renderRadar();
+  for (const side of [-1, 1]) {
+    try {
+      const rows = await scanMoves(side);
+      radarState.data[String(side)] = rows;
+      if (radarState.side === side) renderRadar();
+      const hot = rows.filter(r => r.kind === 'sostenido' && r.trigger >= 60);
+      if (hot.length) triggerRadarAlert(hot, side);
+    } catch (e) {
+      // Marcado como fallo, no como "no hay nada": si el usuario cambia de
+      // pestaña y se vuelve a pintar, no puede salir un verde tranquilizador.
+      const failed = []; failed.failed = true; failed.scanned = 0; failed.attempted = 0;
+      radarState.data[String(side)] = failed;
+      if (radarState.side === side)
+        $('radarList').innerHTML = '<div class="desc">No se pudo escanear: ' + (e.message || e) + '</div>';
+    }
+  }
+  radarState.nextScanAt = Date.now() + radarState.intervalMin * 60 * 1000;
+  radarState.scanning = false;
+}
+
+function setupRadar() {
+  document.querySelectorAll('#radarTabs .tab').forEach(t => {
+    t.onclick = () => {
+      document.querySelectorAll('#radarTabs .tab').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      radarState.side = parseInt(t.dataset.side);
+      renderRadar();
+    };
+  });
+  document.querySelectorAll('.chip[data-min]').forEach(ch => {
+    ch.onclick = () => {
+      document.querySelectorAll('.chip[data-min]').forEach(c => c.classList.remove('on'));
+      ch.classList.add('on');
+      radarState.intervalMin = parseInt(ch.dataset.min);
+      if (radarState.nextScanAt) radarState.nextScanAt = Math.min(radarState.nextScanAt, Date.now() + radarState.intervalMin * 60 * 1000);
+    };
+  });
+  $('radarRefresh').onclick = () => runRadarScan();
+  $('alertBtn').onclick = async () => {
+    radarState.alertsOn = !radarState.alertsOn;
+    if (radarState.alertsOn) {
+      try { radarState.audio = radarState.audio || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+      if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        try { await Notification.requestPermission(); } catch (e) {}
+      }
+      $('alertBtn').textContent = '🔔 Alertas activas';
+      showBanner('🔔 Alertas activadas: sonido, vibración y aviso cuando aparezca un movimiento <b>con aguante</b> (no los rebotes cortos). <b>Sólo funcionan con la app abierta.</b>');
+    } else {
+      $('alertBtn').textContent = '🔔 Activar alertas';
+    }
+  };
+  setInterval(() => {
+    if (!radarState.nextScanAt) return;
+    const s = Math.max(0, Math.round((radarState.nextScanAt - Date.now()) / 1000));
+    $('radarNext').textContent = `próximo escaneo ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    if (s === 0 && !radarState.scanning) runRadarScan();
+  }, 1000);
+}
+
+/* =====================================================================
+   MONITOR DE POSICIÓN ABIERTA
+   Guarda la operación en el propio teléfono y responde siempre a la
+   misma pregunta: ¿la mantengo o la cierro ya?
+   ===================================================================== */
+const POS_KEY = 'fable_pos_v4';
+const posState = { pos: null, poll: null };
+
+function savePos(p) {
+  posState.pos = p;
+  try { p ? localStorage.setItem(POS_KEY, JSON.stringify(p)) : localStorage.removeItem(POS_KEY); } catch (e) {}
+}
+function loadPos() {
+  try { const s = localStorage.getItem(POS_KEY); posState.pos = s ? JSON.parse(s) : null; } catch (e) { posState.pos = null; }
+}
+
+function evalPos(p, price) {
+  const s = p.side === 'LONG' ? 1 : -1;
+  const risk = Math.abs(p.entry - p.sl) || 1;
+  const rMult = s * (price - p.entry) / risk;
+  const mins = (Date.now() - p.openedAt) / 60000;
+  const maxMin = p.maxBars * MV.MIN;
+  const hit = (target) => s > 0 ? price >= target : price <= target;
+  const broke = (level) => s > 0 ? price <= level : price >= level;
+
+  if (broke(p.sl))
+    return { state: 'out', title: 'YA DEBERÍA ESTAR CERRADA', why: `El precio tocó tu stop loss (${fmtNum(p.sl)}). Si dejaste la orden puesta en Binance, ya salió sola. Márcala como cerrada abajo.`, rMult, mins, maxMin };
+  if (hit(p.tp2))
+    return { state: 'out', title: 'CERRAR YA ✅', why: `Llegó al segundo objetivo (${fmtNum(p.tp2)}). Recoge el beneficio completo. Estirar más allá del plan es de donde salen las devoluciones.`, rMult, mins, maxMin };
+  if (hit(p.tp1))
+    return p.horizon === 'sostenido'
+      ? { state: 'warn', title: 'CIERRA LA MITAD', why: `Llegó al primer objetivo (${fmtNum(p.tp1)}). Cierra el 50% y mueve el stop a tu entrada (${fmtNum(p.entry)}). A partir de ahí ya no puedes perder dinero en esta operación, pase lo que pase.`, rMult, mins, maxMin }
+      : { state: 'out', title: 'CERRAR YA ✅', why: `Llegó al objetivo (${fmtNum(p.tp1)}) y ésta era una operación <b>corta</b>. Cierra el 100%. No esperes más: este perfil rebota.`, rMult, mins, maxMin };
+  if (broke(p.invalid))
+    return { state: 'out', title: 'CERRAR YA 🛑', why: `El precio pasó de ${fmtNum(p.invalid)}: la razón por la que entraste ya no se cumple. Cierra ahora, no esperes al stop.`, rMult, mins, maxMin };
+  if (mins > maxMin)
+    return { state: 'out', title: 'CERRAR POR TIEMPO ⏰', why: `Han pasado ${Math.round(mins)} minutos y no llegó al objetivo. Los movimientos buenos son rápidos; los que se estancan terminan girándose. Cierra como esté.`, rMult, mins, maxMin };
+  const left = Math.max(0, Math.round(maxMin - mins));
+  return {
+    state: 'keep', title: 'MANTENER',
+    why: `Todo sigue en su sitio. ${p.horizon === 'sostenido'
+      ? `Esta operación es de las que se pueden dejar correr: te quedan hasta <b>${left} minutos</b> antes de cerrarla por tiempo.`
+      : `Ojo, es una operación <b>corta</b>: te quedan <b>${left} minutos</b> como mucho. Si no llega al objetivo, se cierra igual.`}`,
+    rMult, mins, maxMin,
+  };
+}
+
+function renderPos(price) {
+  const card = $('posCard'), body = $('posBody');
+  const p = posState.pos;
+  if (!p) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  if (price === undefined || price === null || isNaN(price)) {
+    body.innerHTML = `<div class="desc">Buscando el precio de ${p.symbol}…</div>`;
+    return;
+  }
+  const e = evalPos(p, price);
+  const cls = e.state === 'keep' ? 'keep' : e.state === 'warn' ? 'warnc' : 'out';
+  const pnlCls = e.rMult >= 0 ? 'up' : 'down';
+  body.innerHTML = `
+    <div class="posbig ${cls}">${e.title}</div>
+    <div class="desc" style="margin-top:6px">${e.why}</div>
+    <div class="grid3" style="margin-top:10px">
+      <div class="kv"><div class="k">${p.symbol.replace('USDT', '')} · ${p.side}</div><div class="v">${fmtNum(price)}</div><div class="s">precio ahora</div></div>
+      <div class="kv"><div class="k">Vas ganando/perdiendo</div><div class="v ${pnlCls}">${(e.rMult >= 0 ? '+' : '') + e.rMult.toFixed(2)}R</div><div class="s">R = lo que arriesgaste</div></div>
+      <div class="kv"><div class="k">Abierta hace</div><div class="v">${Math.round(e.mins)} min</div><div class="s">límite ${Math.round(e.maxMin)} min</div></div>
+      <div class="kv"><div class="k">Entrada</div><div class="v">${fmtNum(p.entry)}</div><div class="s">tu precio</div></div>
+      <div class="kv"><div class="k">Stop</div><div class="v down">${fmtNum(p.sl)}</div><div class="s">déjalo puesto en Binance</div></div>
+      <div class="kv"><div class="k">Objetivo 1</div><div class="v up">${fmtNum(p.tp1)}</div><div class="s">${p.horizon === 'sostenido' ? 'cierra la mitad aquí' : 'cierra todo aquí'}</div></div>
+    </div>`;
+}
+
+async function pollPos() {
+  const p = posState.pos;
+  if (!p) return;
+  if (state.symbol === p.symbol && state.ticker) { renderPos(parseFloat(state.ticker.lastPrice)); }
+  try {
+    const t = await fetchJSON(`${FAPI}/fapi/v1/ticker/price?symbol=${p.symbol}`);
+    if (posState.pos && t && t.price) renderPos(parseFloat(t.price));
+  } catch (e) {}
+}
+
+function setupPos() {
+  loadPos();
+  renderPos(null);
+  if (posState.pos) pollPos();
+  if (!posState.poll) posState.poll = setInterval(pollPos, 30000);
+
+  $('posCloseBtn').onclick = () => {
+    savePos(null);
+    $('posCard').classList.add('hidden');
+    showBanner('✔️ Operación marcada como cerrada. Anota qué salió bien o mal: es la única forma de mejorar.');
+  };
+  $('markBtn').onclick = () => {
+    const v = state.verdict, plan = state.plan, exit = state.exitPlan;
+    if (!v || !plan || !exit) return;
+    savePos({
+      symbol: state.symbol, base: state.meta.base, side: v.action,
+      entry: plan.entry, sl: plan.sl, tp1: plan.tp1, tp2: plan.tp2,
+      invalid: exit.invalid, maxBars: exit.maxBars, horizon: v.horizon,
+      tf: v.tf, openedAt: Date.now(),
+    });
+    renderPos(parseFloat(state.ticker.lastPrice));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showBanner('📌 Guardada. A partir de ahora, arriba del todo te digo en cada momento si <b>MANTENER</b> o <b>CERRAR YA</b>.');
+  };
+}
+
+/* ================= AYUDAS DESPLEGABLES ================= */
+function setupHelp() {
+  document.addEventListener('click', e => {
+    const q = e.target.closest('.q[data-h]');
+    if (!q) return;
+    e.preventDefault(); e.stopPropagation();
+    const host = q.closest('h2, h3') || q.parentNode;
+    const nxt = host.nextElementSibling;
+    // Sólo se cierra la ayuda que abrimos nosotros (.qhelp). Hay cajas .qbox
+    // fijas en la app (avisos de la calculadora) que no deben desaparecer.
+    if (nxt && nxt.classList.contains('qhelp')) { nxt.remove(); q.classList.remove('open'); return; }
+    const box = document.createElement('div');
+    box.className = 'qbox qhelp';
+    box.textContent = q.dataset.h;
+    host.parentNode.insertBefore(box, host.nextSibling);
+    q.classList.add('open');
+  });
+}
+
+/* ================= INIT ================= */
+(async function init() {
+  setupSearch();
+  setupRadar();
+  setupCalc();
+  setupHelp();
+  setupPos();
+  showStatus('<span class="spinner"></span>Conectando con Binance Futures…', 'info');
+  try {
+    await loadSymbols();
+    showStatus(`✅ Conectado: ${state.symbols.length} monedas disponibles. Mira el radar o busca una arriba.`, 'info');
+    setTimeout(hideStatus, 4000);
+    runRadarScan();
+  } catch (e) {
+    const geo = e.status === 451 || e.status === 403;
+    const msg = geo
+      ? '<b>Binance rechazó la conexión (error ' + e.status + ').</b> Binance Futures no acepta conexiones desde EE.UU. ni desde algunas VPN o redes. Abre esta app desde una red de un país donde Binance opere.'
+      : '<b>No se pudo conectar con Binance:</b> ' + (e.message || e) + '. Revisa tu conexión y recarga la página.';
+    showStatus(msg, 'error');
+    $('radarList').innerHTML = '<div class="desc">Radar inactivo: sin conexión con Binance.</div>';
+  }
+})();
+</script>
+</body>
+</html>
