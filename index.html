@@ -69,6 +69,9 @@ header h1 span{color:var(--yellow);}
 .reasons li{padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;
   display:flex;gap:8px;align-items:flex-start;line-height:1.45;}
 .reasons li:last-child{border-bottom:none;}
+.reasons li.secthead{display:block;padding:14px 0 6px;border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--muted);text-transform:none;letter-spacing:.2px;}
+.reasons li.secthead:first-child{padding-top:4px;}
 .dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
 .dot.g{background:var(--green);} .dot.r{background:var(--red);} .dot.n{background:var(--muted);}
 table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -324,10 +327,19 @@ details.ex[open]{border-color:#3a424d;}
       </div>
 
       <details class="ex"><summary>¿De dónde sale esta decisión? (las 4 capas)</summary><div>
-        <div class="desc">La app mira cuatro cosas, en este orden de importancia. Si las dos primeras
-          se contradicen, la respuesta es <b>ESPERAR</b> — nunca te va a dar dos consejos opuestos a la vez.</div>
+        <div class="desc">La dirección la deciden <b>tres</b> cosas: dónde está colocado el dinero grande (45%),
+          la tendencia de 4 horas y diario (30%) y la estructura del gráfico (25%). El radar aparece en la lista
+          pero <b>no vota</b>: sirve para elegir el momento de entrada, no la dirección.
+          Si alguna de las tres va en contra de las otras, la respuesta es <b>ESPERAR</b> — nunca te va a dar
+          dos consejos opuestos a la vez, y nunca va a proponerte operar contra una tendencia grande y clara.</div>
         <div id="vLayers"></div>
       </div></details>
+    </div>
+
+    <!-- COMPROBACIÓN CON DATOS REALES -->
+    <div class="card" id="valCard">
+      <h2>🔬 ¿Ha funcionado esta regla en esta moneda?<span class="q" data-h="Quien programó esta app no puede probarla contra el mercado real: desde donde se escribe el código no hay acceso a Binance. Todas las pruebas de desarrollo corren sobre precios inventados, y eso demuestra que el programa es coherente, no que acierte. Así que la comprobación se hace aquí, en tu teléfono: se recorre el historial real de esta moneda vela a vela y se aplica exactamente la misma regla que da el veredicto de arriba, entrando siempre en la vela siguiente a la señal y usando sólo información que existía en ese momento. Lo que ves es lo que habría pasado.">?</span></h2>
+      <div id="valOut"><div class="desc">Abre una moneda para comprobarla.</div></div>
     </div>
 
     <!-- GRÁFICO -->
@@ -399,7 +411,7 @@ details.ex[open]{border-color:#3a424d;}
         <div id="btBest"></div>
         <div style="overflow-x:auto;">
           <table id="btTable">
-            <thead><tr><th>Estrategia</th><th>Trades</th><th>Aciertos</th><th>PF</th><th>Neto</th><th>DD máx</th><th>Ahora</th></tr></thead>
+            <thead><tr><th>Estrategia</th><th>Trades</th><th>Aciertos</th><th>PF</th><th>Neto</th><th>DD máx</th><th>¿Coincide con el veredicto?</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -411,7 +423,7 @@ details.ex[open]{border-color:#3a424d;}
         <div class="tfreco" id="tfReco"></div>
         <div style="margin-top:12px;overflow-x:auto;">
           <table id="tfTable">
-            <thead><tr><th>Marco</th><th>Sesgo</th><th>Puntaje</th><th>ADX</th><th>RSI</th></tr></thead>
+            <thead><tr><th>Marco</th><th>¿Acompaña al veredicto?</th><th>Puntaje</th><th>ADX</th><th>RSI</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -742,6 +754,7 @@ const state = {
   cg: null, fundamental: null,
   profDump: null, profBump: null,      // perfil de caída / subida del símbolo abierto
   verdict: null, plan: null, exitPlan: null, entryPlan: null, backtest: null,
+  validacion: null,                    // resultado de replicar la regla sobre el historial real
   chart: null, series: {}, priceLines: [],
 };
 
@@ -1038,133 +1051,209 @@ function computeOwnProfiles() {
    Puntúa el contexto fundamental/sentimiento con datos verificables:
    funding, interés abierto, ratio long/short, flujo taker, basis y
    métricas de CoinGecko. Devuelve score en [-1, +1]. */
-function computeFundamental() {
-  const factors = [];
-  const add = (dir, w, name, text) => factors.push({ dir, w, name, text });
-  const p = state.premium, t = state.ticker;
+/* Aquí se separan DOS cosas que antes estaban mezcladas en un solo número, y
+   esa mezcla era una de las causas de que el veredicto saliera siempre a medias.
 
-  if (p && p.lastFundingRate !== undefined) {
-    const fr = parseFloat(p.lastFundingRate) * 100; // % por 8h
-    if (fr >= 0.05) add(-1, 1.2, 'Funding extremo', `Funding ${pct(fr,3)}: los longs pagan carísimo; mercado saturado de largos → riesgo de long squeeze (bajista contrario)`);
-    else if (fr >= 0.012) add(0.5, 0.5, 'Funding positivo', `Funding ${pct(fr,3)}: sesgo alcista moderado del mercado de futuros`);
-    else if (fr <= -0.05) add(1, 1.2, 'Funding muy negativo', `Funding ${pct(fr,3)}: shorts saturados pagando; combustible para short squeeze (alcista contrario)`);
-    else if (fr <= -0.012) add(-0.5, 0.5, 'Funding negativo', `Funding ${pct(fr,3)}: sesgo bajista moderado del mercado`);
-    else add(0, 0.5, 'Funding neutro', `Funding ${pct(fr,3)}: sin presión relevante de ningún lado`);
+   1) DIRECCIÓN (`score`): hacia dónde está empujando el dinero que de verdad
+      mueve el precio. Todo lo que entra aquí es de tipo "seguir al dinero":
+      dónde están posicionadas las ballenas, si están construyendo o soltando,
+      quién está siendo agresivo comprando o vendiendo, si entra dinero nuevo
+      (interés abierto) acompañando al precio, y cómo está el libro de órdenes.
+
+   2) RIESGO DE LATIGAZO (`squeeze`): el funding extremo, el basis recalentado y
+      la multitud minorista amontonada en un lado. Eso NO dice hacia dónde va el
+      precio — dice que si se da la vuelta, se dará la vuelta con violencia.
+
+   Antes los dos grupos se sumaban en el mismo marcador con signos opuestos, así
+   que una moneda subiendo con fuerza (ballenas largas, taker comprador, OI
+   subiendo) se anulaba contra su propio funding positivo y su propia multitud
+   larga, y la capa más pesada del análisis acababa valiendo casi cero. De ahí
+   los "rodeos": el 35% del veredicto no decía nada porque se cancelaba solo. */
+/* Toma DATOS SUELTOS, no el estado global, y a propósito: así la misma función
+   puede puntuar el momento actual y también cualquier momento del pasado. Es lo
+   que permite que el validador mida exactamente la regla que opera, en vez de
+   una parecida.
+   d = { funding %8h, basis %, publico, publicoLong, ballenaNow, ballenaPrev,
+         taker, oiChg %, priceChg %, libro {bid,ask}, cg } */
+function flujoDesdeDatos(d) {
+  const factors = [];
+  const risks = [];
+  // dirección: seguir al dinero grande
+  const add  = (dir, w, name, text) => factors.push({ dir, w, name, text, role: 'direccion' });
+  // riesgo: no marca dirección, sólo avisa de que el suelo está resbaladizo
+  const risk = (dir, w, name, text) => risks.push({ dir, w, name, text, role: 'riesgo' });
+  const num = x => (x === null || x === undefined || !isFinite(x)) ? null : x;
+
+  if (num(d.funding) !== null) {
+    const fr = d.funding; // % por 8h
+    if (fr >= 0.05) risk(-1, 1.2, 'Funding extremo', `Funding ${pct(fr,3)}: los largos pagan carísimo por seguir dentro. Esto no dice que vaya a bajar, dice que si baja será de golpe (limpieza de largos).`);
+    else if (fr >= 0.012) risk(-0.4, 0.5, 'Funding positivo alto', `Funding ${pct(fr,3)}: hay más largos que cortos pagando. Riesgo moderado de sacudida a la baja.`);
+    else if (fr <= -0.05) risk(1, 1.2, 'Funding muy negativo', `Funding ${pct(fr,3)}: los cortos están saturados y pagando. Si esto se gira, se gira hacia arriba y rápido (short squeeze).`);
+    else if (fr <= -0.012) risk(0.4, 0.5, 'Funding negativo', `Funding ${pct(fr,3)}: cortos cargados. Riesgo moderado de rebote violento.`);
   }
-  if (p && p.markPrice && p.indexPrice) {
-    const basis = (parseFloat(p.markPrice) / parseFloat(p.indexPrice) - 1) * 100;
-    if (basis >= 0.4) add(-0.7, 0.6, 'Basis sobrecalentado', `Futuro ${pct(basis,2)} sobre el spot: euforia en derivados, terreno de corrección`);
-    else if (basis >= 0.05) add(0.6, 0.6, 'Basis positivo', `Futuro ${pct(basis,2)} sobre el spot: demanda sana en derivados`);
-    else if (basis <= -0.05) add(-0.6, 0.6, 'Basis negativo', `Futuro ${pct(basis,2)} bajo el spot: pesimismo en derivados`);
+  if (num(d.basis) !== null) {
+    const basis = d.basis;
+    if (basis >= 0.4) risk(-0.7, 0.6, 'Basis sobrecalentado', `El futuro cotiza ${pct(basis,2)} por encima del contado: euforia en derivados. Terreno de sacudidas.`);
+    else if (basis <= -0.4) risk(0.7, 0.6, 'Basis muy negativo', `El futuro cotiza ${pct(basis,2)} por debajo del contado: pánico en derivados. Terreno de rebotes bruscos.`);
+    else if (basis >= 0.05) add(0.4, 0.4, 'Basis positivo', `Futuro ${pct(basis,2)} sobre el contado: demanda sana en derivados, sin llegar a euforia.`);
+    else if (basis <= -0.05) add(-0.4, 0.4, 'Basis negativo', `Futuro ${pct(basis,2)} bajo el contado: oferta en derivados, sin llegar a pánico.`);
   }
-  if (state.lsRatio) {
-    const r = parseFloat(state.lsRatio.longShortRatio);
-    if (r >= 2.2) add(-1, 0.9, 'Multitud en long', `Ratio L/S ${r.toFixed(2)}: demasiadas cuentas en long; históricamente terreno de caídas (contrario)`);
-    else if (r >= 1.5) add(-0.4, 0.9, 'Mayoría long', `Ratio L/S ${r.toFixed(2)}: sesgo largo del público, precaución con longs`);
-    else if (r <= 0.6) add(1, 0.9, 'Multitud en short', `Ratio L/S ${r.toFixed(2)}: exceso de shorts; posible short squeeze (contrario alcista)`);
-    else if (r <= 0.8) add(0.4, 0.9, 'Mayoría short', `Ratio L/S ${r.toFixed(2)}: sesgo corto del público`);
-    else add(0, 0.9, 'Posicionamiento equilibrado', `Ratio L/S ${r.toFixed(2)}: sin extremos de multitud`);
+  /* La multitud minorista NO marca dirección. Que haya mucha gente larga no
+     significa que vaya a bajar: en una subida de verdad la mayoría está larga
+     y sigue subiendo durante días. Lo único que dice es dónde están los stops
+     amontonados, es decir, hacia dónde dolería una sacudida. Por eso pasa a la
+     lista de riesgos y ya no vota. */
+  if (num(d.publico) !== null) {
+    const r = d.publico;
+    const lp = num(d.publicoLong) !== null ? d.publicoLong * 100 : (r / (1 + r)) * 100;
+    if (r >= 2.2) risk(-1, 0.9, 'Multitud amontonada en largo', `${lp.toFixed(0)}% de las cuentas están largas (ratio ${r.toFixed(2)}). Ahí abajo hay una alfombra de stops: si el precio los toca, la caída se acelera sola.`);
+    else if (r >= 1.5) risk(-0.4, 0.5, 'Mayoría en largo', `${lp.toFixed(0)}% de las cuentas largas (ratio ${r.toFixed(2)}): sacudida bajista más probable de lo normal.`);
+    else if (r <= 0.6) risk(1, 0.9, 'Multitud amontonada en corto', `Sólo ${lp.toFixed(0)}% de las cuentas están largas (ratio ${r.toFixed(2)}). Hay combustible para un rebote violento hacia arriba.`);
+    else if (r <= 0.8) risk(0.4, 0.5, 'Mayoría en corto', `${lp.toFixed(0)}% de cuentas largas (ratio ${r.toFixed(2)}): rebote al alza más probable de lo normal.`);
   }
-  // ===== BALLENAS: posicionamiento de los top traders de Binance (top 20% por margen) =====
-  if (state.topPos && state.topPos.length) {
-    const rw = parseFloat(state.topPos[state.topPos.length - 1].longShortRatio);
-    const rw0 = parseFloat(state.topPos[0].longShortRatio);
-    if (rw >= 1.6) add(1, 1.3, '🐋 Ballenas muy largas', `Top traders con ratio ${rw.toFixed(2)} (posiciones): el dinero grande está posicionado al alza`);
-    else if (rw >= 1.15) add(0.5, 1.3, '🐋 Ballenas largas', `Top traders con ratio ${rw.toFixed(2)}: sesgo alcista del dinero grande`);
-    else if (rw <= 0.65) add(-1, 1.3, '🐋 Ballenas muy cortas', `Top traders con ratio ${rw.toFixed(2)}: el dinero grande está posicionado a la baja`);
-    else if (rw <= 0.9) add(-0.5, 1.3, '🐋 Ballenas cortas', `Top traders con ratio ${rw.toFixed(2)}: sesgo bajista del dinero grande`);
-    else add(0, 1.3, '🐋 Ballenas neutrales', `Top traders con ratio ${rw.toFixed(2)}: sin sesgo claro del dinero grande`);
-    if (rw0 > 0) {
+  /* ===== BALLENAS =====
+     Éste es el bloque que manda en la dirección. `topLongShortPositionRatio` es
+     el ratio de POSICIONES (no de cuentas) del 20% de traders con más margen de
+     Binance. Es lo más cerca que se puede estar, con datos públicos, de ver
+     dónde se está colocando el dinero que mueve el precio — y en monedas chicas
+     ese dinero ES el precio. Se le da el peso más alto de todo el motor. */
+  if (num(d.ballenaNow) !== null && d.ballenaNow > 0) {
+    const rw = d.ballenaNow;
+    const rw0 = num(d.ballenaPrev);
+    if (rw >= 1.6) add(1, 2.4, '🐋 Ballenas muy largas', `Los grandes traders tienen ${rw.toFixed(2)} veces más posición larga que corta. El dinero que mueve esta moneda está colocado al alza.`);
+    else if (rw >= 1.15) add(0.5, 2.4, '🐋 Ballenas largas', `Los grandes traders se inclinan al alza (ratio ${rw.toFixed(2)}).`);
+    else if (rw <= 0.65) add(-1, 2.4, '🐋 Ballenas muy cortas', `Los grandes traders tienen ${(1/rw).toFixed(2)} veces más posición corta que larga. El dinero que mueve esta moneda está colocado a la baja.`);
+    else if (rw <= 0.9) add(-0.5, 2.4, '🐋 Ballenas cortas', `Los grandes traders se inclinan a la baja (ratio ${rw.toFixed(2)}).`);
+    else add(0, 1.2, '🐋 Ballenas repartidas', `Los grandes traders están casi empatados (ratio ${rw.toFixed(2)}): no hay bando del dinero grande al que seguir.`);
+    /* El MOVIMIENTO del ratio suele adelantarse al precio más que el nivel:
+       una ballena que está construyendo posición hoy es la que empujará mañana. */
+    if (rw0 !== null && rw0 > 0) {
       const chg = (rw / rw0 - 1) * 100;
-      if (chg >= 12) add(0.6, 0.7, '🐋 Ballenas acumulando', `El ratio de posiciones de top traders subió ${pct(chg,0)} en 24h: están construyendo largos`);
-      else if (chg <= -12) add(-0.6, 0.7, '🐋 Ballenas distribuyendo', `El ratio de posiciones de top traders cayó ${pct(chg,0)} en 24h: están soltando largos / abriendo cortos`);
+      if (chg >= 12) add(1, 1.6, '🐋 Ballenas construyendo largos', `Su posición larga creció ${pct(chg,0)} en las últimas horas: están entrando, no saliendo.`);
+      else if (chg <= -12) add(-1, 1.6, '🐋 Ballenas soltando', `Su posición larga cayó ${pct(chg,0)} en las últimas horas: están saliendo o dándose la vuelta.`);
     }
-    if (state.lsRatio) {
-      const rr = parseFloat(state.lsRatio.longShortRatio);
-      if (rw >= 1.15 && rr <= 0.9) add(1, 1, '🐋 Ballenas contra retail (alcista)', `Top traders largos (${rw.toFixed(2)}) mientras el público está corto (${rr.toFixed(2)}): históricamente gana el dinero grande`);
-      else if (rw <= 0.9 && rr >= 1.4) add(-1, 1, '🐋 Ballenas contra retail (bajista)', `Top traders cortos (${rw.toFixed(2)}) mientras el público está largo (${rr.toFixed(2)}): el retail suele ser la liquidez de salida`);
+    /* Ballenas contra multitud: la configuración más limpia que existe con
+       datos públicos. No porque el minorista "siempre pierda", sino porque
+       cuando los dos grupos están en lados opuestos, los stops del grupo
+       numeroso son la gasolina del movimiento del grupo grande. */
+    if (num(d.publico) !== null) {
+      const rr = d.publico;
+      if (rw >= 1.15 && rr <= 0.9) add(1, 2, '🐋 Ballenas compran lo que la multitud vende', `Los grandes están largos (${rw.toFixed(2)}) mientras el público está corto (${rr.toFixed(2)}). Los stops del público están arriba, y hacia arriba es donde empuja el dinero grande.`);
+      else if (rw <= 0.9 && rr >= 1.4) add(-1, 2, '🐋 Ballenas venden lo que la multitud compra', `Los grandes están cortos (${rw.toFixed(2)}) mientras el público está largo (${rr.toFixed(2)}). Los stops del público están abajo, y hacia abajo es donde empuja el dinero grande.`);
     }
   }
-  // Muro de órdenes: desequilibrio del libro en ±2% del precio
-  if (state.depth && state.depth.bids && state.depth.asks && state.premium) {
-    const mid = parseFloat(state.premium.markPrice);
-    let bid = 0, ask = 0;
-    state.depth.bids.forEach(([p, q]) => { const P = parseFloat(p); if (P >= mid * 0.98) bid += P * parseFloat(q); });
-    state.depth.asks.forEach(([p, q]) => { const P = parseFloat(p); if (P <= mid * 1.02) ask += P * parseFloat(q); });
+  // Muro de órdenes: desequilibrio del libro en ±2% del precio.
+  // El libro NO tiene historial público, así que este factor existe en vivo pero
+  // no en la validación. Está avisado en la tarjeta de validación.
+  if (d.libro) {
+    const bid = d.libro.bid, ask = d.libro.ask;
     if (bid + ask > 0) {
       const imb = (bid - ask) / (bid + ask);
-      if (imb >= 0.25) add(0.7, 0.7, 'Muro comprador', `Libro de órdenes: ${pct(imb*100,0)} más demanda que oferta en ±2% (${fmtUSD(bid)} vs ${fmtUSD(ask)})`);
-      else if (imb <= -0.25) add(-0.7, 0.7, 'Muro vendedor', `Libro de órdenes: ${pct(imb*100,0).replace('+','')} más oferta que demanda en ±2% (${fmtUSD(ask)} vs ${fmtUSD(bid)})`);
-      else add(0, 0.4, 'Libro equilibrado', `Sin muros dominantes en ±2% del precio (${fmtUSD(bid)} compra vs ${fmtUSD(ask)} venta)`);
+      /* Los factores neutros llevan peso mínimo a propósito. El marcador es una
+         media ponderada, así que un factor "sin opinión" con peso 1 no es
+         inocuo: arrastra el resultado hacia cero con toda su fuerza. Varios de
+         ésos juntos bastaban para dejar la capa más importante en nada. */
+      if (imb >= 0.25) add(0.7, 0.7, 'Muro comprador', `En el libro hay ${pct(imb*100,0)} más dinero comprando que vendiendo cerca del precio (${fmtUSD(bid)} contra ${fmtUSD(ask)}).`);
+      else if (imb <= -0.25) add(-0.7, 0.7, 'Muro vendedor', `En el libro hay ${pct(-imb*100,0)} más dinero vendiendo que comprando cerca del precio (${fmtUSD(ask)} contra ${fmtUSD(bid)}).`);
+      else add(0, 0.15, 'Libro equilibrado', `Sin muros dominantes cerca del precio (${fmtUSD(bid)} compra contra ${fmtUSD(ask)} venta).`);
     }
   }
-  if (state.taker && state.taker.buySellRatio) {
-    const b = parseFloat(state.taker.buySellRatio);
-    if (b >= 1.08) add(1, 0.8, 'Flujo comprador agresivo', `Taker buy/sell ${b.toFixed(2)}: las órdenes de mercado están comprando con agresividad (flujo real alcista)`);
-    else if (b <= 0.92) add(-1, 0.8, 'Flujo vendedor agresivo', `Taker buy/sell ${b.toFixed(2)}: las órdenes de mercado están vendiendo con agresividad (flujo real bajista)`);
-    else add(0, 0.8, 'Flujo taker equilibrado', `Taker buy/sell ${b.toFixed(2)}: sin dominio claro de compras o ventas de mercado`);
+  if (num(d.taker) !== null && d.taker > 0) {
+    const b = d.taker;
+    if (b >= 1.08) add(1, 1.4, 'Compra agresiva', `Por cada moneda vendida a mercado se compran ${b.toFixed(2)}. Alguien está pagando el precio de oferta con prisa, y eso es dinero real entrando al alza.`);
+    else if (b <= 0.92) add(-1, 1.4, 'Venta agresiva', `Por cada moneda comprada a mercado se venden ${(1/b).toFixed(2)}. Alguien está soltando con prisa.`);
+    else add(0, 0.15, 'Flujo equilibrado', `Compras y ventas a mercado casi empatadas (${b.toFixed(2)}).`);
   }
-  if (state.oiHist && state.oiHist.length > 1 && t) {
-    const first = parseFloat(state.oiHist[0].sumOpenInterest);
-    const lastV = parseFloat(state.oiHist[state.oiHist.length-1].sumOpenInterest);
-    const chg = first > 0 ? (lastV/first - 1) * 100 : 0;
-    const pchg = parseFloat(t.priceChangePercent);
-    if (chg > 1.5 && pchg > 0.5) add(1, 1, 'OI confirma la subida', `Interés abierto ${pct(chg,1)} con precio subiendo: entra dinero nuevo al alza (alcista)`);
-    else if (chg > 1.5 && pchg < -0.5) add(-1, 1, 'OI confirma la caída', `Interés abierto ${pct(chg,1)} con precio cayendo: se están abriendo shorts con convicción (bajista)`);
-    else if (chg < -1.5) add(0, 1, 'OI cayendo', `Interés abierto ${pct(chg,1)}: se cierran posiciones; el movimiento actual tiene poca convicción`);
-    else add(0, 0.5, 'OI estable', `Interés abierto ${pct(chg,1)} en 24h: sin cambios relevantes de posicionamiento`);
+  /* Interés abierto contra precio. Es la diferencia entre "sube porque entra
+     dinero nuevo" y "sube porque están cerrando cortos". Lo primero dura; lo
+     segundo se agota solo. Se compara la misma ventana en los dos: 24 h. */
+  if (num(d.oiChg) !== null && num(d.priceChg) !== null) {
+    const chg = d.oiChg, pchg = d.priceChg;
+    if (chg > 1.5 && pchg > 0.5) add(1, 1.5, 'Dinero nuevo entrando al alza', `El interés abierto sube ${pct(chg,1)} y el precio también (${pct(pchg,1)} en 24 h): se están abriendo posiciones largas nuevas, no cerrando cortas. Esto es lo que sostiene una subida.`);
+    else if (chg > 1.5 && pchg < -0.5) add(-1, 1.5, 'Dinero nuevo entrando a la baja', `El interés abierto sube ${pct(chg,1)} mientras el precio cae ${pct(pchg,1)}: se están abriendo cortos con convicción, no cerrando largos.`);
+    else if (chg < -1.5) risk(0, 0.8, 'Se están cerrando posiciones', `El interés abierto cae ${pct(chg,1)}: el movimiento de ahora es gente saliendo, no entrando. Este tipo de movimiento se agota solo y suele darse la vuelta.`);
+    else add(0, 0.15, 'Posicionamiento estable', `El interés abierto apenas cambia (${pct(chg,1)} en 24 h).`);
   }
-  if (state.cg && state.cg.market_data) {
-    const m = state.cg.market_data;
-    const p30 = m.price_change_percentage_30d, p7 = m.price_change_percentage_7d;
+  /* Los datos de CoinGecko son de fondo: hablan de semanas, y aquí se está
+     decidiendo una operación de horas. Pesan poco a propósito. Antes pesaban
+     casi lo mismo que las ballenas, y eso significaba que la dilución de un
+     token podía torcer una señal de 15 minutos. */
+  if (d.cg && d.cg.market_data) {
+    const m = d.cg.market_data;
+    const p30 = m.price_change_percentage_30d;
     if (p30 !== null && p30 !== undefined) {
-      if (p30 >= 20) add(0.6, 0.6, 'Momentum 30d fuerte', `${pct(p30,1)} en 30 días: flujo de capital sostenido hacia el activo`);
-      else if (p30 <= -25) add(-0.6, 0.6, 'Sangría de 30 días', `${pct(p30,1)} en 30 días: salida sostenida de capital`);
-      else add(0, 0.3, 'Momentum 30d moderado', `${pct(p30,1)} en 30 días`);
+      if (p30 >= 20) add(0.6, 0.35, 'Momentum de 30 días fuerte', `${pct(p30,1)} en 30 días: entra capital de forma sostenida.`);
+      else if (p30 <= -25) add(-0.6, 0.35, 'Sangría de 30 días', `${pct(p30,1)} en 30 días: sale capital de forma sostenida.`);
+      else add(0, 0.1, 'Momentum de 30 días moderado', `${pct(p30,1)} en 30 días.`);
     }
     const mc = m.market_cap && m.market_cap.usd, fdv = m.fully_diluted_valuation && m.fully_diluted_valuation.usd;
-    if (mc && fdv && fdv/mc >= 3) add(-0.5, 0.5, 'Dilución alta', `FDV ${(fdv/mc).toFixed(1)}× el market cap: quedan muchos tokens por desbloquear, presión vendedora estructural`);
+    if (mc && fdv && fdv/mc >= 3) add(-0.5, 0.3, 'Dilución alta', `El valor totalmente diluido es ${(fdv/mc).toFixed(1)} veces la capitalización: quedan muchos tokens por desbloquear, y eso es presión vendedora de fondo.`);
     const athChg = m.ath_change_percentage && m.ath_change_percentage.usd;
-    if (athChg !== null && athChg !== undefined && athChg <= -85) add(-0.3, 0.4, 'Muy lejos del ATH', `${pct(athChg,1)} desde su máximo: el mercado le ha retirado la confianza (o es muy especulativo)`);
+    if (athChg !== null && athChg !== undefined && athChg <= -85) add(-0.3, 0.25, 'Muy lejos de su máximo', `${pct(athChg,1)} desde su máximo histórico.`);
   }
-  if (!factors.length) return null;
+  if (!factors.length && !risks.length) return null;
+
+  /* DIRECCIÓN: media ponderada sólo de los factores que siguen al dinero. */
   const wSum = factors.reduce((a,f) => a + f.w, 0);
-  const score = factors.reduce((a,f) => a + f.dir * f.w, 0) / wSum;
-  return { score, factors, hasCG: !!(state.cg && state.cg.market_data) };
+  const score = wSum > 0 ? factors.reduce((a,f) => a + f.dir * f.w, 0) / wSum : 0;
+
+  /* RIESGO DE LATIGAZO: mismo formato, pero su significado es otro. El signo
+     dice hacia dónde sería el tirón si el mercado se da la vuelta, y la
+     magnitud dice cómo de cargado está el resorte. No vota la dirección: sólo
+     puede quitar confianza, o frenar una entrada que vaya justo contra él. */
+  const rSum = risks.reduce((a,f) => a + f.w, 0);
+  const squeeze = rSum > 0 ? risks.reduce((a,f) => a + f.dir * f.w, 0) / rSum : 0;
+
+  /* ¿Ha llegado el dato de las ballenas? Es la pieza que manda; si falta, el
+     resto de la capa vale mucho menos y hay que decirlo en vez de disimularlo. */
+  const whaleOk = num(d.ballenaNow) !== null && d.ballenaNow > 0;
+
+  return { score, squeeze, factors, risks, whaleOk, rSum,
+           hasCG: !!(d.cg && d.cg.market_data) };
 }
 
-/* ================= MOTOR DE SEÑALES =================
-   Confluencia: tendencia (EMA20/50/200) + momentum (RSI, MACD)
-   + fuerza (ADX) + volumen. Solo velas CERRADAS. */
-function analyzeTF(candles) {
-  if (!candles || candles.length < 60) return null;
-  const closed = candles.slice(0, -1); // descarta la vela en curso
-  const c = closed.map(x=>x.close), h = closed.map(x=>x.high),
-        l = closed.map(x=>x.low), v = closed.map(x=>x.volume);
-  const n = c.length;
-  const emaLongP = n >= 210 ? 200 : 100; // pares nuevos con poco historial
-  const e20 = emaArr(c,20), e50 = emaArr(c,50), eL = emaArr(c,emaLongP);
-  const rsi = rsiArr(c,14), macd = macdArr(c), atr = atrArr(h,l,c,14);
-  const { adx, pdi, mdi } = adxArr(h,l,c,14);
-  const volS = smaArr(v,20);
-  const frama = framaArr(h,l,c,16);
-  const st = supertrendArr(h,l,c,10,3);
+/* Recoge del estado global lo que hay AHORA y se lo pasa a la función de
+   arriba. Es el único sitio que sabe de dónde salen los datos en vivo. */
+function computeFundamental() {
+  const p = state.premium, t = state.ticker;
+  let libro = null;
+  if (state.depth && state.depth.bids && state.depth.asks && p) {
+    const mid = parseFloat(p.markPrice);
+    let bid = 0, ask = 0;
+    state.depth.bids.forEach(([px, q]) => { const P = parseFloat(px); if (P >= mid * 0.98) bid += P * parseFloat(q); });
+    state.depth.asks.forEach(([px, q]) => { const P = parseFloat(px); if (P <= mid * 1.02) ask += P * parseFloat(q); });
+    libro = { bid, ask };
+  }
+  let oiChg = null;
+  if (state.oiHist && state.oiHist.length > 1) {
+    const a0 = parseFloat(state.oiHist[0].sumOpenInterest);
+    const a1 = parseFloat(state.oiHist[state.oiHist.length - 1].sumOpenInterest);
+    if (a0 > 0) oiChg = (a1 / a0 - 1) * 100;
+  }
+  const top = state.topPos;
+  return flujoDesdeDatos({
+    funding: p && p.lastFundingRate !== undefined ? parseFloat(p.lastFundingRate) * 100 : null,
+    basis: p && p.markPrice && p.indexPrice
+      ? (parseFloat(p.markPrice) / parseFloat(p.indexPrice) - 1) * 100 : null,
+    publico: state.lsRatio ? parseFloat(state.lsRatio.longShortRatio) : null,
+    publicoLong: state.lsRatio ? parseFloat(state.lsRatio.longAccount) : null,
+    ballenaNow: top && top.length ? parseFloat(top[top.length - 1].longShortRatio) : null,
+    ballenaPrev: top && top.length > 1 ? parseFloat(top[0].longShortRatio) : null,
+    taker: state.taker && state.taker.buySellRatio ? parseFloat(state.taker.buySellRatio) : null,
+    oiChg,
+    priceChg: t ? parseFloat(t.priceChangePercent) : null,
+    libro,
+    cg: state.cg,
+  });
+}
 
-  const L = { close: c[n-1], e20: last(e20), e50: last(e50), eL: last(eL),
-    rsi: last(rsi), macdLine: last(macd.line), macdSig: last(macd.signal),
-    hist: macd.hist[n-1], histPrev: macd.hist[n-2],
-    atr: last(atr), adx: last(adx), pdi: last(pdi), mdi: last(mdi),
-    vol: v[n-1], volAvg: volS[n-1], candleDir: Math.sign(c[n-1] - closed[n-1].open),
-    frama: last(frama), stTrend: last(st.trend), stLine: last(st.line) };
-
-  // ATR 0 (moneda parada, o con todas las velas idénticas) no es un dato
-  // válido: el stop saldría pegado a la entrada, el riesgo sería 0 y todo lo
-  // que se divide por él daría NaN o Infinity. Se descarta como dato ausente.
-  if (L.e20 === null || L.rsi === null || !L.atr || !isFinite(L.atr)) return null;
-
+/* Los votos de estructura viven en su propia función porque hacen falta en dos
+   sitios: en el análisis del momento actual y, uno por uno, en el validador que
+   replica la regla sobre el pasado. Igual que con decidirDireccion(), tener dos
+   copias significaría medir una regla distinta de la que opera. */
+function votosEstructura(L, emaLongP) {
   const votes = [];
   const add = (dir, w, name, text) => votes.push({ dir, w, name, text });
-
   if (L.eL !== null) {
     const d = L.close > L.eL ? 1 : -1;
     add(d, 1, `Precio vs EMA ${emaLongP}`,
@@ -1210,6 +1299,40 @@ function analyzeTF(candles) {
       conf ? `Última vela cerró ${L.candleDir>0?'alcista':'bajista'} con volumen sobre su promedio de 20 → movimiento con respaldo`
            : 'Volumen por debajo del promedio → sin confirmación de volumen');
   }
+
+  return votes;
+}
+
+/* ================= MOTOR DE SEÑALES =================
+   Confluencia: tendencia (EMA20/50/200) + momentum (RSI, MACD)
+   + fuerza (ADX) + volumen. Solo velas CERRADAS. */
+function analyzeTF(candles) {
+  if (!candles || candles.length < 60) return null;
+  const closed = candles.slice(0, -1); // descarta la vela en curso
+  const c = closed.map(x=>x.close), h = closed.map(x=>x.high),
+        l = closed.map(x=>x.low), v = closed.map(x=>x.volume);
+  const n = c.length;
+  const emaLongP = n >= 210 ? 200 : 100; // pares nuevos con poco historial
+  const e20 = emaArr(c,20), e50 = emaArr(c,50), eL = emaArr(c,emaLongP);
+  const rsi = rsiArr(c,14), macd = macdArr(c), atr = atrArr(h,l,c,14);
+  const { adx, pdi, mdi } = adxArr(h,l,c,14);
+  const volS = smaArr(v,20);
+  const frama = framaArr(h,l,c,16);
+  const st = supertrendArr(h,l,c,10,3);
+
+  const L = { close: c[n-1], e20: last(e20), e50: last(e50), eL: last(eL),
+    rsi: last(rsi), macdLine: last(macd.line), macdSig: last(macd.signal),
+    hist: macd.hist[n-1], histPrev: macd.hist[n-2],
+    atr: last(atr), adx: last(adx), pdi: last(pdi), mdi: last(mdi),
+    vol: v[n-1], volAvg: volS[n-1], candleDir: Math.sign(c[n-1] - closed[n-1].open),
+    frama: last(frama), stTrend: last(st.trend), stLine: last(st.line) };
+
+  // ATR 0 (moneda parada, o con todas las velas idénticas) no es un dato
+  // válido: el stop saldría pegado a la entrada, el riesgo sería 0 y todo lo
+  // que se divide por él daría NaN o Infinity. Se descarta como dato ausente.
+  if (L.e20 === null || L.rsi === null || !L.atr || !isFinite(L.atr)) return null;
+
+  const votes = votosEstructura(L, emaLongP);
 
   const score = votes.reduce((a,x) => a + x.dir*x.w, 0);
   const maxScore = votes.reduce((a,x) => a + x.w, 0);
@@ -2115,10 +2238,14 @@ async function scanMoves(side, opts = {}) {
   // --- Etapa 2 ---
   const full = await Promise.all(short.map(async ({ t }) => {
     try {
-      const [k15, oiH, top] = await Promise.all([
+      const [k15, oiH, top, k4h, tak] = await Promise.all([
         fetchJSON(`${FAPI}/fapi/v1/klines?symbol=${t.symbol}&interval=15m&limit=700`).then(parseKlines),
         fetchJSON(`${FAPI}/futures/data/openInterestHist?symbol=${t.symbol}&period=15m&limit=17`).catch(() => null),
         fetchJSON(`${FAPI}/futures/data/topLongShortPositionRatio?symbol=${t.symbol}&period=15m&limit=17`).catch(() => null),
+        // hace falta la tendencia mayor: sin ella el radar seguiría proponiendo
+        // cortos en monedas que suben, que es de donde venía el problema
+        fetchJSON(`${FAPI}/fapi/v1/klines?symbol=${t.symbol}&interval=4h&limit=300`).then(parseKlines).catch(() => null),
+        fetchJSON(`${FAPI}/futures/data/takerlongshortRatio?symbol=${t.symbol}&period=15m&limit=2`).catch(() => null),
       ]);
       let oiChg = null;
       if (Array.isArray(oiH) && oiH.length > 1) {
@@ -2135,20 +2262,64 @@ async function scanMoves(side, opts = {}) {
       const ctx = { funding: fundMap[t.symbol] ?? null, oiChg, priceChg4h, whaleNow, whalePrev };
       const prof = moveProfile(k15, side, ctx, true);
       if (!prof) return null;
+
+      /* EL RADAR PASA POR LA MISMA PUERTA QUE EL VEREDICTO.
+         Antes esta lista salía sólo del gatillo de agotamiento, así que
+         proponía cortos precisamente en las monedas que más habían subido y
+         largos en las que más se habían desplomado. Es la misma raíz del
+         problema que el veredicto ya tiene arreglada, y había que arreglarla
+         también aquí: esta lista es de donde salen las entradas y de donde
+         saldrán los avisos al teléfono. Si una moneda no pasaría el filtro de
+         dirección, no tiene por qué aparecer como oportunidad. */
+      const a4 = k4h ? analyzeTF(k4h) : null;
+      const a15 = analyzeTF(k15);
+      const trendOf = x => {
+        if (!x || x.L.eL === null) return null;
+        let v = x.L.close > x.L.eL ? 0.6 : -0.6;
+        if (x.L.e20 !== null && x.L.e50 !== null) v += (x.L.e20 > x.L.e50 ? 0.4 : -0.4);
+        return Math.max(-1, Math.min(1, v));
+      };
+      const big = trendOf(a4);
+      const tech = a15 ? a15.score / a15.maxScore : 0;
+      const takerNow = Array.isArray(tak) && tak.length
+        ? parseFloat(tak[tak.length - 1].buySellRatio) : null;
+      const flujo = flujoDesdeDatos({
+        funding: fundMap[t.symbol] ?? null, basis: null, publico: null, publicoLong: null,
+        ballenaNow: whaleNow, ballenaPrev: whalePrev, taker: takerNow,
+        oiChg, priceChg: priceChg4h, libro: null, cg: null,
+      });
+      const D = decidirDireccion({
+        big: big ?? 0, bigOk: big !== null,
+        flow: flujo ? flujo.score : 0, flowOk: !!flujo, whaleOk: !!(flujo && flujo.whaleOk),
+        squeeze: flujo ? flujo.squeeze : 0, rSum: flujo ? flujo.rSum : 0,
+        tech, corto: tech,
+      });
+      // el lado que pide el radar (caída = -1, subida = +1) tiene que coincidir
+      const quiere = side < 0 ? 'SHORT' : 'LONG';
+
       return {
         symbol: t.symbol, price: parseFloat(t.lastPrice),
         chg24: parseFloat(t.priceChangePercent), ...prof,
+        direccionOk: D.action === quiere,
+        direccionMotivo: D.razones[0] || null,
+        direccionConf: D.conf,
       };
     } catch (e) { return null; }
   }));
 
   const rank = k => k === 'sostenido' ? 2 : k === 'medio' ? 1 : 0;
-  const out = full.filter(Boolean)
-    .filter(r => r.trigger >= 42 && r.kind !== 'ninguno')
+  const analizadas = full.filter(Boolean);
+  const conGatillo = analizadas.filter(r => r.trigger >= 42 && r.kind !== 'ninguno');
+  const out = conGatillo
+    // el momento lo pone el gatillo, pero la DIRECCIÓN tiene que pasar el filtro
+    .filter(r => r.direccionOk)
     // primero los que pueden durar (es lo que pidió el usuario), luego los calientes
     .sort((a, b) => (rank(b.kind) - rank(a.kind)) ||
       ((b.trigger * 0.55 + b.persist * 0.45) - (a.trigger * 0.55 + a.persist * 0.45)))
     .slice(0, 5);
+  // cuántas se cayeron por dirección: se enseña, porque un radar vacío tiene que
+  // poder explicarse ("había candidatas, pero ninguna en la dirección correcta")
+  out.descartadas = conGatillo.length - conGatillo.filter(r => r.direccionOk).length;
   /* Cuántas monedas se llegaron a analizar de verdad. Cada fetch individual
      está envuelto en su propio try/catch, así que si fallan TODOS esta función
      devolvía [] sin lanzar error y la pantalla pintaba un verde tranquilizador
@@ -2162,10 +2333,65 @@ async function scanMoves(side, opts = {}) {
 }
 
 /* =====================================================================
+   EL NÚCLEO DE LA DECISIÓN
+   Una función pura: entran números, sale una dirección. Está separada del
+   resto a propósito, porque hay DOS sitios que tienen que usar exactamente
+   la misma regla:
+     · buildVerdict(), que decide lo que se ve ahora en pantalla
+     · validarRegla(), que replica la regla sobre el pasado real de la
+       moneda para medir si acierta
+   Si cada uno tuviera su copia, la medición acabaría midiendo una regla
+   distinta de la que opera — que es la peor forma posible de mentirse.
+
+   PESOS: tendencia 30, dinero grande 45, estructura de precio 25. El radar
+   de agotamiento no aparece aquí porque no decide dirección.
+   ===================================================================== */
+const PESOS = { tendencia: 0.30, dinero: 0.45, estructura: 0.25 };
+
+function decidirDireccion(x) {
+  const capas = [
+    { k: 'tendencia',  v: x.big,  w: PESOS.tendencia,  ok: x.bigOk },
+    { k: 'dinero',     v: x.flow, w: PESOS.dinero,     ok: x.flowOk },
+    { k: 'estructura', v: x.tech, w: PESOS.estructura, ok: true },
+  ];
+  const okW = capas.filter(c => c.ok).reduce((s, c) => s + c.w, 0);
+  const total = okW > 0 ? capas.filter(c => c.ok).reduce((s, c) => s + c.v * c.w, 0) / okW : 0;
+  const razones = [];
+  if (okW < 0.5) return { action: 'ESPERAR', total: 0, conf: 0, razones: ['sin-datos'], okW };
+
+  const lado = total > 0 ? 1 : -1;
+
+  // sin el dato de las ballenas no hay dirección que dar
+  if (x.flowOk && !x.whaleOk) razones.push('sin-ballenas');
+  // nunca contra una tendencia mayor clara
+  if (x.bigOk && Math.abs(x.big) >= 0.45 && Math.sign(x.big) !== lado && Math.abs(total) >= 0.18)
+    razones.push('veto-tendencia');
+  // giro corto dentro de una tendencia grande = respiro, no cambio
+  if (x.bigOk && x.corto !== null && Math.abs(x.big) >= 0.45 &&
+      Math.abs(x.corto) >= 0.30 && Math.sign(x.corto) === -Math.sign(x.big))
+    razones.push('rebote');
+  // capas enfrentadas
+  if (Math.abs(total) >= 0.18 &&
+      capas.some(c => c.ok && Math.abs(c.v) >= 0.30 && Math.sign(c.v) === -lado))
+    razones.push('division');
+  // resorte cargado en contra
+  const latigazo = Math.abs(x.squeeze) >= 0.5 && Math.sign(x.squeeze) === -lado;
+  if (latigazo && x.rSum >= 1.5 && Math.abs(x.squeeze) >= 0.75 && Math.abs(total) >= 0.22)
+    razones.push('resorte');
+
+  if (razones.length) return { action: 'ESPERAR', total, conf: 0, razones, okW, latigazo };
+  if (Math.abs(total) < 0.22) return { action: 'ESPERAR', total, conf: 0, razones: ['debil'], okW, latigazo };
+
+  let conf = Math.min(92, Math.round(30 + Math.abs(total) * 85));
+  if (latigazo) conf = Math.max(35, Math.round(conf * 0.75));
+  return { action: lado > 0 ? 'LONG' : 'SHORT', total, conf, razones: [], okW, latigazo };
+}
+
+/* =====================================================================
    VEREDICTO ÚNICO
-   Una sola respuesta. Cuatro capas con jerarquía explícita; si las dos
-   primeras se contradicen el resultado es ESPERAR, no dos consejos
-   opuestos. Nada en la pantalla puede decir algo distinto a esto.
+   Una sola respuesta. Las capas tienen jerarquía explícita y basta con que
+   una puerta se cierre para que el resultado sea ESPERAR, en vez de dos
+   consejos opuestos. Nada en la pantalla puede decir algo distinto a esto.
    ===================================================================== */
 function buildVerdict(tf) {
   const a = state.analyses[tf];
@@ -2192,40 +2418,54 @@ function buildVerdict(tf) {
     ok: (t4 !== null || td !== null),
     help: 'Manda sobre todo lo demás. Operar en su contra sólo funciona en operaciones muy cortas.' });
 
-  // Capa 2 — flujos reales: ballenas, funding, interés abierto, libro
+  // Capa 2 — el dinero grande. Es la que manda en la dirección.
   const f = state.fundamental;
   const flow = f ? f.score : 0;
-  layers.push({ key: 'flujos', name: 'Dinero real (ballenas, funding, interés abierto, libro)', w: 0.35,
-    v: flow, txt: f ? (flow > 0.15 ? 'El dinero grande y los flujos empujan al ALZA'
-                     : flow < -0.15 ? 'El dinero grande y los flujos empujan a la BAJA'
-                     : 'Los flujos están repartidos, sin bando ganador')
-                   : 'sin datos de flujos — esta capa no cuenta',
+  const squeeze = f ? f.squeeze : 0;
+  layers.push({ key: 'flujos', name: 'Dinero grande (ballenas, flujo agresivo, interés abierto, libro)', w: 0.45,
+    v: flow, txt: !f ? 'sin datos del dinero grande — esta capa no cuenta'
+                 : !f.whaleOk ? 'no llegó el dato de las ballenas: esta capa va coja'
+                 : flow > 0.15 ? 'El dinero grande está colocado al ALZA'
+                 : flow < -0.15 ? 'El dinero grande está colocado a la BAJA'
+                 : 'El dinero grande está repartido, sin bando claro',
     ok: !!f,
-    help: 'Cómo están posicionados los que mueven el precio de verdad.' });
+    help: 'Dónde se está posicionando quien mueve el precio de verdad. En monedas pequeñas, ese dinero ES el precio.' });
 
-  // Capa 3 — radar del propio símbolo (dump vs bump)
-  let radar = 0, radarTxt = 'sin señal de movimiento inminente', prof = null;
+  /* Capa 3 — el radar.
+     ¡OJO! Esta capa tiene peso CERO en la dirección, y es deliberado.
+
+     El gatillo del radar es un detector de AGOTAMIENTO: para anunciar una caída
+     espera a que la moneda esté sobrecomprada y estirada hacia arriba. Eso
+     responde a "¿es buen momento?", no a "¿hacia dónde va?". Mientras votó
+     dirección con un 20% del peso, la app se volvía más bajista cuanto más
+     subía una moneda — y como además chocaba con la tendencia, saltaba el freno
+     de señal cruzada y el veredicto salía ESPERAR justo en las tendencias más
+     limpias. Resultado: la app sólo hablaba cuando el mercado estaba revuelto.
+
+     Ahora el radar hace sólo aquello para lo que sirve: elegir el MOMENTO de
+     entrada (ver `entryWhen`) y alimentar las listas de caídas y subidas. */
+  let radarTxt = 'sin señal de movimiento inminente', prof = null;
   const pd = state.profDump, pb = state.profBump;
   if (pd && pb) {
-    const dv = pd.trigger >= 42 ? -(pd.trigger / 100) * (0.5 + pd.persist / 200) : 0;
-    const bv = pb.trigger >= 42 ?  (pb.trigger / 100) * (0.5 + pb.persist / 200) : 0;
-    radar = Math.max(-1, Math.min(1, dv + bv));
-    prof = Math.abs(dv) >= Math.abs(bv) ? pd : pb;
-    if (Math.abs(radar) < 0.2) radarTxt = 'sin movimiento inminente detectado';
-    else radarTxt = `${prof.kindLabel} detectada (gatillo ${Math.round(prof.trigger)}, aguante ${Math.round(prof.persist)})`;
+    const dScore = pd.trigger >= 42 ? pd.trigger : 0;
+    const bScore = pb.trigger >= 42 ? pb.trigger : 0;
+    prof = dScore >= bScore ? pd : pb;
+    radarTxt = (dScore || bScore)
+      ? `${prof.kindLabel} detectada (gatillo ${Math.round(prof.trigger)}, aguante ${Math.round(prof.persist)}). Sirve para el momento de entrada, no para decidir la dirección.`
+      : 'sin movimiento inminente detectado';
   }
-  layers.push({ key: 'radar', name: 'Radar de movimiento inmediato', w: 0.20, v: radar, txt: radarTxt,
-    ok: !!(pd && pb),
-    help: 'Detecta el momento de entrada. Sirve para el "cuándo", no para el "hacia dónde".' });
+  layers.push({ key: 'radar', name: 'Radar de movimiento inmediato', w: 0, v: 0, txt: radarTxt,
+    ok: !!(pd && pb), noVota: true,
+    help: 'Decide CUÁNDO entrar, nunca HACIA DÓNDE. Por eso no puntúa en el veredicto.' });
 
-  // Capa 4 — técnico del marco elegido (sólo confirma)
+  // Capa 4 — estructura de precio del marco elegido
   const tech = a.score / a.maxScore;
-  layers.push({ key: 'tecnico', name: `Indicadores de ${TF_LABEL[tf]}`, w: 0.15, v: tech,
-    txt: tech > 0.2 ? 'Los indicadores del gráfico acompañan al alza'
-       : tech < -0.2 ? 'Los indicadores del gráfico acompañan a la baja'
-       : 'Los indicadores del gráfico están indecisos',
+  layers.push({ key: 'tecnico', name: `Estructura de precio en ${TF_LABEL[tf]}`, w: 0.25, v: tech,
+    txt: tech > 0.2 ? 'La estructura del gráfico acompaña al alza'
+       : tech < -0.2 ? 'La estructura del gráfico acompaña a la baja'
+       : 'La estructura del gráfico está indecisa',
     ok: true,
-    help: 'Confirmación. Nunca decide la dirección por sí solo.' });
+    help: 'Medias, momentum y fuerza de tendencia. Confirma o desmiente al dinero; nunca decide solo.' });
 
   /* Una capa sin datos NO es una capa neutra. Antes, si fallaba la petición de
      flujos, esa capa valía 0 y seguía pesando su 35% completo: el dato ausente
@@ -2237,41 +2477,91 @@ function buildVerdict(tf) {
     ? layers.filter(x => x.ok).reduce((s, x) => s + x.v * x.w, 0) / okW
     : 0;
 
-  // ---- Resolución de conflictos: una sola salida ----
+  /* ---- De aquí sale UNA respuesta ----
+     La regla de fondo cambió. Antes se sumaba todo y se miraba el signo, de
+     modo que casi cualquier combinación producía un LONG o un SHORT. Ahora hay
+     que superar una serie de puertas, y basta con que una se cierre para que la
+     respuesta sea ESPERAR. Son menos señales a propósito: la app tiene que
+     hablar cuando sabe algo, no cuando le toca decir algo. */
   const conflicts = [];
-  // Con menos de la mitad del análisis disponible no se opina. Un fallo de
-  // datos tiene que FRENAR la app, no soltarle los frenos.
+  const LT = layers[0], LD = layers[1], LE = layers[3];   // tendencia, dinero, estructura
+
+  /* La decisión la toma decidirDireccion(), que es la MISMA función que usa el
+     validador para replicar la regla sobre el pasado. Aquí sólo se traduce cada
+     motivo a una frase que se pueda leer. Si esto volviera a decidir por su
+     cuenta, la app operaría con una regla y mediría otra. */
+  const a15 = state.analyses['15m'];
+  const corto = a15 ? a15.score / a15.maxScore : null;
+  const D = decidirDireccion({
+    big, bigOk: LT.ok, flow, flowOk: LD.ok, whaleOk: !!(f && f.whaleOk),
+    squeeze, rSum: f ? f.rSum : 0, tech, corto,
+  });
+
+  // PUERTA 0 — ¿hay con qué opinar?
   if (okW < 0.5) {
-    const faltan = layers.filter(x => !x.ok).map(x => x.name.toLowerCase());
+    const faltan = layers.filter(x => !x.ok && x.w > 0).map(x => x.name.toLowerCase());
     return {
       action: 'ESPERAR', horizon: null, conf: 0, total: 0, layers,
       conflicts: [`Faltan datos de ${faltan.join(' y ')}. Con menos de la mitad del análisis disponible no se puede dar un veredicto: no es que el mercado esté neutro, es que no se ha podido mirar. Refresca en un momento.`],
-      why: [], prof: null, tf,
+      why: [], prof: null, tf, squeeze,
     };
   }
-  // Aunque quede análisis suficiente, si falta alguna capa hay que decirlo:
-  // el veredicto se ha calculado con menos información de la normal.
-  const faltantes = layers.filter(x => !x.ok);
+  const faltantes = layers.filter(x => !x.ok && x.w > 0);
   if (faltantes.length)
     conflicts.push(`No se pudieron traer los datos de ${faltantes.map(x => x.name.toLowerCase()).join(' ni de ')}. El veredicto está calculado sólo con las capas que sí hay, así que fíate menos de lo normal.`);
-  const L1 = layers[0], L2 = layers[1], L4 = layers[3];
-  if (Math.abs(L1.v) >= 0.35 && Math.abs(L2.v) >= 0.30 && Math.sign(L1.v) !== Math.sign(L2.v))
-    conflicts.push(`${L1.txt.toLowerCase()}, pero ${L2.txt.toLowerCase()}. Cuando la tendencia grande y el dinero van en sentidos opuestos, lo rentable es no operar.`);
-  if (prof && prof.trigger >= 55 && Math.abs(total) >= 0.18 &&
-      Math.sign(prof.side) !== Math.sign(total) && prof.kind !== 'ninguno')
-    conflicts.push(`El radar detecta ${prof.kindLabel.toLowerCase()} justo en contra del resto del análisis. Señal cruzada: mejor esperar a que se aclare.`);
 
-  let action, horizon = null, why = [], conf;
-  if (conflicts.length) {
-    action = 'ESPERAR';
-    conf = 0;
-  } else if (Math.abs(total) < 0.18) {
-    action = 'ESPERAR'; conf = 0;
-    conflicts.push('Ninguna capa tiene una ventaja clara: el mercado está indeciso en esta moneda. No operar también es una decisión.');
-  } else {
-    action = total > 0 ? 'LONG' : 'SHORT';
-    conf = Math.min(92, Math.round(35 + Math.abs(total) * 90));
-    const sideNum = total > 0 ? 1 : -1;
+  /* PUERTA 1 — sin ballenas no hay dirección.
+     Toda la reescritura se apoya en saber dónde está el dinero grande. Si ese
+     dato concreto no llegó, lo honesto no es opinar con lo que queda: es decir
+     que falta la pieza principal. */
+  if (f && !f.whaleOk)
+    conflicts.push('No llegó el dato de posicionamiento de los grandes traders, que es justo la pieza en la que se apoya la dirección. Sin eso, lo que queda son indicadores de gráfico, y con eso solo no se abre una posición. Refresca en un momento.');
+
+  const sideNum = total > 0 ? 1 : -1;
+  const contrarios = lado => (f && f.risks || []).filter(r => Math.sign(r.dir) === -lado)
+                                                 .map(r => r.name.toLowerCase());
+
+  /* Cada motivo devuelto por el núcleo se traduce aquí a una frase. El núcleo
+     decide; esta parte sólo explica. */
+  const explica = {
+    'sin-ballenas': () => 'No llegó el dato de posicionamiento de los grandes traders, que es justo la pieza en la que se apoya la dirección. Sin eso, lo que queda son indicadores de gráfico, y con eso solo no se abre una posición. Refresca en un momento.',
+
+    /* Nunca un largo cuando 4 h y diario apuntan claramente abajo, ni un corto
+       cuando apuntan claramente arriba. No se compensa con nada: no hay flujo
+       ni indicador que valga para ponerse delante de un tren. Esta sola regla
+       habría bloqueado las tres posiciones que costaron dinero. */
+    'veto-tendencia': () => `El resto del análisis apunta ${sideNum > 0 ? 'al alza' : 'a la baja'}, pero la tendencia de 4 horas y diario va claramente ${big > 0 ? 'hacia arriba' : 'hacia abajo'}. Operar contra la tendencia grande es lo que más caro sale, así que aquí no se opera.`,
+
+    /* El caso concreto que costó dinero: en el gráfico corto la moneda se está
+       dando la vuelta, pero en 4 horas y en el diario sigue cayendo a plomo. Se
+       dice con todas las letras, porque el usuario tiene que poder reconocer la
+       situación la próxima vez que la vea. Se mira el corto plazo REAL (15
+       minutos), no el marco que tenga abierto: la situación de la moneda no
+       cambia porque uno toque una pestaña. */
+    'rebote': () => `En el corto plazo (velas de 15 minutos) la moneda se está girando ${corto > 0 ? 'al alza' : 'a la baja'}, pero en 4 horas y en el diario sigue yendo ${big > 0 ? 'hacia arriba' : 'hacia abajo'} con claridad. Un giro corto dentro de una tendencia grande casi siempre es un respiro, no un cambio: lo normal es que se agote y el precio siga ${big > 0 ? 'subiendo' : 'bajando'}. Ésta es exactamente la situación en la que la versión anterior de esta app abría posición, y es la que hay que dejar pasar.`,
+
+    'division': () => {
+      const opuestas = [LT, LD, LE].filter(l =>
+        l.ok && l.w > 0 && Math.abs(l.v) >= 0.30 && Math.sign(l.v) === -sideNum);
+      return `${opuestas.map(l => l.txt).join('; y ')}. Con el análisis dividido no hay entrada: se espera a que las piezas apunten al mismo lado.`;
+    },
+
+    /* El funding extremo y la multitud amontonada no dicen hacia dónde va el
+       precio, pero sí que un giro sería violento. Para BLOQUEAR hace falta más
+       que un aviso suelto: en una subida de verdad la multitud está larga casi
+       siempre, y bloquear por eso sería volver por la puerta de atrás al error
+       que se acaba de quitar. Un aviso suelto baja la confianza, no cierra. */
+    'resorte': () => `Hay un resorte cargado justo en tu contra: ${contrarios(sideNum).join(', ')}. La dirección puede ser la correcta y aun así saltar el stop en una sola vela antes de que ocurra. No merece la pena.`,
+
+    'debil': () => 'Ninguna capa tiene una ventaja clara: ni el dinero grande ni el gráfico se mojan en esta moneda ahora mismo. No operar también es una decisión.',
+    'sin-datos': () => 'No hay suficientes datos para dar un veredicto.',
+  };
+  D.razones.forEach(r => { if (explica[r]) conflicts.push(explica[r]()); });
+
+  const latigazoEnContra = !!D.latigazo;
+  let action = D.action, horizon = null, why = [], conf = D.conf;
+  if (conflicts.length) { action = 'ESPERAR'; conf = 0; }
+  if (action !== 'ESPERAR') {
     const own = sideNum < 0 ? pd : pb;
     // horizonte: sólo es "sostenido" si va con la tendencia mayor Y tiene aguante
     const withBig = Math.sign(big) === sideNum && Math.abs(big) >= 0.3;
@@ -2283,9 +2573,9 @@ function buildVerdict(tf) {
     } else {
       horizon = withBig ? 'sostenido' : 'rapido';
     }
-    layers.forEach(l => { if (Math.sign(l.v) === sideNum && Math.abs(l.v) > 0.15) why.push(l.txt + '.'); });
-    if (Math.sign(L4.v) === -sideNum && Math.abs(L4.v) > 0.45)
-      why.push(`Aviso: los indicadores de ${TF_LABEL[tf]} van en contra, pero pesan menos que la tendencia y los flujos. Ya está descontado en la confianza (${conf}%).`);
+    layers.forEach(l => { if (l.w > 0 && Math.sign(l.v) === sideNum && Math.abs(l.v) > 0.15) why.push(l.txt + '.'); });
+    if (latigazoEnContra)
+      why.push(`Aviso: ${(f.risks || []).filter(r => Math.sign(r.dir) === -sideNum).map(r => r.name.toLowerCase()).join(' y ')}. La dirección se mantiene, pero cuenta con sacudidas bruscas en contra: por eso la confianza baja al ${conf}%.`);
   }
 
   // Si lo que justificaba entrar era una sacudida corta y esa sacudida ya
@@ -2304,8 +2594,223 @@ function buildVerdict(tf) {
     action = 'ESPERAR'; conf = 0; horizon = null; why = [];
   }
 
+  /* Lo medido manda sobre lo razonado.
+     Si al recorrer el historial real de esta moneda esta misma regla salió
+     perdedora, ese hecho pesa más que cualquier argumento que se pueda
+     construir con los indicadores de ahora. Se exige una muestra mínima para no
+     tirar una señal por tres operaciones de nada. */
+  const V = state.validacion;
+  if (action !== 'ESPERAR' && V && !V.error && V.n >= VAL.MIN_SENALES && V.rMedio <= 0) {
+    conflicts.push(`Comprobado sobre el historial real de esta moneda: en los últimos ${V.dias} días esta misma regla dio ${V.n} señales y habría perdido dinero (${V.rMedio.toFixed(2)} R por operación, ${V.aciertos.toFixed(0)}% de aciertos, cuando hace falta más del 33% para empatar). El análisis de ahora apunta a ${action}, pero en esta moneda concreta este método no ha funcionado. Lo medido gana a lo razonado.`);
+    action = 'ESPERAR'; conf = 0; horizon = null; why = [];
+  }
+  // muestra corta o resultado flojo: no bloquea, pero baja la confianza y se dice
+  if (action !== 'ESPERAR' && V && !V.error && V.n > 0 && V.rMedio <= 0.15) {
+    conf = Math.max(30, Math.round(conf * 0.7));
+    why.push(`Aviso medido: en los últimos ${V.dias} días esta regla dio ${V.n} señales en esta moneda y el resultado fue ${V.rMedio >= 0 ? '+' : ''}${V.rMedio.toFixed(2)} R por operación — apenas tablas. Por eso la confianza baja al ${conf}%.`);
+  }
+
   const ownProf = action === 'SHORT' ? pd : action === 'LONG' ? pb : null;
-  return { action, horizon, conf, total, layers, conflicts, why, prof: ownProf, tf };
+  return { action, horizon, conf, total, layers, conflicts, why, prof: ownProf, tf, squeeze,
+           validacion: V && !V.error ? V : null };
+}
+
+/* =====================================================================
+   VALIDACIÓN CON DATOS REALES
+   =====================================================================
+   Ésta es la parte honesta de la app, y existe por un motivo concreto:
+   quien escribió el motor no puede probarlo contra el mercado de verdad —
+   desde donde se programa no hay acceso a Binance. Todas las pruebas que
+   se hicieron corren sobre precios inventados, y eso sirve para comprobar
+   que el código es coherente consigo mismo, NO que acierte.
+
+   Así que la comprobación se hace aquí, en tu teléfono, con los datos
+   reales de la moneda que tengas abierta: se recorre su historial vela a
+   vela, se aplica la MISMA regla que decide el veredicto (la función
+   decidirDireccion, literalmente la misma), y se mira qué habría pasado.
+
+   Reglas de la casa, para que la medición valga algo:
+     · en cada vela sólo se usa información disponible HASTA esa vela
+     · se entra en la apertura de la vela SIGUIENTE, nunca en la misma
+     · el stop y el objetivo son los mismos que usa la app (1.5 y 3 ATR)
+     · si el stop y el objetivo caen en la misma vela, se cuenta el stop
+
+   Lo que NO puede reconstruirse: el libro de órdenes y el basis no tienen
+   historial público, y CoinGecko tampoco por vela. La validación mide, por
+   tanto, la parte de la regla que sí se puede medir: ballenas, flujo
+   agresivo e interés abierto contra precio, más la estructura y la
+   tendencia. Se dice en pantalla en vez de esconderlo. */
+const VAL = { WARM: 210, H: 32, MIN_SENALES: 8 };
+
+/* Para cada vela de 15m, el índice de la última vela de un marco mayor que ya
+   había CERRADO en ese momento. Sin esto se estaría usando información del
+   futuro (una vela de 4 h que aún no había terminado). */
+function alinearMayor(k15, kMayor) {
+  const out = new Array(k15.length).fill(-1);
+  if (!kMayor || kMayor.length < 2) return out;
+  const dur = kMayor[1].time - kMayor[0].time;   // duración de la vela mayor, en segundos
+  let j = -1;
+  for (let i = 0; i < k15.length; i++) {
+    const t = k15[i].time;
+    // una vela mayor sólo se puede usar si YA HABÍA CERRADO: abre en .time y
+    // cierra en .time + dur. Usar la vela en curso sería mirar el futuro.
+    while (j + 1 < kMayor.length && kMayor[j + 1].time + dur <= t) j++;
+    out[i] = j;
+  }
+  return out;
+}
+
+/* Series de indicadores de un marco mayor, para poder preguntar por su
+   tendencia en cualquier punto sin recalcular nada. */
+function serieTendencia(candles) {
+  if (!candles || candles.length < 60) return null;
+  const c = candles.map(x => x.close);
+  const p = c.length >= 210 ? 200 : 100;
+  return { c, e20: emaArr(c, 20), e50: emaArr(c, 50), eL: emaArr(c, p) };
+}
+function tendenciaEn(S, i) {
+  if (!S || i < 0 || i >= S.c.length || S.eL[i] === null) return null;
+  let v = S.c[i] > S.eL[i] ? 0.6 : -0.6;
+  if (S.e20[i] !== null && S.e50[i] !== null) v += (S.e20[i] > S.e50[i] ? 0.4 : -0.4);
+  return Math.max(-1, Math.min(1, v));
+}
+
+/* Estructura (los mismos votos que ve el usuario) en cada vela de una serie. */
+function serieEstructura(candles) {
+  const c = candles.map(x => x.close), h = candles.map(x => x.high),
+        l = candles.map(x => x.low), v = candles.map(x => x.volume);
+  const n = c.length;
+  const P = n >= 210 ? 200 : 100;
+  const e20 = emaArr(c, 20), e50 = emaArr(c, 50), eL = emaArr(c, P);
+  const rsi = rsiArr(c, 14), macd = macdArr(c), atr = atrArr(h, l, c, 14);
+  const volS = smaArr(v, 20), frama = framaArr(h, l, c, 16), st = supertrendArr(h, l, c, 10, 3);
+  const out = new Array(n).fill(null);
+  for (let i = 1; i < n; i++) {
+    if (e20[i] === null || rsi[i] === null || !atr[i]) continue;
+    const L = { close: c[i], e20: e20[i], e50: e50[i], eL: eL[i], rsi: rsi[i],
+      macdLine: macd.line[i], macdSig: macd.signal[i], hist: macd.hist[i], histPrev: macd.hist[i - 1],
+      atr: atr[i], vol: v[i], volAvg: volS[i], candleDir: Math.sign(c[i] - candles[i].open),
+      frama: frama[i], stTrend: st.trend[i] };
+    const votes = votosEstructura(L, P);
+    const s = votes.reduce((a, x) => a + x.dir * x.w, 0);
+    const m = votes.reduce((a, x) => a + x.w, 0);
+    out[i] = { v: m > 0 ? s / m : 0, atr: atr[i] };
+  }
+  return out;
+}
+
+/* Convierte la respuesta de un endpoint /futures/data/... en un array alineado
+   vela a vela con las de 15 minutos, por marca de tiempo. */
+function alinearPorTiempo(k15, filas, campo) {
+  const out = new Array(k15.length).fill(null);
+  if (!Array.isArray(filas) || !filas.length) return out;
+  /* CUIDADO CON LAS UNIDADES. parseKlines guarda `time` en SEGUNDOS, pero los
+     endpoints /futures/data/ devuelven `timestamp` en MILISEGUNDOS. Comparar
+     los dos tal cual hace que ninguna fila se acepte nunca y el validador se
+     quede sin datos de ballenas sin quejarse: parecería que la moneda no tiene
+     historial cuando lo que hay es un factor 1000. */
+  const orden = filas.slice()
+    .map(x => ({ t: Math.floor(x.timestamp / 1000), v: parseFloat(x[campo]) }))
+    .sort((a, b) => a.t - b.t);
+  let j = -1;
+  for (let i = 0; i < k15.length; i++) {
+    const t = k15[i].time;
+    while (j + 1 < orden.length && orden[j + 1].t <= t) j++;
+    if (j >= 0 && isFinite(orden[j].v)) out[i] = orden[j].v;
+  }
+  return out;
+}
+
+async function validarRegla(sym) {
+  const g = (p) => fetchJSON(`${FAPI}${p}`).catch(() => null);
+  const [r15, r4h, r1d, top, tak, oih] = await Promise.all([
+    g(`/fapi/v1/klines?symbol=${sym}&interval=15m&limit=1000`),
+    g(`/fapi/v1/klines?symbol=${sym}&interval=4h&limit=500`),
+    g(`/fapi/v1/klines?symbol=${sym}&interval=1d&limit=300`),
+    g(`/futures/data/topLongShortPositionRatio?symbol=${sym}&period=15m&limit=500`),
+    g(`/futures/data/takerlongshortRatio?symbol=${sym}&period=15m&limit=500`),
+    g(`/futures/data/openInterestHist?symbol=${sym}&period=15m&limit=500`),
+  ]);
+  if (!r15 || !r4h) return { error: 'No se pudieron traer los datos históricos de Binance.' };
+  const k15 = parseKlines(r15).slice(0, -1);      // fuera la vela en curso
+  const k4h = parseKlines(r4h), k1d = r1d ? parseKlines(r1d) : [];
+  if (k15.length < VAL.WARM + VAL.H + 10) return { error: 'Esta moneda no tiene suficiente historial para medir la regla.' };
+
+  const S4 = serieTendencia(k4h), S1 = serieTendencia(k1d);
+  const i4 = alinearMayor(k15, k4h), i1 = k1d.length ? alinearMayor(k15, k1d) : null;
+  const estr = serieEstructura(k15);
+  const ballena = alinearPorTiempo(k15, top, 'longShortRatio');
+  const taker   = alinearPorTiempo(k15, tak, 'buySellRatio');
+  const oi      = alinearPorTiempo(k15, oih, 'sumOpenInterest');
+  const hayBallenas = ballena.some(x => x !== null);
+
+  const ops = [];
+  let evaluadas = 0;
+  const CUATRO_H = 16;          // 16 velas de 15m = 4 h
+  const UN_DIA = 96;
+  for (let i = VAL.WARM; i < k15.length - VAL.H - 1; i++) {
+    const e = estr[i];
+    if (!e || !e.atr) continue;
+    evaluadas++;
+    const t4 = S4 ? tendenciaEn(S4, i4[i]) : null;
+    const td = (S1 && i1) ? tendenciaEn(S1, i1[i]) : null;
+    const bigOk = t4 !== null || td !== null;
+    const big = bigOk
+      ? ((t4 ?? 0) * 0.6 + (td ?? 0) * 0.4) / ((t4 !== null ? 0.6 : 0) + (td !== null ? 0.4 : 0))
+      : 0;
+
+    const oiPrev = i >= UN_DIA ? oi[i - UN_DIA] : null;
+    const oiChg = (oi[i] !== null && oiPrev) ? (oi[i] / oiPrev - 1) * 100 : null;
+    const pPrev = i >= UN_DIA ? k15[i - UN_DIA].close : null;
+    const priceChg = pPrev ? (k15[i].close / pPrev - 1) * 100 : null;
+    const f = flujoDesdeDatos({
+      funding: null, basis: null, publico: null, publicoLong: null,
+      ballenaNow: ballena[i],
+      ballenaPrev: i >= CUATRO_H ? ballena[i - CUATRO_H] : null,
+      taker: taker[i], oiChg, priceChg, libro: null, cg: null,
+    });
+    const D = decidirDireccion({
+      big, bigOk, flow: f ? f.score : 0, flowOk: !!f, whaleOk: !!(f && f.whaleOk),
+      squeeze: f ? f.squeeze : 0, rSum: f ? f.rSum : 0, tech: e.v, corto: e.v,
+    });
+    if (D.action === 'ESPERAR') continue;
+
+    // se entra en la apertura de la vela SIGUIENTE: nunca dentro de la vela que
+    // produjo la señal, porque en vivo esa vela todavía no había cerrado.
+    const side = D.action === 'LONG' ? 1 : -1;
+    const entrada = k15[i + 1].open, a = e.atr;
+    const stop = side > 0 ? entrada - MV.SL_ATR * a : entrada + MV.SL_ATR * a;
+    const obj  = side > 0 ? entrada + MV.TP_ATR * a : entrada - MV.TP_ATR * a;
+    let res = 'abierta', R = 0;
+    for (let k = 1; k <= VAL.H && i + 1 + k < k15.length; k++) {
+      const b = k15[i + 1 + k];
+      const tocaStop = side > 0 ? b.low <= stop : b.high >= stop;
+      const tocaObj  = side > 0 ? b.high >= obj : b.low <= obj;
+      if (tocaStop) { res = 'stop'; R = -1; break; }   // el stop primero: criterio conservador
+      if (tocaObj)  { res = 'objetivo'; R = 2; break; }
+    }
+    if (res === 'abierta') {
+      const cierre = k15[Math.min(i + 1 + VAL.H, k15.length - 1)].close;
+      R = ((cierre - entrada) * side) / (MV.SL_ATR * a);
+    }
+    ops.push({ i, side, res, R });
+    i += VAL.H;   // no se cuenta la misma señal muchas veces seguidas
+  }
+
+  const n = ops.length;
+  if (!n) return { n: 0, evaluadas, hayBallenas, dias: Math.round(k15.length / 96) };
+  const ganadas = ops.filter(o => o.R > 0).length;
+  const sumaR = ops.reduce((s, o) => s + o.R, 0);
+  return {
+    n, evaluadas, hayBallenas,
+    dias: Math.round(k15.length / 96),
+    aciertos: ganadas / n * 100,
+    rMedio: sumaR / n,
+    rTotal: sumaR,
+    largos: ops.filter(o => o.side > 0).length,
+    cortos: ops.filter(o => o.side < 0).length,
+    ops,
+  };
 }
 
 /* =====================================================================
@@ -2504,6 +3009,10 @@ function switchTf(tf) {
   state.curTf = tf;
   renderTfButtons();
   renderVerdict(tf);
+  // el veredicto puede cambiar al cambiar de marco, así que las dos tablas que
+  // se comparan con él tienen que repintarse detrás, o quedan diciendo
+  // "acompaña" respecto a un veredicto que ya no está en pantalla.
+  renderTfReco();
   renderChart(tf);
   renderTech(tf);
   renderBacktest(tf);
@@ -2528,9 +3037,15 @@ function layerRow(l) {
   const color = l.v >= 0.08 ? 'var(--green)' : l.v <= -0.08 ? 'var(--red)' : 'var(--muted)';
   const lean = l.v >= 0.08 ? 'al alza' : l.v <= -0.08 ? 'a la baja' : 'neutro';
   const peso = Math.round(l.w * 100);
+  /* La capa del radar aparece en la lista pero no puntúa. Hay que decirlo en la
+     propia fila: si se muestra una barra y un peso como las demás, el usuario
+     asume que está votando, y eso es justo lo que dejó de hacer. */
+  const marca = l.noVota
+    ? `<span style="color:var(--muted)">no vota · sólo el momento</span>`
+    : `<span style="color:${color}">${lean} · peso ${peso}%</span>`;
   return `<div class="layer">
-    <div class="lh"><span>${l.name}</span><span style="color:${color}">${lean} · peso ${peso}%</span></div>
-    <div class="mixtrack"><span class="mid"></span><i style="background:${color};${l.v >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`}"></i></div>
+    <div class="lh"><span>${l.name}</span>${marca}</div>
+    ${l.noVota ? '' : `<div class="mixtrack"><span class="mid"></span><i style="background:${color};${l.v >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`}"></i></div>`}
     <div class="lt">${l.txt}. <span style="color:#6e7681">${l.help}</span></div>
   </div>`;
 }
@@ -2657,6 +3172,67 @@ function renderVerdict(tf) {
   renderCalc();
 }
 
+/* ================= COMPROBACIÓN CON DATOS REALES ================= */
+function renderValidacion() {
+  const el = $('valOut');
+  const V = state.validacion;
+  if (!el) return;
+  if (V === 'cargando') {
+    el.innerHTML = '<div class="desc"><span class="spinner"></span>Recorriendo el historial real de esta moneda y aplicándole la misma regla…</div>';
+    return;
+  }
+  if (!V) { el.innerHTML = '<div class="desc">Abre una moneda para comprobarla.</div>'; return; }
+  if (V.error) { el.innerHTML = `<div class="warn">⚠️ ${V.error}</div>`; return; }
+
+  const nota = `<div class="src" style="margin-top:10px">Medido sobre <b>${V.dias} días</b> de velas de 15 minutos de esta misma moneda. Cada señal entra en la apertura de la vela siguiente, con stop a ${MV.SL_ATR} ATR y objetivo a ${MV.TP_ATR} ATR — los mismos que usa el plan de arriba. Si el stop y el objetivo caen en la misma vela se cuenta el stop, que es lo peor que pudo pasar. La comprobación usa ballenas, flujo agresivo, interés abierto, estructura y tendencia; el libro de órdenes y el basis no tienen historial público, así que esa parte de la regla no se puede medir hacia atrás.</div>`;
+
+  if (!V.hayBallenas) {
+    el.innerHTML = `<div class="warn">⚠️ <b>Binance no publica historial de posicionamiento de ballenas para esta moneda.</b> Sin ese dato no se puede comprobar la regla hacia atrás — y, por el mismo motivo, la app tampoco te va a dar señal en vivo. Es una moneda que este método no sabe leer.</div>` + nota;
+    return;
+  }
+  if (!V.n) {
+    el.innerHTML = `<div class="desc">✅ En los últimos <b>${V.dias} días</b> esta regla <b>no habría dado ninguna señal</b> en esta moneda. No es un fallo: la regla exige que la tendencia, el dinero grande y la estructura apunten al mismo sitio, y eso no pasa a menudo. Sin señales no hay nada que medir todavía.</div>` + nota;
+    return;
+  }
+
+  const bueno = V.rMedio > 0.15;
+  const malo = V.rMedio <= 0 && V.n >= VAL.MIN_SENALES;
+  const pocas = V.n < VAL.MIN_SENALES;
+  const color = malo ? 'var(--red)' : bueno ? 'var(--green)' : 'var(--yellow)';
+  const titulo = malo
+    ? '❌ En esta moneda, esta regla ha PERDIDO dinero'
+    : bueno ? '✅ En esta moneda, esta regla ha ganado dinero'
+    : '➖ En esta moneda, esta regla se ha quedado en tablas';
+
+  const cell = (k, v, s, c = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`;
+  el.innerHTML =
+    `<div class="big" style="color:${color};margin-bottom:8px">${titulo}</div>` +
+    `<div class="grid">` +
+      cell('Señales dadas', V.n, `en ${V.dias} días · ${V.largos} largos, ${V.cortos} cortos`) +
+      cell('Aciertos', V.aciertos.toFixed(0) + '%', 'hace falta más del 33% para empatar', V.aciertos >= 34 ? 'up' : 'down') +
+      cell('Por operación', (V.rMedio >= 0 ? '+' : '') + V.rMedio.toFixed(2) + ' R', 'R = lo que arriesgas en cada una', V.rMedio >= 0 ? 'up' : 'down') +
+      cell('Resultado total', (V.rTotal >= 0 ? '+' : '') + V.rTotal.toFixed(1) + ' R', 'sumando las ' + V.n, V.rTotal >= 0 ? 'up' : 'down') +
+    `</div>` +
+    (pocas ? `<div class="warn" style="margin-top:10px">⚠️ Sólo <b>${V.n} señales</b> en la ventana medida. Con tan pocas, este resultado puede ser suerte en cualquiera de los dos sentidos. Tómalo como un indicio, no como una prueba: Binance sólo publica unos cinco días de historial de ballenas a 15 minutos, y de ahí no se puede sacar más.</div>` : '') +
+    (malo ? `<div class="warn" style="margin-top:10px">Esto es un dato en contra de operar esta moneda con esta app, y por eso aparece en la tarjeta de arriba. La regla puede funcionar en otras monedas y no en ésta.</div>` : '') +
+    nota;
+}
+
+async function correrValidacion(sym) {
+  state.validacion = 'cargando';
+  renderValidacion();
+  try {
+    const r = await validarRegla(sym);
+    if (state.symbol !== sym) return;        // el usuario cambió de moneda mientras tanto
+    state.validacion = r;
+  } catch (e) {
+    state.validacion = { error: 'No se pudo comprobar la regla: ' + (e.message || e) };
+  }
+  renderValidacion();
+  // el veredicto muestra el resultado medido, así que hay que repintarlo
+  if (state.curTf) { renderVerdict(state.curTf); renderTfReco(); }
+}
+
 /* ================= PERFIL DE LA MONEDA ABIERTA ================= */
 function profileBlock(p, title) {
   if (!p) return `<div class="desc">${title}: sin datos suficientes.</div>`;
@@ -2689,12 +3265,23 @@ function renderTfReco() {
     puntaje de confluencia ${a.score >= 0 ? '+' : ''}${a.score.toFixed(1)} de ±${a.maxScore.toFixed(1)}.
     Estilo de operación: <b>${TF_STYLE[best]}</b>.</p>`;
   const tb = $('tfTable').querySelector('tbody'); tb.innerHTML = '';
+  /* Esta columna imprimía LONG o SHORT por cada marco temporal, cada uno por su
+     cuenta y ninguno relacionado con el veredicto. Con seis marcos en pantalla
+     era normal ver "ABRIR SHORT" arriba y cuatro etiquetas LONG debajo. La app
+     da UNA dirección; aquí sólo se dice si cada marco la acompaña o no. */
+  const vAct = state.verdict && state.verdict.action;
+  const etiqueta = a => {
+    if (!a || a.dir === 'NEUTRO') return '<span class="pill neutro">sin dirección</span>';
+    if (!vAct || vAct === 'ESPERAR') return `<span class="pill neutro">${a.dir === 'LONG' ? 'estructura al alza' : 'estructura a la baja'}</span>`;
+    return a.dir === vAct
+      ? '<span class="pill long">acompaña</span>'
+      : '<span class="pill short">va en contra</span>';
+  };
   rows.forEach(({ tf, a }) => {
     const tr = document.createElement('tr');
     if (tf === best) tr.className = 'reco';
-    const d = a ? a.dir : '—';
     tr.innerHTML = `<td><b>${tf.toUpperCase()}</b>${tf === best ? ' ★' : ''}</td>
-      <td><span class="pill ${d.toLowerCase()}">${d}</span></td>
+      <td>${etiqueta(a)}</td>
       <td>${a ? (a.score >= 0 ? '+' : '') + a.score.toFixed(1) : '—'}</td>
       <td>${a && a.L.adx ? a.L.adx.toFixed(0) : '—'}</td>
       <td>${a && a.L.rsi ? a.L.rsi.toFixed(0) : '—'}</td>`;
@@ -2783,9 +3370,24 @@ function renderDerivatives() {
     ul.id = 'fundFactors'; ul.className = 'reasons';
     g.parentNode.insertBefore(ul, g.nextSibling);
   }
+  /* La lista va partida en dos, y la separación es el arreglo de fondo de esta
+     versión. Arriba, lo que dice HACIA DÓNDE empuja el dinero. Abajo, lo que
+     dice que el suelo está resbaladizo. Antes todo iba junto en una sola lista
+     y, peor, en un solo marcador: el funding positivo de una moneda que subía
+     restaba contra sus propias ballenas largas, y la capa más importante del
+     análisis se quedaba en nada. */
   const f = state.fundamental;
-  ul.innerHTML = f ? f.factors.map(v =>
-    `<li><span class="dot ${v.dir > 0.05 ? 'g' : v.dir < -0.05 ? 'r' : 'n'}"></span><span><b>${v.name}</b>: ${v.text}</span></li>`).join('') : '';
+  const punto = v => `<li><span class="dot ${v.dir > 0.05 ? 'g' : v.dir < -0.05 ? 'r' : 'n'}"></span><span><b>${v.name}</b>: ${v.text}</span></li>`;
+  if (!f) { ul.innerHTML = ''; }
+  else {
+    const dirLista = f.factors.length
+      ? `<li class="secthead"><b>Hacia dónde empuja el dinero</b> — esto es lo que decide la dirección</li>` + f.factors.map(punto).join('')
+      : '';
+    const riesgoLista = f.risks && f.risks.length
+      ? `<li class="secthead"><b>Dónde está el suelo resbaladizo</b> — esto NO decide la dirección; avisa de que un giro sería violento</li>` + f.risks.map(punto).join('')
+      : '';
+    ul.innerHTML = dirLista + riesgoLista;
+  }
 }
 
 function renderCoinGecko(cg) {
@@ -2865,11 +3467,22 @@ async function selectSymbol(meta) {
   chgEl.textContent = pct(ch) + ' 24h';
   chgEl.className = 'chg ' + (ch >= 0 ? 'up' : 'down');
 
-  renderTfReco();
+  /* El ORDEN importa. La tabla de marcos y la de estrategias ya no imprimen una
+     dirección propia: dicen si acompañan al veredicto. Para eso el veredicto
+     tiene que estar calculado ANTES que ellas. Antes se pintaba primero la
+     tabla de marcos, así que se comparaba contra el veredicto de la moneda
+     ANTERIOR — otra forma de acabar viendo dos direcciones que no encajan. */
+  state.verdict = null;
+  // la validación es de la moneda anterior: hay que tirarla, o el veredicto de
+  // la nueva se frenaría (o se soltaría) con la medición de otra moneda
+  state.validacion = null;
+  renderValidacion();
+  state.recTf = rankTimeframes().best;
   state.curTf = state.recTf || '1h';
   if (!state.chart) initChart();
   renderTfButtons();
-  renderVerdict(state.curTf);
+  renderVerdict(state.curTf);          // ← deja state.verdict listo
+  renderTfReco();                      // ← y ahora ya puede compararse con él
   renderChart(state.curTf);
   renderTech(state.curTf);
   renderDerivatives();
@@ -2878,6 +3491,9 @@ async function selectSymbol(meta) {
   startLive(meta.symbol, state.curTf);
   $('updated').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
   fetchCG();
+  // la comprobación con datos reales tarda (son seis peticiones de historial),
+  // así que va aparte y repinta el veredicto cuando termina
+  correrValidacion(meta.symbol);
 }
 
 /* ================= BÚSQUEDA ================= */
@@ -2917,6 +3533,20 @@ function renderBacktest(tf) {
   } else {
     bestEl.innerHTML = `<div class="warn">⚠️ Ninguna estrategia automática fue rentable en las últimas ${bt.candles} velas de ${TF_LABEL[tf]} (después de comisiones). Eso también es información: este par y este marco están difíciles ahora mismo.</div>`;
   }
+  /* Esta columna mostraba un LONG/SHORT propio de cada estrategia, al lado del
+     veredicto de arriba y sin ninguna relación con él. Era una de las fuentes
+     del "arriba me dice short y abajo long": el usuario veía dos direcciones
+     opuestas en la misma pantalla y no sabía cuál era el consejo.
+     Ahora ninguna estrategia anuncia dirección por su cuenta: sólo se dice si
+     coincide o no con la única decisión de la app. */
+  const vAct = state.verdict && state.verdict.action;
+  const acuerdo = r => {
+    if (!vAct || vAct === 'ESPERAR') return '<span class="pill neutro" title="La app no está dando señal ahora mismo">sin señal activa</span>';
+    if (r.current === 'NEUTRO') return '<span class="pill neutro">no opina</span>';
+    return r.current === vAct
+      ? '<span class="pill long">coincide</span>'
+      : '<span class="pill short">no coincide</span>';
+  };
   tb.innerHTML = bt.results.map(r => `
     <tr${bt.best && r.key === bt.best.key ? ' class="reco"' : ''}>
       <td><b>${r.name}</b><br><small style="color:var(--muted)">${r.desc}</small></td>
@@ -2924,7 +3554,7 @@ function renderBacktest(tf) {
       <td style="color:${r.pf >= 1.2 ? 'var(--green)' : r.pf < 1 ? 'var(--red)' : 'var(--text)'}">${r.pf >= 99 ? '∞' : r.pf.toFixed(2)}</td>
       <td style="color:${r.net >= 0 ? 'var(--green)' : 'var(--red)'}">${pct(r.net, 1)}</td>
       <td>${r.maxDD.toFixed(0)}%</td>
-      <td><span class="pill ${r.current.toLowerCase()}">${r.current}</span></td>
+      <td>${acuerdo(r)}</td>
     </tr>`).join('');
   $('btNote').textContent = `Medido sobre las últimas ${bt.candles} velas cerradas con comisión taker 0.05% por lado más deslizamiento. El factor de beneficio es ganancia bruta ÷ pérdida bruta: por encima de 1 es rentable. Que algo haya funcionado antes no significa que vaya a funcionar ahora.`;
 }
@@ -3025,7 +3655,7 @@ function applyCandle(candle, closed) {
   if (closed) {
     state.analyses[live.tf] = analyzeTF(state.klines[live.tf]);
     if (live.tf === '15m') { computeOwnProfiles(); renderOwnProfile(); }
-    if (state.curTf === live.tf) { renderVerdict(live.tf); renderTech(live.tf); renderBacktest(live.tf); }
+    if (state.curTf === live.tf) { renderVerdict(live.tf); renderTfReco(); renderTech(live.tf); renderBacktest(live.tf); }
   }
 }
 
@@ -3185,6 +3815,13 @@ function renderRadar() {
       el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ <b>El escaneo falló</b>: no se pudieron traer los datos de Binance. El radar está vacío porque no ha podido mirar, no porque no haya nada. Vuelve a intentarlo en un momento.</div>`;
     else if (scanned === 0 && attempted > 0)
       el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ <b>El radar no pudo analizar ninguna moneda</b> (fallaron las ${attempted} peticiones de datos a Binance). Esto <b>no</b> significa que no haya oportunidades: significa que no se ha podido mirar. Vuelve a escanear en un momento.</div>`;
+    else if (rows.descartadas > 0)
+      /* Caso nuevo e importante: SÍ había monedas con el gatillo disparado, pero
+         ninguna pasó el filtro de dirección. Antes esas monedas se listaban tal
+         cual, y eran justo las peores: cortos en monedas que venían subiendo.
+         Ahora se quedan fuera, y se explica por qué en vez de mostrar un vacío
+         que parece que no hubo nada que mirar. */
+      el.innerHTML = `<div class="desc">✅ Había <b>${rows.descartadas}</b> ${rows.descartadas === 1 ? 'moneda con señal' : 'monedas con señal'} de ${side < 0 ? 'caída' : 'subida'} a punto de arrancar, pero ${rows.descartadas === 1 ? 'no pasó' : 'ninguna pasó'} el filtro de dirección: o van contra su tendencia grande, o el dinero grande está colocado al otro lado. Son exactamente las que antes aparecían aquí y salían mal. Radar vacío es mejor que radar equivocado.</div>`;
     else if (scanned !== undefined && attempted && scanned < attempted)
       el.innerHTML = `<div class="desc">✅ Ninguna de las <b>${scanned}</b> monedas analizadas cumple ahora mismo las condiciones de ${side < 0 ? 'caída' : 'subida'}. Que el radar esté vacío es buena señal: no hay que forzar ninguna operación.<br><small style="opacity:.75">Nota: ${attempted - scanned} de ${attempted} monedas no se pudieron analizar por fallos de datos, así que la lista puede estar incompleta.</small></div>`;
     else
