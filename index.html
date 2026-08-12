@@ -255,9 +255,10 @@ details.ex[open]{border-color:#3a424d;}
     <h2>📡 Radar de movimientos<span class="q" data-h="Aquí busco monedas a punto de moverse fuerte. Cada una lleva dos números que NO significan lo mismo. GATILLO: cuánto empuja el movimiento para empezar ahora mismo. AGUANTE: cuánto combustible tiene para seguir durante horas. Un gatillo alto con aguante bajo es una sacudida: baja de golpe y rebota enseguida (eso fue lo que hizo perder dinero antes). Un gatillo alto CON aguante alto es la que puedes dejar corriendo. Por eso cada fila te dice además si es CORTA, MEDIA o LARGA.">?</span>
       <span id="radarNext" style="margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;"></span>
     </h2>
+    <div id="posMercado"></div>
     <div class="tabs" id="radarTabs">
-      <button class="tab on" data-side="-1">🔻 Van a CAER</button>
-      <button class="tab" data-side="1">🔺 Van a SUBIR</button>
+      <button class="tab on" data-side="-1">🔻 Candidatas a CAER</button>
+      <button class="tab" data-side="1">🔺 Candidatas a SUBIR</button>
     </div>
     <div id="radarList" class="desc">Esperando conexión con Binance…</div>
 
@@ -2319,6 +2320,13 @@ async function scanMoves(side, opts = {}) {
         direccionOk: D.action === quiere,
         direccionMotivo: D.razones[0] || null,
         direccionConf: D.conf,
+        /* Los datos crudos de posicionamiento viajan con cada fila. La app ya no
+           pretende adivinar lo que van a hacer: enseña dónde está puesto el
+           dinero y quién está al otro lado, y la lectura la haces tú. */
+        ballena: whaleNow, ballenaAntes: whalePrev,
+        funding: fundMap[t.symbol] ?? null,
+        taker: takerNow, oiChg,
+        tendenciaMayor: big,
       };
     } catch (e) { return null; }
   }));
@@ -2326,16 +2334,18 @@ async function scanMoves(side, opts = {}) {
   const rank = k => k === 'sostenido' ? 2 : k === 'medio' ? 1 : 0;
   const analizadas = full.filter(Boolean);
   const conGatillo = analizadas.filter(r => r.trigger >= 42 && r.kind !== 'ninguno');
+  /* Se listan TODAS las candidatas, no sólo las que pasan el filtro de
+     dirección. Es lo que pidió el usuario y es defendible: esto es un
+     buscador, no un pronóstico. Cada fila lleva su etiqueta diciendo si el
+     dinero grande está de ese lado o del contrario, que es la información que
+     de verdad quería ver. Las que pasan el filtro salen primero. */
   const out = conGatillo
-    // el momento lo pone el gatillo, pero la DIRECCIÓN tiene que pasar el filtro
-    .filter(r => r.direccionOk)
-    // primero los que pueden durar (es lo que pidió el usuario), luego los calientes
-    .sort((a, b) => (rank(b.kind) - rank(a.kind)) ||
+    .sort((a, b) => (Number(b.direccionOk) - Number(a.direccionOk)) ||
+      (rank(b.kind) - rank(a.kind)) ||
       ((b.trigger * 0.55 + b.persist * 0.45) - (a.trigger * 0.55 + a.persist * 0.45)))
-    .slice(0, 5);
-  // cuántas se cayeron por dirección: se enseña, porque un radar vacío tiene que
-  // poder explicarse ("había candidatas, pero ninguna en la dirección correcta")
-  out.descartadas = conGatillo.length - conGatillo.filter(r => r.direccionOk).length;
+    .slice(0, 8);
+  out.conBallenasAFavor = conGatillo.filter(r => r.direccionOk).length;
+  out.descartadas = conGatillo.length - out.conBallenasAFavor;
   /* Cuántas monedas se llegaron a analizar de verdad. Cada fetch individual
      está envuelto en su propio try/catch, así que si fallan TODOS esta función
      devolvía [] sin lanzar error y la pantalla pintaba un verde tranquilizador
@@ -2401,6 +2411,67 @@ function decidirDireccion(x) {
   let conf = Math.min(92, Math.round(30 + Math.abs(total) * 85));
   if (latigazo) conf = Math.max(35, Math.round(conf * 0.75));
   return { action: lado > 0 ? 'LONG' : 'SHORT', total, conf, razones: [], okW, latigazo };
+}
+
+/* =====================================================================
+   CÓMO ESTÁ POSICIONADO EL DINERO GRANDE EN EL MERCADO
+   =====================================================================
+   Esto no predice nada y no pretende hacerlo: es una foto. Se pregunta a
+   Binance, moneda por moneda, cómo están colocados los traders con más
+   margen (el 20% de arriba) y cómo está colocada la multitud, y se cuenta
+   cuántas monedas tienen a cada grupo de cada lado.
+
+   Sirve para responder a una pregunta concreta y legítima: ¿el dinero
+   grande se está colocando para caídas o para subidas, en general? Eso es
+   un dato observable. Lo que NO se puede afirmar, porque está medido y no
+   sale, es que de ahí se pueda deducir qué va a hacer el precio. */
+async function posicionamientoMercado(nMonedas = 25) {
+  const tickers = await fetchJSON(`${FAPI}/fapi/v1/ticker/24hr`);
+  const validos = new Set(state.symbols.map(s => s.symbol));
+  const lista = (Array.isArray(tickers) ? tickers : [])
+    .filter(t => validos.has(t.symbol) && parseFloat(t.quoteVolume) > 1e7)
+    .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, nMonedas);
+
+  const filas = await Promise.all(lista.map(async t => {
+    try {
+      const [top, glob] = await Promise.all([
+        fetchJSON(`${FAPI}/futures/data/topLongShortPositionRatio?symbol=${t.symbol}&period=1h&limit=25`).catch(() => null),
+        fetchJSON(`${FAPI}/futures/data/globalLongShortAccountRatio?symbol=${t.symbol}&period=1h&limit=1`).catch(() => null),
+      ]);
+      if (!Array.isArray(top) || !top.length) return null;
+      const ahora = parseFloat(top[top.length - 1].longShortRatio);
+      const antes = parseFloat(top[0].longShortRatio);
+      const publico = (Array.isArray(glob) && glob.length) ? parseFloat(glob[0].longShortRatio) : null;
+      if (!isFinite(ahora) || ahora <= 0) return null;
+      return {
+        symbol: t.symbol, ballena: ahora, ballenaAntes: antes, publico,
+        chg24: parseFloat(t.priceChangePercent),
+        cambio: (isFinite(antes) && antes > 0) ? (ahora / antes - 1) * 100 : null,
+      };
+    } catch (e) { return null; }
+  }));
+
+  const ok = filas.filter(Boolean);
+  if (!ok.length) return { error: 'No se pudieron traer los datos de posicionamiento.' };
+
+  const cortas = ok.filter(x => x.ballena < 0.9).length;
+  const largas = ok.filter(x => x.ballena > 1.15).length;
+  const neutras = ok.length - cortas - largas;
+  const soltando = ok.filter(x => x.cambio !== null && x.cambio <= -8).length;
+  const cargando = ok.filter(x => x.cambio !== null && x.cambio >= 8).length;
+  const conPublico = ok.filter(x => x.publico !== null);
+  const publicoLargo = conPublico.filter(x => x.publico > 1.2).length;
+  const enfrentados = conPublico.filter(x =>
+    (x.ballena < 0.9 && x.publico > 1.3) || (x.ballena > 1.15 && x.publico < 0.85)).length;
+
+  return {
+    total: ok.length, cortas, largas, neutras, soltando, cargando,
+    publicoLargo, conPublico: conPublico.length, enfrentados,
+    // mediana del ratio: menos sensible a una moneda rara que la media
+    medianaBallena: median(ok.map(x => x.ballena)),
+    detalle: ok.sort((a, b) => a.ballena - b.ballena),
+  };
 }
 
 /* =====================================================================
@@ -4168,6 +4239,94 @@ function histLine(r) {
     <b>${Math.round(A.sustainedRate)}%</b> aguantaron varias horas${mid}${extra}.${aviso}</div>`;
 }
 
+/* Foto del posicionamiento del dinero grande en el conjunto del mercado.
+   Es la respuesta a "¿la mayoría se está posicionando para caídas?" — una
+   pregunta que sí se puede contestar con datos, a diferencia de "¿va a caer?" */
+function renderPosMercado() {
+  const el = $('posMercado');
+  const P = state.posMercado;
+  if (!el) return;
+  if (P === 'cargando') {
+    el.innerHTML = '<div class="desc"><span class="spinner"></span>Mirando cómo está colocado el dinero grande en el mercado…</div>';
+    return;
+  }
+  if (!P) { el.innerHTML = ''; return; }
+  if (P.error) { el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ ${P.error}</div>`; return; }
+
+  const pc = x => Math.round(x / P.total * 100);
+  const sesgo = P.cortas > P.largas * 1.5 ? 'bajista'
+              : P.largas > P.cortas * 1.5 ? 'alcista' : 'repartido';
+  const titulo = sesgo === 'bajista'
+    ? `🔻 El dinero grande está colocado a la BAJA en ${P.cortas} de ${P.total} monedas`
+    : sesgo === 'alcista'
+      ? `🔺 El dinero grande está colocado al ALZA en ${P.largas} de ${P.total} monedas`
+      : `➖ El dinero grande está repartido (${P.cortas} cortas, ${P.largas} largas de ${P.total})`;
+  const color = sesgo === 'bajista' ? 'var(--red)' : sesgo === 'alcista' ? 'var(--green)' : 'var(--muted)';
+
+  el.innerHTML = `
+    <div style="border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px">
+      <div style="font-weight:700;color:${color};margin-bottom:6px">${titulo}</div>
+      <div class="desc" style="margin:0">
+        Entre las <b>${P.total}</b> monedas más negociadas: los grandes traders están
+        <b style="color:var(--red)">cortos en ${P.cortas}</b> (${pc(P.cortas)}%),
+        <b style="color:var(--green)">largos en ${P.largas}</b> (${pc(P.largas)}%)
+        y repartidos en ${P.neutras}. Ratio típico <b>${P.medianaBallena.toFixed(2)}</b>
+        (por debajo de 1 = más posición corta que larga).
+        En las últimas 24 h han <b>soltado</b> posición larga en ${P.soltando} monedas y la han
+        <b>cargado</b> en ${P.cargando}.
+        ${P.conPublico ? `Y en <b>${P.enfrentados}</b> monedas están en el lado contrario al del público.` : ''}
+      </div>
+      <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--muted);font-size:13px">Ver moneda por moneda</summary>
+        <div style="overflow-x:auto"><table style="margin-top:8px">
+          <thead><tr><th>Moneda</th><th>Ballenas</th><th>24 h</th><th>Público</th><th>Precio 24 h</th></tr></thead>
+          <tbody>${P.detalle.map(d => `<tr>
+            <td><b>${d.symbol.replace('USDT', '')}</b></td>
+            <td style="color:${d.ballena < 0.9 ? 'var(--red)' : d.ballena > 1.15 ? 'var(--green)' : 'var(--muted)'}">${d.ballena.toFixed(2)}</td>
+            <td style="color:${d.cambio === null ? 'var(--muted)' : d.cambio < 0 ? 'var(--red)' : 'var(--green)'}">${d.cambio === null ? '—' : pct(d.cambio, 0)}</td>
+            <td>${d.publico === null ? '—' : d.publico.toFixed(2)}</td>
+            <td style="color:${d.chg24 >= 0 ? 'var(--green)' : 'var(--red)'}">${pct(d.chg24, 1)}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <div class="src" style="margin-top:6px">"Ballenas" es el ratio de posiciones largas frente a cortas del 20% de traders con más margen de Binance. "24 h" es cuánto ha cambiado ese ratio. "Público" es el mismo ratio pero contando cuentas, donde manda el minorista. Todo son datos publicados por Binance, sin interpretar.</div>
+      </details>
+    </div>`;
+}
+
+async function correrPosMercado() {
+  state.posMercado = 'cargando';
+  renderPosMercado();
+  try { state.posMercado = await posicionamientoMercado(25); }
+  catch (e) { state.posMercado = { error: 'No se pudo traer el posicionamiento: ' + (e.message || e) }; }
+  renderPosMercado();
+}
+
+/* La línea que el usuario pidió: en esta moneda concreta, ¿el dinero grande
+   está del lado de la caída que anuncia el radar, o del contrario? Es un dato,
+   no una predicción, y por eso se enseña tal cual con sus números. */
+function ballenasFila(r, side) {
+  if (r.ballena === null || r.ballena === undefined || !isFinite(r.ballena))
+    return `<div class="verdictline no">🐋 Binance no publica el posicionamiento de los grandes traders para esta moneda.</div>`;
+  const cortas = r.ballena < 0.9, largas = r.ballena > 1.15;
+  const aFavor = side < 0 ? cortas : largas;
+  const enContra = side < 0 ? largas : cortas;
+  const nivel = cortas ? `${(1 / r.ballena).toFixed(2)} veces más posición corta que larga`
+              : largas ? `${r.ballena.toFixed(2)} veces más posición larga que corta`
+              : `casi empatados (${r.ballena.toFixed(2)})`;
+  const mov = (r.ballenaAntes && isFinite(r.ballenaAntes) && r.ballenaAntes > 0)
+    ? (() => { const c = (r.ballena / r.ballenaAntes - 1) * 100;
+        return Math.abs(c) < 5 ? '' :
+          c < 0 ? ` Y están <b>soltando</b> largos: el ratio ha bajado ${pct(c, 0)} en las últimas horas.`
+                : ` Y están <b>cargando</b> largos: el ratio ha subido ${pct(c, 0)} en las últimas horas.`; })()
+    : '';
+  const clase = aFavor ? 'ok' : enContra ? 'no' : '';
+  const cabeza = aFavor
+    ? `🐋 <b>El dinero grande está del mismo lado</b>`
+    : enContra
+      ? `🐋 <b>El dinero grande está al otro lado</b>`
+      : `🐋 <b>El dinero grande no se moja</b>`;
+  return `<div class="verdictline ${clase}">${cabeza}: los grandes traders tienen ${nivel}.${mov}</div>`;
+}
+
 function renderRadar() {
   const el = $('radarList');
   const side = radarState.side;
@@ -4182,13 +4341,6 @@ function renderRadar() {
       el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ <b>El escaneo falló</b>: no se pudieron traer los datos de Binance. El radar está vacío porque no ha podido mirar, no porque no haya nada. Vuelve a intentarlo en un momento.</div>`;
     else if (scanned === 0 && attempted > 0)
       el.innerHTML = `<div class="desc" style="color:#e0a030">⚠️ <b>El radar no pudo analizar ninguna moneda</b> (fallaron las ${attempted} peticiones de datos a Binance). Esto <b>no</b> significa que no haya oportunidades: significa que no se ha podido mirar. Vuelve a escanear en un momento.</div>`;
-    else if (rows.descartadas > 0)
-      /* Caso nuevo e importante: SÍ había monedas con el gatillo disparado, pero
-         ninguna pasó el filtro de dirección. Antes esas monedas se listaban tal
-         cual, y eran justo las peores: cortos en monedas que venían subiendo.
-         Ahora se quedan fuera, y se explica por qué en vez de mostrar un vacío
-         que parece que no hubo nada que mirar. */
-      el.innerHTML = `<div class="desc">✅ Había <b>${rows.descartadas}</b> ${rows.descartadas === 1 ? 'moneda con señal' : 'monedas con señal'} de ${side < 0 ? 'caída' : 'subida'} a punto de arrancar, pero ${rows.descartadas === 1 ? 'no pasó' : 'ninguna pasó'} el filtro de dirección: o van contra su tendencia grande, o el dinero grande está colocado al otro lado. Son exactamente las que antes aparecían aquí y salían mal. Radar vacío es mejor que radar equivocado.</div>`;
     else if (scanned !== undefined && attempted && scanned < attempted)
       el.innerHTML = `<div class="desc">✅ Ninguna de las <b>${scanned}</b> monedas analizadas cumple ahora mismo las condiciones de ${side < 0 ? 'caída' : 'subida'}. Que el radar esté vacío es buena señal: no hay que forzar ninguna operación.<br><small style="opacity:.75">Nota: ${attempted - scanned} de ${attempted} monedas no se pudieron analizar por fallos de datos, así que la lista puede estar incompleta.</small></div>`;
     else
@@ -4202,6 +4354,7 @@ function renderRadar() {
           <span class="px">${fmtNum(r.price)} · ${pct(r.chg24, 1)} en 24 h</span></div>
         <div class="kind"><b>${r.kindLabel}</b><small>${r.kind === 'sostenido' ? 'se puede dejar correr' : r.kind === 'medio' ? 'vigílala' : 'entrar y salir rápido'}</small></div>
       </div>
+      ${ballenasFila(r, side)}
       ${radarVerdictLine(r)}
       ${timingLine(r)}
       ${gaugesHtml(r)}
@@ -4239,6 +4392,9 @@ async function runRadarScan() {
   radarState.scanning = true;
   radarState.data['-1'] = null; radarState.data['1'] = null;
   renderRadar();
+  // la foto del posicionamiento general va en paralelo: no depende del radar y
+  // es la que contesta "¿hacia dónde se está colocando el dinero grande?"
+  correrPosMercado();
   for (const side of [-1, 1]) {
     try {
       const rows = await scanMoves(side);
