@@ -350,6 +350,14 @@ details.ex[open]{border-color:#3a424d;}
       <div id="medirOut"></div>
     </div>
 
+    <!-- COMPARAR CONFIGURACIONES -->
+    <div class="card" id="compCard">
+      <h2>🧪 Probar si sirve operando más despacio<span class="q" data-h="La primera medición dijo que la ventaja bruta existe pero es más pequeña que lo que cuesta operar. Eso pasa porque en velas de 15 minutos el stop está a medio punto porcentual del precio, y la comisión ida y vuelta es 0,14% — o sea, el peaje se lleva casi un tercio de lo que arriesgas. En marcos más lentos y con stops más anchos ese peaje es mucho menor. Este botón prueba siete formas distintas de operar la misma regla y te las enseña TODAS, no sólo la mejor, porque quedarse con la mejor de siete es como quedarse con la mejor de cuatro monedas: encuentras algo bueno aunque no lo haya.">?</span></h2>
+      <div class="desc">La ventaja bruta existe pero es menor que el coste de operar. Aquí se prueba la misma regla operando más despacio y con stops más anchos, donde el coste pesa mucho menos. Se prueban <b>siete configuraciones</b> sobre las mismas monedas. Tarda bastante — diez minutos o más.</div>
+      <button id="compBtn" class="btn" style="margin-top:10px">Probar las siete formas</button>
+      <div id="compOut"></div>
+    </div>
+
     <!-- GRÁFICO -->
     <div class="card">
       <div class="pricebar">
@@ -2656,7 +2664,9 @@ const VAL = { WARM: 210, H: 32, MIN_SENALES: 8, MONEDAS: 22 };
    estrategia de velas de 15 minutos lo que arriesgas por operación es una
    fracción pequeña del precio, así que estos números pesan mucho más de lo que
    sugiere su tamaño. Ignorarlos era hacer trampa. */
-const COSTES = { comision: 0.0005, deslizamiento: 0.0002,
+const COSTES = { comision: 0.0005,        // taker: cruzas contra el libro
+                 maker: 0.0002,           // limitada: pones precio y esperas
+                 deslizamiento: 0.0002,
                  get total() { return (this.comision + this.deslizamiento) * 2; } };
 
 /* Para cada vela de 15m, el índice de la última vela de un marco mayor que ya
@@ -2738,19 +2748,41 @@ function alinearPorTiempo(k15, filas, campo) {
   return out;
 }
 
-async function validarRegla(sym) {
+/* Configuraciones que se pueden medir.
+   Para cada marco base: de qué marcos sale la tendencia mayor, cuántas velas de
+   ese marco caben en cuatro horas y en un día (se usa para los cambios de
+   ballenas y de interés abierto), y cuántas velas hay en un día — sirve para
+   contar los días medidos. */
+const MARCOS_VAL = {
+  '15m': { mayores: ['4h', '1d'], cuatroH: 16, unDia: 96, porDia: 96 },
+  '1h':  { mayores: ['4h', '1d'], cuatroH: 4,  unDia: 24, porDia: 24 },
+  '4h':  { mayores: ['1d', '1w'], cuatroH: 1,  unDia: 6,  porDia: 6 },
+};
+
+async function validarRegla(sym, opts = {}) {
+  const tf = opts.tf || '15m';
+  const M = MARCOS_VAL[tf];
+  if (!M) return { error: 'Marco no soportado: ' + tf };
+  const slAtr = opts.slAtr ?? MV.SL_ATR;
+  const tpAtr = opts.tpAtr ?? MV.TP_ATR;
+  // con órdenes límite se paga comisión de maker en vez de taker y casi no hay
+  // deslizamiento al entrar; el stop sigue saliendo a mercado
+  const costeIdaVuelta = opts.maker
+    ? (COSTES.maker + COSTES.comision) + COSTES.deslizamiento
+    : COSTES.total;
+
   const g = (p) => fetchJSON(`${FAPI}${p}`).catch(() => null);
-  const [r15, r4h, r1d, top, tak, oih] = await Promise.all([
-    g(`/fapi/v1/klines?symbol=${sym}&interval=15m&limit=1000`),
-    g(`/fapi/v1/klines?symbol=${sym}&interval=4h&limit=500`),
-    g(`/fapi/v1/klines?symbol=${sym}&interval=1d&limit=300`),
-    g(`/futures/data/topLongShortPositionRatio?symbol=${sym}&period=15m&limit=500`),
-    g(`/futures/data/takerlongshortRatio?symbol=${sym}&period=15m&limit=500`),
-    g(`/futures/data/openInterestHist?symbol=${sym}&period=15m&limit=500`),
+  const [rBase, rM1, rM2, top, tak, oih] = await Promise.all([
+    g(`/fapi/v1/klines?symbol=${sym}&interval=${tf}&limit=1000`),
+    g(`/fapi/v1/klines?symbol=${sym}&interval=${M.mayores[0]}&limit=500`),
+    g(`/fapi/v1/klines?symbol=${sym}&interval=${M.mayores[1]}&limit=300`),
+    g(`/futures/data/topLongShortPositionRatio?symbol=${sym}&period=${tf}&limit=500`),
+    g(`/futures/data/takerlongshortRatio?symbol=${sym}&period=${tf}&limit=500`),
+    g(`/futures/data/openInterestHist?symbol=${sym}&period=${tf}&limit=500`),
   ]);
-  if (!r15 || !r4h) return { error: 'No se pudieron traer los datos históricos de Binance.' };
-  const k15 = parseKlines(r15).slice(0, -1);      // fuera la vela en curso
-  const k4h = parseKlines(r4h), k1d = r1d ? parseKlines(r1d) : [];
+  if (!rBase || !rM1) return { error: 'No se pudieron traer los datos históricos de Binance.' };
+  const k15 = parseKlines(rBase).slice(0, -1);      // fuera la vela en curso
+  const k4h = parseKlines(rM1), k1d = rM2 ? parseKlines(rM2) : [];
   if (k15.length < VAL.WARM + VAL.H + 10) return { error: 'Esta moneda no tiene suficiente historial para medir la regla.' };
 
   const S4 = serieTendencia(k4h), S1 = serieTendencia(k1d);
@@ -2763,8 +2795,8 @@ async function validarRegla(sym) {
 
   const ops = [];
   let evaluadas = 0;
-  const CUATRO_H = 16;          // 16 velas de 15m = 4 h
-  const UN_DIA = 96;
+  const CUATRO_H = M.cuatroH;   // cuántas velas de este marco caben en 4 h
+  const UN_DIA = M.unDia;       // y en un día
   for (let i = VAL.WARM; i < k15.length - VAL.H - 1; i++) {
     const e = estr[i];
     if (!e || !e.atr) continue;
@@ -2796,19 +2828,20 @@ async function validarRegla(sym) {
     // produjo la señal, porque en vivo esa vela todavía no había cerrado.
     const side = D.action === 'LONG' ? 1 : -1;
     const entrada = k15[i + 1].open, a = e.atr;
-    const stop = side > 0 ? entrada - MV.SL_ATR * a : entrada + MV.SL_ATR * a;
-    const obj  = side > 0 ? entrada + MV.TP_ATR * a : entrada - MV.TP_ATR * a;
+    const stop = side > 0 ? entrada - slAtr * a : entrada + slAtr * a;
+    const obj  = side > 0 ? entrada + tpAtr * a : entrada - tpAtr * a;
+    const premio = tpAtr / slAtr;          // cuántas R se ganan al tocar objetivo
     let res = 'abierta', R = 0;
     for (let k = 1; k <= VAL.H && i + 1 + k < k15.length; k++) {
       const b = k15[i + 1 + k];
       const tocaStop = side > 0 ? b.low <= stop : b.high >= stop;
       const tocaObj  = side > 0 ? b.high >= obj : b.low <= obj;
       if (tocaStop) { res = 'stop'; R = -1; break; }   // el stop primero: criterio conservador
-      if (tocaObj)  { res = 'objetivo'; R = 2; break; }
+      if (tocaObj)  { res = 'objetivo'; R = premio; break; }
     }
     if (res === 'abierta') {
       const cierre = k15[Math.min(i + 1 + VAL.H, k15.length - 1)].close;
-      R = ((cierre - entrada) * side) / (MV.SL_ATR * a);
+      R = ((cierre - entrada) * side) / (slAtr * a);
     }
     /* COSTES. Sin esto la medición enseña un número más bonito que la realidad,
        y en una estrategia de velas de 15 minutos los costes NO son un detalle:
@@ -2818,20 +2851,22 @@ async function validarRegla(sym) {
        Se calcula operación por operación con el ATR y el precio de ESA
        operación, no con un promedio: en una moneda tranquila pesa mucho más que
        en una movida. */
-    const costeR = (entrada * COSTES.total) / (MV.SL_ATR * a);
+    const costeR = (entrada * costeIdaVuelta) / (slAtr * a);
     ops.push({ i, side, res, R, costeR, Rneto: R - costeR });
     i += VAL.H;   // no se cuenta la misma señal muchas veces seguidas
   }
 
   const n = ops.length;
-  if (!n) return { n: 0, evaluadas, hayBallenas, dias: Math.round(k15.length / 96) };
+  if (!n) return { n: 0, evaluadas, hayBallenas, dias: Math.round(k15.length / M.porDia), tf, slAtr, tpAtr };
   const ganadas = ops.filter(o => o.Rneto > 0).length;
   const sumaBruto = ops.reduce((s, o) => s + o.R, 0);
   const sumaNeto = ops.reduce((s, o) => s + o.Rneto, 0);
   const coste = ops.reduce((s, o) => s + o.costeR, 0) / n;
   return {
-    n, evaluadas, hayBallenas,
-    dias: Math.round(k15.length / 96),
+    n, evaluadas, hayBallenas, tf, slAtr, tpAtr,
+    dias: Math.round(k15.length / M.porDia),
+    // punto de empate: con premio P y pérdida 1, hace falta acertar 1/(1+P)
+    empate: 100 / (1 + tpAtr / slAtr),
     aciertos: ganadas / n * 100,
     // el número que manda es el NETO: es el que puedes cobrar
     rMedio: sumaNeto / n,
@@ -2857,20 +2892,99 @@ async function validarRegla(sym) {
    Se informa también de cuánto se aleja el resultado de lo que daría el
    puro azar, en desviaciones típicas. Por debajo de 2 no hay nada que
    celebrar, por mucho que el número sea positivo. */
-async function medirRegla(onProgreso) {
+/* =====================================================================
+   COMPARAR CONFIGURACIONES
+   =====================================================================
+   La primera medición dejó el diagnóstico claro: en velas de 15 minutos, lo
+   que se arriesga por operación (1,5 ATR ≈ 0,5% del precio) es tan pequeño
+   comparado con lo que cuesta operar (0,14% ida y vuelta) que las comisiones
+   se llevan el 28% del riesgo. Con ese peaje, una ventaja bruta de 0,11 R
+   se convierte en −0,17 R netos.
+
+   La pregunta que sigue es concreta: ¿sobrevive esa ventaja bruta si se
+   opera más despacio, con stops más anchos, o poniendo órdenes limitadas en
+   vez de cruzar contra el libro? En todos esos casos el coste, medido en R,
+   baja mucho.
+
+   AVISO IMPORTANTE, Y VA EN EL CÓDIGO PARA QUE NO SE OLVIDE:
+   probar varias configuraciones y quedarse con la mejor es exactamente el
+   error que hizo que una moneda suelta pareciera rentable. Si se prueban
+   seis, alguna saldrá bien por puro azar. Por eso el listón sube: en vez de
+   pedir 2 desviaciones típicas se pide el equivalente a repartir el mismo
+   margen de error entre todas las probadas (corrección de Bonferroni), y se
+   enseñan TODAS, no sólo la ganadora. */
+const CONFIGS = [
+  { id: '15m-1.5-taker', tf: '15m', slAtr: 1.5, tpAtr: 3, maker: false, nombre: '15 min · stop 1,5 ATR · a mercado' },
+  { id: '15m-3-taker',   tf: '15m', slAtr: 3,   tpAtr: 6, maker: false, nombre: '15 min · stop 3 ATR · a mercado' },
+  { id: '1h-1.5-taker',  tf: '1h',  slAtr: 1.5, tpAtr: 3, maker: false, nombre: '1 hora · stop 1,5 ATR · a mercado' },
+  { id: '1h-3-taker',    tf: '1h',  slAtr: 3,   tpAtr: 6, maker: false, nombre: '1 hora · stop 3 ATR · a mercado' },
+  { id: '4h-1.5-taker',  tf: '4h',  slAtr: 1.5, tpAtr: 3, maker: false, nombre: '4 horas · stop 1,5 ATR · a mercado' },
+  { id: '4h-3-taker',    tf: '4h',  slAtr: 3,   tpAtr: 6, maker: false, nombre: '4 horas · stop 3 ATR · a mercado' },
+  { id: '1h-3-maker',    tf: '1h',  slAtr: 3,   tpAtr: 6, maker: true,  nombre: '1 hora · stop 3 ATR · con orden limitada' },
+];
+
+/* Umbral de significación con corrección por número de pruebas.
+   Con una sola prueba se pide z ≥ 2 (más o menos un 2,5% de probabilidad de
+   verlo por azar). Con k pruebas se reparte ese 2,5% entre las k, lo que
+   equivale a subir el listón. La inversa de la normal se calcula con la
+   aproximación de Acklam, que es más que suficiente aquí. */
+function zNormalInversa(p) {
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
+             1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
+             6.680131188771972e+01, -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
+             -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
+  const pl = 0.02425;
+  let q, r;
+  if (p < pl) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+  if (p > 1 - pl) {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+  q = p - 0.5; r = q * q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
+         (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+function umbralZ(k) { return zNormalInversa(1 - 0.025 / Math.max(1, k)); }
+
+async function compararConfigs(onProgreso) {
+  // la MISMA lista de monedas para todas, o no se estarían comparando entre sí
+  const lista = await monedasParaMedir();
+  const out = [];
+  for (let c = 0; c < CONFIGS.length; c++) {
+    const cfg = CONFIGS[c];
+    const M = await medirRegla(
+      (i, total, sym) => onProgreso && onProgreso(cfg, c + 1, CONFIGS.length, i, total, sym),
+      { tf: cfg.tf, slAtr: cfg.slAtr, tpAtr: cfg.tpAtr, maker: cfg.maker },
+      lista);
+    out.push({ cfg, M });
+  }
+  return { resultados: out, umbral: umbralZ(CONFIGS.length), monedas: lista.length };
+}
+
+async function monedasParaMedir() {
   const info = await fetchJSON(`${FAPI}/fapi/v1/ticker/24hr`);
   const validos = new Set(state.symbols.map(s => s.symbol));
-  const lista = (Array.isArray(info) ? info : [])
+  return (Array.isArray(info) ? info : [])
     .filter(t => validos.has(t.symbol) && parseFloat(t.quoteVolume) > 2e7)
     .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
     .slice(0, VAL.MONEDAS)
     .map(t => t.symbol);
+}
+
+async function medirRegla(onProgreso, opts = {}, listaDada) {
+  const lista = listaDada || await monedasParaMedir();
 
   const porMoneda = [];
   for (let i = 0; i < lista.length; i++) {
     if (onProgreso) onProgreso(i + 1, lista.length, lista[i]);
     try {
-      const r = await validarRegla(lista[i]);
+      const r = await validarRegla(lista[i], opts);
       if (!r.error) porMoneda.push({ symbol: lista[i], ...r });
     } catch (e) { /* una moneda que falle no puede tumbar la medición */ }
     await new Promise(res => setTimeout(res, 150));
@@ -2891,12 +3005,15 @@ async function medirRegla(onProgreso) {
      así que hace falta acertar más de 1 de cada 3 para empatar. Se compara el
      número de aciertos con lo que daría una moneda al aire con esa probabilidad
      y se mide la distancia en desviaciones típicas. */
-  const pBase = 1 / 3;
+  const pBase = 1 / (1 + (opts.tpAtr ?? MV.TP_ATR) / (opts.slAtr ?? MV.SL_ATR));
   const esperadas = n * pBase;
   const desv = Math.sqrt(n * pBase * (1 - pBase));
   const z = desv > 0 ? (ganadas - esperadas) / desv : 0;
 
   return {
+    tf: opts.tf || '15m', slAtr: opts.slAtr ?? MV.SL_ATR, tpAtr: opts.tpAtr ?? MV.TP_ATR,
+    maker: !!opts.maker, empate: pBase * 100,
+    dias: conSenales.length ? Math.round(conSenales.reduce((s, m) => s + m.dias, 0) / conSenales.length) : 0,
     n, monedas: conSenales.length, analizadas: porMoneda.length,
     sinBallenas: porMoneda.filter(m => !m.hayBallenas).length,
     aciertos: ganadas / n * 100,
@@ -3381,6 +3498,60 @@ async function correrMedicion() {
     renderMedicion({ error: 'No se pudo completar la medición: ' + (e.message || e) });
   }
   b.disabled = false; b.textContent = 'Medir otra vez';
+}
+
+/* ---- Comparación de configuraciones ---- */
+function renderComparacion(C, progreso) {
+  const el = $('compOut');
+  if (progreso) { el.innerHTML = `<div class="desc" style="margin-top:12px"><span class="spinner"></span>${progreso}</div>`; return; }
+  if (!C) { el.innerHTML = ''; return; }
+  if (C.error) { el.innerHTML = `<div class="warn" style="margin-top:12px">⚠️ ${C.error}</div>`; return; }
+
+  const filas = C.resultados.map(({ cfg, M }) => ({ cfg, M }))
+    .filter(x => x.M && !x.M.error);
+  const buenas = filas.filter(x => x.M.n > 0 && x.M.rNeto > 0 && x.M.z >= C.umbral);
+  const R = x => (x >= 0 ? '+' : '') + x.toFixed(3);
+
+  el.innerHTML =
+    `<div class="big" style="margin:12px 0 8px;color:${buenas.length ? 'var(--green)' : 'var(--red)'}">` +
+      (buenas.length
+        ? `✅ ${buenas.length === 1 ? 'Una configuración supera' : buenas.length + ' configuraciones superan'} el listón`
+        : '❌ Ninguna de las siete supera el listón') + `</div>` +
+    `<div class="desc">Listón: <b>${C.umbral.toFixed(2)} σ</b>. Es más alto que el 2 σ de siempre porque se están probando siete cosas a la vez, y con siete intentos algo sale bien por azar. El reparto del margen de error entre las siete es lo que sube el listón.</div>` +
+    `<div style="overflow-x:auto;margin-top:10px"><table>
+      <thead><tr><th>Cómo se opera</th><th>Ops</th><th>Aciertos</th><th>Coste</th><th>Neto</th><th>σ</th></tr></thead>
+      <tbody>` +
+      filas.map(({ cfg, M }) => {
+        if (!M.n) return `<tr><td>${cfg.nombre}</td><td colspan="5" style="color:var(--muted)">sin señales</td></tr>`;
+        const gana = M.rNeto > 0 && M.z >= C.umbral;
+        return `<tr${gana ? ' class="reco"' : ''}>
+          <td><b>${cfg.nombre}</b><br><small style="color:var(--muted)">empate en ${M.empate.toFixed(0)}% · ${M.dias} días</small></td>
+          <td>${M.n}</td>
+          <td style="color:${M.aciertos > M.empate ? 'var(--green)' : 'var(--red)'}">${M.aciertos.toFixed(1)}%</td>
+          <td style="color:var(--muted)">${M.costeMedio.toFixed(3)} R</td>
+          <td style="color:${M.rNeto > 0 ? 'var(--green)' : 'var(--red)'}"><b>${R(M.rNeto)} R</b><br><small style="color:var(--muted)">bruto ${R(M.rBruto)}</small></td>
+          <td style="color:${M.z >= C.umbral ? 'var(--green)' : 'var(--muted)'}">${M.z.toFixed(2)}</td>
+        </tr>`;
+      }).join('') +
+    `</tbody></table></div>` +
+    (buenas.length
+      ? `<div class="warn" style="margin-top:10px"><b>Antes de darlo por bueno.</b> Que una configuración pase el listón sobre este historial no quiere decir que vaya a seguir funcionando. Está medido sobre un solo periodo y un solo tipo de mercado. Lo sensato es operarla en testnet o con el tamaño más pequeño posible durante unas semanas y volver a medir, no cambiarle el tamaño a la cuenta hoy.</div>`
+      : `<div class="warn" style="margin-top:10px"><b>Esto cierra la pregunta.</b> Ninguna forma de operar esta regla — ni más despacio, ni con stops más anchos, ni con órdenes limitadas — produce una ventaja que se distinga del azar después de pagar comisiones. Si el coste dejara de ser el problema y aun así no aparece ventaja, es que la ventaja no está ahí. Lo honesto es no operar esto con dinero real y, si quieres seguir, cambiar la idea de raíz en vez de seguir ajustando los mismos números.</div>`) +
+    `<div class="src" style="margin-top:10px">Todas las configuraciones se miden sobre las mismas ${C.monedas} monedas y con las mismas reglas: se entra en la apertura de la vela siguiente a la señal, sólo con información que existía en ese momento, y si el stop y el objetivo caen en la misma vela se cuenta el stop. La columna de coste es lo que se llevan comisión y deslizamiento por operación, medido en R sobre el ATR y el precio reales de cada una.</div>`;
+}
+
+async function correrComparacion() {
+  const b = $('compBtn');
+  b.disabled = true; b.textContent = 'Probando…';
+  try {
+    const C = await compararConfigs((cfg, c, total, i, nMon, sym) =>
+      renderComparacion(null, `Probando <b>${cfg.nombre}</b> — configuración ${c} de ${total}.<br>Moneda ${i} de ${nMon} (${sym.replace('USDT', '')}). Esto tarda; deja la app abierta.`));
+    state.comparacion = C;
+    renderComparacion(C);
+  } catch (e) {
+    renderComparacion({ error: 'No se pudo completar: ' + (e.message || e) });
+  }
+  b.disabled = false; b.textContent = 'Probar otra vez';
 }
 
 async function correrValidacion(sym) {
@@ -4231,6 +4402,7 @@ function setupHelp() {
   setupHelp();
   setupPos();
   $('medirBtn').onclick = correrMedicion;
+  $('compBtn').onclick = correrComparacion;
   showStatus('<span class="spinner"></span>Conectando con Binance Futures…', 'info');
   try {
     await loadSymbols();
