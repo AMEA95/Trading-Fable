@@ -342,6 +342,14 @@ details.ex[open]{border-color:#3a424d;}
       <div id="valOut"><div class="desc">Abre una moneda para comprobarla.</div></div>
     </div>
 
+    <!-- MEDICIÓN AGRUPADA -->
+    <div class="card" id="medirCard">
+      <h2>📐 ¿Funciona esta estrategia, en general?<span class="q" data-h="Medir una moneda suelta no sirve para decidir, y es la forma más común de engañarse: si miras cuatro monedas y te quedas con la que salió mejor, vas a encontrar una buena aunque la estrategia no valga nada. Este botón mide la regla sobre las monedas más negociadas a la vez, junta todas las operaciones y te dice si el resultado se distingue del azar o no. Tarda un par de minutos porque baja mucho historial.">?</span></h2>
+      <div class="desc">Mide la regla sobre las <b>22 monedas</b> con más volumen a la vez y junta todas las operaciones. Con varios cientos de operaciones ya se puede distinguir una ventaja real de la suerte. Tarda un par de minutos.</div>
+      <button id="medirBtn" class="btn" style="margin-top:10px">Medir la estrategia</button>
+      <div id="medirOut"></div>
+    </div>
+
     <!-- GRÁFICO -->
     <div class="card">
       <div class="pricebar">
@@ -2640,7 +2648,16 @@ function buildVerdict(tf) {
    tanto, la parte de la regla que sí se puede medir: ballenas, flujo
    agresivo e interés abierto contra precio, más la estructura y la
    tendencia. Se dice en pantalla en vez de esconderlo. */
-const VAL = { WARM: 210, H: 32, MIN_SENALES: 8 };
+const VAL = { WARM: 210, H: 32, MIN_SENALES: 8, MONEDAS: 22 };
+
+/* Lo que cuesta operar, por lado. Comisión taker de Binance Futures más un
+   deslizamiento prudente (el precio al que entras nunca es exactamente el que
+   viste). Se paga al entrar Y al salir, de ahí el ×2. Parece poco, pero en una
+   estrategia de velas de 15 minutos lo que arriesgas por operación es una
+   fracción pequeña del precio, así que estos números pesan mucho más de lo que
+   sugiere su tamaño. Ignorarlos era hacer trampa. */
+const COSTES = { comision: 0.0005, deslizamiento: 0.0002,
+                 get total() { return (this.comision + this.deslizamiento) * 2; } };
 
 /* Para cada vela de 15m, el índice de la última vela de un marco mayor que ya
    había CERRADO en ese momento. Sin esto se estaría usando información del
@@ -2793,23 +2810,103 @@ async function validarRegla(sym) {
       const cierre = k15[Math.min(i + 1 + VAL.H, k15.length - 1)].close;
       R = ((cierre - entrada) * side) / (MV.SL_ATR * a);
     }
-    ops.push({ i, side, res, R });
+    /* COSTES. Sin esto la medición enseña un número más bonito que la realidad,
+       y en una estrategia de velas de 15 minutos los costes NO son un detalle:
+       se pagan comisión y deslizamiento al entrar y al salir, y lo que arriesgas
+       en cada operación (1.5 ATR) suele ser menos del 1% del precio. Es decir,
+       el coste puede llevarse una quinta parte de lo que arriesgas.
+       Se calcula operación por operación con el ATR y el precio de ESA
+       operación, no con un promedio: en una moneda tranquila pesa mucho más que
+       en una movida. */
+    const costeR = (entrada * COSTES.total) / (MV.SL_ATR * a);
+    ops.push({ i, side, res, R, costeR, Rneto: R - costeR });
     i += VAL.H;   // no se cuenta la misma señal muchas veces seguidas
   }
 
   const n = ops.length;
   if (!n) return { n: 0, evaluadas, hayBallenas, dias: Math.round(k15.length / 96) };
-  const ganadas = ops.filter(o => o.R > 0).length;
-  const sumaR = ops.reduce((s, o) => s + o.R, 0);
+  const ganadas = ops.filter(o => o.Rneto > 0).length;
+  const sumaBruto = ops.reduce((s, o) => s + o.R, 0);
+  const sumaNeto = ops.reduce((s, o) => s + o.Rneto, 0);
+  const coste = ops.reduce((s, o) => s + o.costeR, 0) / n;
   return {
     n, evaluadas, hayBallenas,
     dias: Math.round(k15.length / 96),
     aciertos: ganadas / n * 100,
-    rMedio: sumaR / n,
-    rTotal: sumaR,
+    // el número que manda es el NETO: es el que puedes cobrar
+    rMedio: sumaNeto / n,
+    rTotal: sumaNeto,
+    rMedioBruto: sumaBruto / n,
+    rTotalBruto: sumaBruto,
+    costeMedio: coste,
     largos: ops.filter(o => o.side > 0).length,
     cortos: ops.filter(o => o.side < 0).length,
     ops,
+  };
+}
+
+/* =====================================================================
+   MEDICIÓN AGRUPADA — la regla sobre MUCHAS monedas a la vez
+   =====================================================================
+   Medir moneda por moneda no sirve para decidir, y es la forma más común
+   de engañarse solo: si miras cuatro y te quedas con la que salió mejor,
+   vas a encontrar una buena aunque la regla no valga nada. Con veinte
+   monedas y varios cientos de operaciones ya se puede distinguir una
+   ventaja de verdad del azar.
+
+   Se informa también de cuánto se aleja el resultado de lo que daría el
+   puro azar, en desviaciones típicas. Por debajo de 2 no hay nada que
+   celebrar, por mucho que el número sea positivo. */
+async function medirRegla(onProgreso) {
+  const info = await fetchJSON(`${FAPI}/fapi/v1/ticker/24hr`);
+  const validos = new Set(state.symbols.map(s => s.symbol));
+  const lista = (Array.isArray(info) ? info : [])
+    .filter(t => validos.has(t.symbol) && parseFloat(t.quoteVolume) > 2e7)
+    .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+    .slice(0, VAL.MONEDAS)
+    .map(t => t.symbol);
+
+  const porMoneda = [];
+  for (let i = 0; i < lista.length; i++) {
+    if (onProgreso) onProgreso(i + 1, lista.length, lista[i]);
+    try {
+      const r = await validarRegla(lista[i]);
+      if (!r.error) porMoneda.push({ symbol: lista[i], ...r });
+    } catch (e) { /* una moneda que falle no puede tumbar la medición */ }
+    await new Promise(res => setTimeout(res, 150));
+  }
+
+  const conSenales = porMoneda.filter(m => m.n > 0);
+  const n = conSenales.reduce((s, m) => s + m.n, 0);
+  if (!n) return { n: 0, monedas: porMoneda.length, sinBallenas: porMoneda.filter(m => !m.hayBallenas).length };
+
+  const ops = conSenales.flatMap(m => m.ops);
+  const ganadas = ops.filter(o => o.Rneto > 0).length;
+  const rNeto = ops.reduce((s, o) => s + o.Rneto, 0) / n;
+  const rBruto = ops.reduce((s, o) => s + o.R, 0) / n;
+  const costeMedio = ops.reduce((s, o) => s + o.costeR, 0) / n;
+
+  /* ¿Cuánto se aleja esto del azar?
+     Con stop a 1.5 ATR y objetivo a 3 ATR, cada acierto vale +2 y cada fallo −1,
+     así que hace falta acertar más de 1 de cada 3 para empatar. Se compara el
+     número de aciertos con lo que daría una moneda al aire con esa probabilidad
+     y se mide la distancia en desviaciones típicas. */
+  const pBase = 1 / 3;
+  const esperadas = n * pBase;
+  const desv = Math.sqrt(n * pBase * (1 - pBase));
+  const z = desv > 0 ? (ganadas - esperadas) / desv : 0;
+
+  return {
+    n, monedas: conSenales.length, analizadas: porMoneda.length,
+    sinBallenas: porMoneda.filter(m => !m.hayBallenas).length,
+    aciertos: ganadas / n * 100,
+    rNeto, rBruto, costeMedio, z,
+    aFavor: conSenales.filter(m => m.rMedio > 0).length,
+    enContra: conSenales.filter(m => m.rMedio <= 0).length,
+    largos: ops.filter(o => o.side > 0).length,
+    cortos: ops.filter(o => o.side < 0).length,
+    detalle: conSenales.map(m => ({ symbol: m.symbol, n: m.n, r: m.rMedio, aciertos: m.aciertos }))
+                       .sort((a, b) => b.r - a.r),
   };
 }
 
@@ -3210,12 +3307,80 @@ function renderValidacion() {
     `<div class="grid">` +
       cell('Señales dadas', V.n, `en ${V.dias} días · ${V.largos} largos, ${V.cortos} cortos`) +
       cell('Aciertos', V.aciertos.toFixed(0) + '%', 'hace falta más del 33% para empatar', V.aciertos >= 34 ? 'up' : 'down') +
-      cell('Por operación', (V.rMedio >= 0 ? '+' : '') + V.rMedio.toFixed(2) + ' R', 'R = lo que arriesgas en cada una', V.rMedio >= 0 ? 'up' : 'down') +
+      cell('Por operación', (V.rMedio >= 0 ? '+' : '') + V.rMedio.toFixed(2) + ' R', 'ya descontadas las comisiones', V.rMedio >= 0 ? 'up' : 'down') +
       cell('Resultado total', (V.rTotal >= 0 ? '+' : '') + V.rTotal.toFixed(1) + ' R', 'sumando las ' + V.n, V.rTotal >= 0 ? 'up' : 'down') +
     `</div>` +
+    `<div class="src" style="margin-top:8px">Antes de comisiones habría sido ${(V.rMedioBruto >= 0 ? '+' : '') + V.rMedioBruto.toFixed(2)} R por operación. Operar cuesta <b>${V.costeMedio.toFixed(2)} R</b> cada vez en esta moneda (comisión y deslizamiento al entrar y al salir), y ése es el número que decide si una estrategia floja es rentable o no.</div>` +
+    `<div class="warn" style="margin-top:10px">Una moneda suelta <b>no basta</b> para decidir si la estrategia sirve: si miras varias y te quedas con la mejor, encontrarás una buena aunque no valga nada. Usa el botón de <b>“¿Funciona esta estrategia, en general?”</b> más abajo — ésa es la medición que decide.</div>` +
     (pocas ? `<div class="warn" style="margin-top:10px">⚠️ Sólo <b>${V.n} señales</b> en la ventana medida. Con tan pocas, este resultado puede ser suerte en cualquiera de los dos sentidos. Tómalo como un indicio, no como una prueba: Binance sólo publica unos cinco días de historial de ballenas a 15 minutos, y de ahí no se puede sacar más.</div>` : '') +
     (malo ? `<div class="warn" style="margin-top:10px">Esto es un dato en contra de operar esta moneda con esta app, y por eso aparece en la tarjeta de arriba. La regla puede funcionar en otras monedas y no en ésta.</div>` : '') +
     nota;
+}
+
+/* ---- Medición agrupada: la respuesta a "¿esto funciona o no?" ---- */
+function renderMedicion(M, progreso) {
+  const el = $('medirOut');
+  if (progreso) {
+    el.innerHTML = `<div class="desc" style="margin-top:12px"><span class="spinner"></span>${progreso}</div>`;
+    return;
+  }
+  if (!M) { el.innerHTML = ''; return; }
+  if (M.error) { el.innerHTML = `<div class="warn" style="margin-top:12px">⚠️ ${M.error}</div>`; return; }
+  if (!M.n) {
+    el.innerHTML = `<div class="desc" style="margin-top:12px">La regla no dio ninguna señal en las ${M.monedas} monedas medidas. Sin operaciones no hay nada que juzgar.</div>`;
+    return;
+  }
+
+  /* El veredicto NO se decide por el signo del resultado. Se decide por si la
+     distancia al azar es lo bastante grande. Un +0.05 R con z = 0.4 es ruido
+     con un signo delante, y presentarlo como "gana dinero" sería exactamente el
+     tipo de número bonito que hace perder dinero a la gente. */
+  const claro = M.z >= 2 && M.rNeto > 0.05;
+  const malo = M.rNeto <= 0;
+  const color = claro ? 'var(--green)' : malo ? 'var(--red)' : 'var(--yellow)';
+  const titulo = claro
+    ? '✅ La estrategia muestra una ventaja que se distingue del azar'
+    : malo
+      ? '❌ La estrategia pierde dinero'
+      : '➖ No se distingue del azar';
+
+  const cell = (k, v, s, c = '') => `<div class="kv"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`;
+  const R = x => (x >= 0 ? '+' : '') + x.toFixed(3) + ' R';
+
+  el.innerHTML =
+    `<div class="big" style="color:${color};margin:12px 0 8px">${titulo}</div>` +
+    `<div class="grid">` +
+      cell('Operaciones', M.n, `en ${M.monedas} monedas · ${M.largos} largos, ${M.cortos} cortos`) +
+      cell('Aciertos', M.aciertos.toFixed(1) + '%', 'el punto de empate está en 33,3%', M.aciertos > 33.3 ? 'up' : 'down') +
+      cell('Después de comisiones', R(M.rNeto), 'esto es lo que te quedaría', M.rNeto > 0 ? 'up' : 'down') +
+      cell('Antes de comisiones', R(M.rBruto), `las comisiones se llevan ${M.costeMedio.toFixed(3)} R por operación`) +
+      cell('Distancia al azar', M.z.toFixed(2) + ' σ', M.z >= 2 ? 'lo bastante lejos para tomárselo en serio' : 'por debajo de 2 no significa nada', M.z >= 2 ? 'up' : '') +
+      cell('Monedas a favor', `${M.aFavor} de ${M.monedas}`, `${M.enContra} salieron en contra`) +
+    `</div>` +
+    (!claro && !malo ? `<div class="warn" style="margin-top:10px"><b>Qué significa esto.</b> El resultado puede tener el signo positivo y aun así no valer nada. Con ${M.n} operaciones, una estrategia sin ninguna ventaja produciría un resultado así de bueno o mejor con bastante frecuencia. Para creer que hay algo de verdad haría falta que la distancia al azar pasara de 2 σ, y está en ${M.z.toFixed(2)}. Operar esto con dinero real es pagar comisiones a cambio de nada.</div>` : '') +
+    (malo ? `<div class="warn" style="margin-top:10px"><b>Esto es un resultado, no un fallo.</b> Dice que la estrategia, tal como está, no sirve para operar. Es información útil: te ahorra el dinero que habrías perdido descubriéndolo con la cuenta.</div>` : '') +
+    (claro ? `<div class="warn" style="margin-top:10px">Aun con este resultado, está medido sobre unos diez días. Diez días son un solo tipo de mercado. Que funcione aquí no garantiza que funcione cuando el mercado cambie de humor.</div>` : '') +
+    `<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted);font-size:13px">Ver moneda por moneda</summary>
+      <div style="overflow-x:auto"><table style="margin-top:8px">
+      <thead><tr><th>Moneda</th><th>Ops</th><th>Aciertos</th><th>Neto</th></tr></thead><tbody>
+      ${M.detalle.map(d => `<tr><td><b>${d.symbol.replace('USDT', '')}</b></td><td>${d.n}</td><td>${d.aciertos.toFixed(0)}%</td>
+        <td style="color:${d.r > 0 ? 'var(--green)' : 'var(--red)'}">${(d.r >= 0 ? '+' : '') + d.r.toFixed(2)} R</td></tr>`).join('')}
+      </tbody></table></div></details>` +
+    `<div class="src" style="margin-top:10px">Cada operación descuenta ${(COSTES.comision * 100).toFixed(2)}% de comisión y ${(COSTES.deslizamiento * 100).toFixed(2)}% de deslizamiento por lado, al entrar y al salir, calculado sobre el precio y el ATR reales de esa operación. σ es la distancia al azar medida en desviaciones típicas: es la forma estándar de saber si un resultado se puede atribuir a la suerte.</div>`;
+}
+
+async function correrMedicion() {
+  const b = $('medirBtn');
+  b.disabled = true; b.textContent = 'Midiendo…';
+  try {
+    const M = await medirRegla((i, total, sym) =>
+      renderMedicion(null, `Midiendo ${sym.replace('USDT', '')} — ${i} de ${total}. Puede tardar un par de minutos; no cierres la app.`));
+    state.medicion = M;
+    renderMedicion(M);
+  } catch (e) {
+    renderMedicion({ error: 'No se pudo completar la medición: ' + (e.message || e) });
+  }
+  b.disabled = false; b.textContent = 'Medir otra vez';
 }
 
 async function correrValidacion(sym) {
@@ -4065,6 +4230,7 @@ function setupHelp() {
   setupCalc();
   setupHelp();
   setupPos();
+  $('medirBtn').onclick = correrMedicion;
   showStatus('<span class="spinner"></span>Conectando con Binance Futures…', 'info');
   try {
     await loadSymbols();
