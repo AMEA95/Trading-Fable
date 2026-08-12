@@ -2865,9 +2865,15 @@ async function validarRegla(sym, opts = {}) {
   return {
     n, evaluadas, hayBallenas, tf, slAtr, tpAtr,
     dias: Math.round(k15.length / M.porDia),
-    // punto de empate: con premio P y pérdida 1, hace falta acertar 1/(1+P)
-    empate: 100 / (1 + tpAtr / slAtr),
+    /* OJO al leer estos dos: `aciertos` cuenta las operaciones que acabaron en
+       verde, y ahí entran las que se cerraron al final del horizonte con una
+       ganancia mínima. `objetivo` cuenta sólo las que llegaron a tocar el
+       objetivo. Cuando el stop es ancho, muchas se quedan por el camino y la
+       diferencia entre los dos números es grande — confundirlos fue lo que
+       produjo unas sigmas de 5 que no significaban nada. */
     aciertos: ganadas / n * 100,
+    objetivo: ops.filter(o => o.res === 'objetivo').length / n * 100,
+    abiertas: ops.filter(o => o.res === 'abierta').length / n * 100,
     // el número que manda es el NETO: es el que puedes cobrar
     rMedio: sumaNeto / n,
     rTotal: sumaNeto,
@@ -2996,28 +3002,53 @@ async function medirRegla(onProgreso, opts = {}, listaDada) {
 
   const ops = conSenales.flatMap(m => m.ops);
   const ganadas = ops.filter(o => o.Rneto > 0).length;
+  const tocaronObjetivo = ops.filter(o => o.res === 'objetivo').length;
+  const abiertas = ops.filter(o => o.res === 'abierta').length;
   const rNeto = ops.reduce((s, o) => s + o.Rneto, 0) / n;
   const rBruto = ops.reduce((s, o) => s + o.R, 0) / n;
   const costeMedio = ops.reduce((s, o) => s + o.costeR, 0) / n;
 
-  /* ¿Cuánto se aleja esto del azar?
-     Con stop a 1.5 ATR y objetivo a 3 ATR, cada acierto vale +2 y cada fallo −1,
-     así que hace falta acertar más de 1 de cada 3 para empatar. Se compara el
-     número de aciertos con lo que daría una moneda al aire con esa probabilidad
-     y se mide la distancia en desviaciones típicas. */
-  const pBase = 1 / (1 + (opts.tpAtr ?? MV.TP_ATR) / (opts.slAtr ?? MV.SL_ATR));
-  const esperadas = n * pBase;
-  const desv = Math.sqrt(n * pBase * (1 - pBase));
-  const z = desv > 0 ? (ganadas - esperadas) / desv : 0;
+  /* ¿CUÁNTO SE ALEJA ESTO DEL AZAR?
+     ================================
+     Aquí había un error importante, y se detectó porque los números no
+     cuadraban entre sí: una configuración marcaba 45,9% de "aciertos" y a la
+     vez sólo +0,02 R de resultado. Con premio 2 a 1, un 45,9% tendría que dar
+     +0,38 R. Algo no encajaba.
+
+     La causa: el cálculo anterior contaba como "acierto" cualquier operación
+     que acabara en verde, incluida una que se cerrara al final del horizonte
+     con +0,05 R. Luego comparaba ese recuento contra una moneda al aire que
+     paga +2 o −1. Son dos cosas distintas. Con stops anchos, muchas
+     operaciones no llegan ni al stop ni al objetivo dentro del horizonte y
+     acaban con un resultado pequeño: eso inflaba el recuento de "aciertos" sin
+     aportar casi nada al resultado, y producía sigmas de 5 que no significaban
+     nada. Si el neto hubiera salido positivo, ese 5 σ habría dado luz verde a
+     una estrategia sin ninguna ventaja.
+
+     La forma correcta de preguntarlo no pasa por contar aciertos: se mira
+     directamente la media de lo ganado por operación y se compara con cero,
+     usando la dispersión real de los resultados. Así da igual cómo esté
+     construido el premio o cuántas operaciones queden abiertas. */
+  const media = rNeto;
+  const varianza = n > 1
+    ? ops.reduce((s, o) => s + (o.Rneto - media) * (o.Rneto - media), 0) / (n - 1) : 0;
+  const errorTipico = n > 1 ? Math.sqrt(varianza / n) : 0;
+  const z = errorTipico > 0 ? media / errorTipico : 0;
+  // el mismo cálculo sobre el bruto, para ver si la ventaja existe antes de costes
+  const mediaB = rBruto;
+  const varB = n > 1 ? ops.reduce((s, o) => s + (o.R - mediaB) * (o.R - mediaB), 0) / (n - 1) : 0;
+  const zBruto = n > 1 && varB > 0 ? mediaB / Math.sqrt(varB / n) : 0;
 
   return {
     tf: opts.tf || '15m', slAtr: opts.slAtr ?? MV.SL_ATR, tpAtr: opts.tpAtr ?? MV.TP_ATR,
-    maker: !!opts.maker, empate: pBase * 100,
+    maker: !!opts.maker,
     dias: conSenales.length ? Math.round(conSenales.reduce((s, m) => s + m.dias, 0) / conSenales.length) : 0,
     n, monedas: conSenales.length, analizadas: porMoneda.length,
     sinBallenas: porMoneda.filter(m => !m.hayBallenas).length,
     aciertos: ganadas / n * 100,
-    rNeto, rBruto, costeMedio, z,
+    objetivo: tocaronObjetivo / n * 100,
+    abiertas: abiertas / n * 100,
+    rNeto, rBruto, costeMedio, z, zBruto,
     aFavor: conSenales.filter(m => m.rMedio > 0).length,
     enContra: conSenales.filter(m => m.rMedio <= 0).length,
     largos: ops.filter(o => o.side > 0).length,
@@ -3468,12 +3499,13 @@ function renderMedicion(M, progreso) {
     `<div class="big" style="color:${color};margin:12px 0 8px">${titulo}</div>` +
     `<div class="grid">` +
       cell('Operaciones', M.n, `en ${M.monedas} monedas · ${M.largos} largos, ${M.cortos} cortos`) +
-      cell('Aciertos', M.aciertos.toFixed(1) + '%', 'el punto de empate está en 33,3%', M.aciertos > 33.3 ? 'up' : 'down') +
       cell('Después de comisiones', R(M.rNeto), 'esto es lo que te quedaría', M.rNeto > 0 ? 'up' : 'down') +
-      cell('Antes de comisiones', R(M.rBruto), `las comisiones se llevan ${M.costeMedio.toFixed(3)} R por operación`) +
       cell('Distancia al azar', M.z.toFixed(2) + ' σ', M.z >= 2 ? 'lo bastante lejos para tomárselo en serio' : 'por debajo de 2 no significa nada', M.z >= 2 ? 'up' : '') +
+      cell('Antes de comisiones', R(M.rBruto), `las comisiones se llevan ${M.costeMedio.toFixed(3)} R por operación`, M.rBruto > 0 ? 'up' : 'down') +
+      cell('Llegaron al objetivo', M.objetivo.toFixed(1) + '%', `${M.abiertas.toFixed(0)}% se quedaron sin resolver y ${M.aciertos.toFixed(0)}% acabaron en verde`) +
       cell('Monedas a favor', `${M.aFavor} de ${M.monedas}`, `${M.enContra} salieron en contra`) +
     `</div>` +
+    `<div class="src" style="margin-top:10px">La distancia al azar se mide sobre el resultado medio por operación y su dispersión real, no contando aciertos. Contar aciertos daba números disparatados cuando muchas operaciones se quedaban sin tocar ni stop ni objetivo. Aun así, este número es <b>optimista</b>: las operaciones de monedas distintas se solapan en el tiempo y el mercado las mueve a la vez, así que son menos independientes de lo que supone el cálculo.</div>` +
     (!claro && !malo ? `<div class="warn" style="margin-top:10px"><b>Qué significa esto.</b> El resultado puede tener el signo positivo y aun así no valer nada. Con ${M.n} operaciones, una estrategia sin ninguna ventaja produciría un resultado así de bueno o mejor con bastante frecuencia. Para creer que hay algo de verdad haría falta que la distancia al azar pasara de 2 σ, y está en ${M.z.toFixed(2)}. Operar esto con dinero real es pagar comisiones a cambio de nada.</div>` : '') +
     (malo ? `<div class="warn" style="margin-top:10px"><b>Esto es un resultado, no un fallo.</b> Dice que la estrategia, tal como está, no sirve para operar. Es información útil: te ahorra el dinero que habrías perdido descubriéndolo con la cuenta.</div>` : '') +
     (claro ? `<div class="warn" style="margin-top:10px">Aun con este resultado, está medido sobre unos diez días. Diez días son un solo tipo de mercado. Que funcione aquí no garantiza que funcione cuando el mercado cambie de humor.</div>` : '') +
@@ -3519,17 +3551,16 @@ function renderComparacion(C, progreso) {
         : '❌ Ninguna de las siete supera el listón') + `</div>` +
     `<div class="desc">Listón: <b>${C.umbral.toFixed(2)} σ</b>. Es más alto que el 2 σ de siempre porque se están probando siete cosas a la vez, y con siete intentos algo sale bien por azar. El reparto del margen de error entre las siete es lo que sube el listón.</div>` +
     `<div style="overflow-x:auto;margin-top:10px"><table>
-      <thead><tr><th>Cómo se opera</th><th>Ops</th><th>Aciertos</th><th>Coste</th><th>Neto</th><th>σ</th></tr></thead>
+      <thead><tr><th>Cómo se opera</th><th>Bruto</th><th>Coste</th><th>Neto</th><th>σ</th></tr></thead>
       <tbody>` +
       filas.map(({ cfg, M }) => {
         if (!M.n) return `<tr><td>${cfg.nombre}</td><td colspan="5" style="color:var(--muted)">sin señales</td></tr>`;
         const gana = M.rNeto > 0 && M.z >= C.umbral;
         return `<tr${gana ? ' class="reco"' : ''}>
-          <td><b>${cfg.nombre}</b><br><small style="color:var(--muted)">empate en ${M.empate.toFixed(0)}% · ${M.dias} días</small></td>
-          <td>${M.n}</td>
-          <td style="color:${M.aciertos > M.empate ? 'var(--green)' : 'var(--red)'}">${M.aciertos.toFixed(1)}%</td>
+          <td><b>${cfg.nombre}</b><br><small style="color:var(--muted)">${M.dias} días · ${M.n} ops</small></td>
+          <td style="color:${M.rBruto > 0 ? 'var(--green)' : 'var(--red)'}">${R(M.rBruto)} R<br><small style="color:var(--muted)">${M.zBruto.toFixed(2)} σ</small></td>
           <td style="color:var(--muted)">${M.costeMedio.toFixed(3)} R</td>
-          <td style="color:${M.rNeto > 0 ? 'var(--green)' : 'var(--red)'}"><b>${R(M.rNeto)} R</b><br><small style="color:var(--muted)">bruto ${R(M.rBruto)}</small></td>
+          <td style="color:${M.rNeto > 0 ? 'var(--green)' : 'var(--red)'}"><b>${R(M.rNeto)} R</b></td>
           <td style="color:${M.z >= C.umbral ? 'var(--green)' : 'var(--muted)'}">${M.z.toFixed(2)}</td>
         </tr>`;
       }).join('') +
