@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Señales">
+<meta name="apple-mobile-web-app-title" content="Longs">
 <meta name="theme-color" content="#0d1015">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAEF0lEQVR4nO3dS24aQRSF4eso40iZZMZKvB6vKuvxSrKRDEpCCDjQj3qcW/V/I9uRoaX+udUFBH/8+v0ngGd+jD4A+CIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4kjv8v3V6JaJI7d2ZQRxpHYto1EixJFV05lREEdKHcoI4sjoaRktciGOZPrMjII4MulZRhBHIp3LCOLIYksZ1eshjgT6z4yCONyNKiOIw9zeMuqWRBy+Bs6MgjhMDS8jiMPTmTIqVkUcdhxmRkEcXnzKCOKwUquMWrdDHC6sZkZBHBYMywjicNCijCq3SRyDec6M4ufoA1jdv8+/5QvDSpgckIjDgudlB3GMZ7igFMQxmG0ZEfHBX6QeaG8Z16vX7b97+yt7sVsZ5kwZ0WWbQxxjnCxD/VPdUFhWBqhYxpa7OLyyMDm6OvDIPnZqqyw6TI5+upVRC1vZTtKVEcTRR8Yygjg6SFpGEEdrecsI4mgqdRnBVradDk9mtMbkaGKCMoI4HHiWEcTRwq6xYVtGEEd105QRxDGQeRlBHHVtHxv+ZQRxVDRZGUEctTi/FfQw4ugty9gI4qhivgWlII6zplxQCuLoJ9fYCOI4adYFpSCO4+YuI4gDLxDHQdOPjSCOY1YoI4jjgIn3rneIo6HUYyOIY69FFpSCOHZYZ0EpiKOJCcZGEMd2Sy0oBXFssmAZQRx4gTjeW3NsBHG8tWwZQRx4gTheWXlsBHG8sHgZQRzKak+GPkUcZ806NoI4nmJBKVJ+ss/dyat7hlhQrvLF8Xjyrj/p/Diee2xEuk8w3vKwPnPOWFBupYmjwyfzUcadHBekx64DLt9fXECc4T45Kp7d1w93xsYj6zgaPe4fzy5lPGW6W2m6HJQbd/5rvyYcJ4ft2VpqbITb5LDNItYrI6x2K85lrMlicvhnseDYCIfJQRm2Bk+OM2X02W4sW0YMjKNKFnff+g+hXMZsZSuWUffG997X3HrH0TSLivd14O7m03VZ6VlGsNyc1mlydM7i/DEwNqJPHA5l3Hp7PJRRtI3DLYtb6tgo46phHM5l3Lp8fxHEU03iYJswh/q7lSwDA2/Vf23l8AmmDDcWr8qShacmr8ruOtmUYWvkboUszA17Pwdl+BvwJBhZZNF2cjx2QBmJ9NutkEU6za85ShOUkZHjf2qCifHvPoct4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJD+A8vqPTjhCULVAAAAAElFTkSuQmCC">
 <title>Radar Long Cripto</title>
@@ -120,6 +120,25 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,16,21,.94);ba
 .tab{flex:1;max-width:180px;border:0;background:none;color:var(--muted);font-weight:700;font-size:13px;padding:9px 4px;border-radius:10px;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--surface2);color:var(--fg)}
 @media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+
+.calib{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.calib.neg{border-color:var(--stop)}
+.calib b{font-size:13.5px;display:block;margin-bottom:8px}
+.calib p{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+.cal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cal-grid div{background:var(--surface2);border-radius:9px;padding:7px 8px;display:grid;gap:1px;min-width:0}
+.cal-grid .v{font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap}
+.cal-grid .k{font-size:10.5px;color:var(--muted)}
+.prob{font-size:11px;color:var(--muted);margin-left:6px;font-weight:600;white-space:nowrap}
+.row.tm .lbl{color:var(--warn)} .row.tm .px{font-size:13.5px}
+.chip.s{background:var(--stop-dim);color:var(--stop)}
+.tlist{display:grid;gap:8px}
+.trow{display:flex;justify-content:space-between;gap:10px;background:var(--surface);border-radius:12px;padding:10px 12px;align-items:center}
+.trow>div{min-width:0}
+.tr-r{text-align:right;display:grid;gap:4px;justify-items:end;flex:none}
+.muted{color:var(--muted);font-size:12.5px}
+.small{font-size:11.5px;margin-top:2px}
+.tab{font-size:12.5px}
 </style>
 </head>
 <body>
@@ -128,9 +147,9 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,16,21,.94);ba
     <div class="brand">Radar Long<small id="subtitle">Perps USDT · 4 h</small></div>
     <button class="scanbtn" id="scan">Escanear</button>
   </header>
-
   <section id="view-signals">
     <div class="regime" id="regime"><div class="dot"></div><div><b>Régimen de mercado</b><span>Pulsa Escanear para leer el mercado en vivo.</span></div></div>
+    <div class="calib" id="calib" hidden></div>
     <div class="progress" id="progress" hidden><div class="bar"><i id="bar"></i></div><p id="ptext">Conectando…</p></div>
     <div id="error" class="err" hidden></div>
     <div class="stats" id="stats" hidden>
@@ -140,215 +159,276 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,16,21,.94);ba
     </div>
     <div id="list"></div>
   </section>
-
+  <section id="view-track" hidden>
+    <h2 style="font-size:20px;margin:18px 0 12px">Seguimiento real</h2>
+    <div id="track"></div>
+  </section>
   <section id="view-method" class="doc" hidden>
     <h2>Cómo decide el radar</h2>
-    <p>Cada señal sale de reglas fijas aplicadas a datos en vivo del exchange. Nada se elige a mano. Los métodos son los que tienen respaldo en estudios sobre cripto: seguir la tendencia (momentum de series temporales), comprar retrocesos dentro de esa tendencia y entrar en rupturas con volumen tras una compresión de volatilidad.</p>
-
-    <h3>1. Universo</h3>
-    <p>Perpetuos USDT activos con más de <span id="m-minvol">20</span> millones de USD negociados en 24 h (hasta 120 monedas). Se excluyen stablecoins e índices. La liquidez alta reduce el deslizamiento y las manipulaciones.</p>
-
-    <h3>2. Filtro de tendencia (obligatorio)</h3>
-    <p>En 4 h: precio sobre la EMA 200 y EMA 50 sobre EMA 200. Sin tendencia alcista no hay long.</p>
-
-    <h3>3. Gatillos</h3>
+    <p>Cada señal sale de reglas fijas aplicadas a datos en vivo. Los take profits no se eligen a mano: se calibran en cada escaneo con lo que realmente pasó en todas las señales anteriores del método en las 120 monedas analizadas (unas 250 jornadas de historia).</p>
+    <h3>1. Filtros obligatorios</h3>
     <ul>
-      <li><b>Retroceso en tendencia:</b> en las últimas 6 velas el precio tocó la zona EMA 20 / EMA 50 sin perder la EMA 50, el RSI bajó a 35–52 y vuelve a cerrar sobre 50 con una vela alcista sobre la EMA 20.</li>
-      <li><b>Ruptura con volumen:</b> cierre por encima del máximo de las 20 velas previas (canal de Donchian), volumen mayor a 1,5 veces su media, ADX sobre 18 y precio a menos de 2,5 ATR de la EMA 20 (no persigue velas estiradas).</li>
+      <li>Tendencia alcista en 4 h: precio sobre la EMA 200 y EMA 50 > EMA 200.</li>
+      <li>Tendencia alcista de fondo: precio sobre la EMA 300 de 4 h (equivale a la EMA 50 diaria).</li>
+      <li>BTC a favor: BTC sobre esa misma media. Las altcoins siguen a BTC; ir en contra es la causa más común de fallos. Puedes desactivarlo en Ajustes.</li>
+      <li>Espacio libre: si hay un techo a menos de 0,5 R, no hay señal.</li>
+      <li>Funding extremo en contra o historial negativo en esa moneda: la señal se descarta.</li>
+      <li>No perseguir: si el precio ya se alejó 0,3 R de la entrada o ya tocó TP1, la señal desaparece.</li>
     </ul>
-
-    <h3>4. Stop loss</h3>
-    <p>Bajo la estructura: el mínimo del retroceso o el último mínimo pivote, menos 0,25 ATR de margen para el ruido. Si ese stop queda a menos de 1 ATR se amplía a 1 ATR; si queda a más de 3 ATR la señal se descarta porque el riesgo no compensa.</p>
-
-    <h3>5. Take profits</h3>
-    <p>Se toman de resistencias reales: máximos pivote de 4 h de hasta 500 velas atrás y extensiones de Fibonacci (1, 1,272, 1,618 y 2) del último impulso. Cada objetivo se coloca 0,1 ATR por debajo del nivel para que la orden se llene antes que la multitud.</p>
+    <h3>2. Gatillos (con vela de confirmación)</h3>
     <ul>
-      <li><b>TP1:</b> primer nivel a 1 R o más. Cierra parte y sube el stop a la entrada.</li>
-      <li><b>TP2:</b> primer nivel a 3 R o más. <b>Si no existe, no hay señal.</b> Así se cumple la ganancia mínima de 3 veces el riesgo.</li>
-      <li><b>TP3:</b> siguiente nivel al menos 1 R más arriba, o seguir con un stop dinámico de 2 ATR.</li>
+      <li><b>Retroceso en tendencia:</b> el precio bajó a la zona EMA 20/50, el RSI se enfrió y vuelve a cerrar sobre 50 con una vela alcista que cierra en su tercio alto y supera la mitad de la vela anterior.</li>
+      <li><b>Ruptura:</b> cierre sobre el máximo de 20 velas con volumen mayor a 1,5 veces su media, ADX sobre 20, cuerpo grande y cierre cerca del máximo de la vela.</li>
     </ul>
-
-    <h3>6. Puntaje de confluencia (0–100)</h3>
-    <p>Tendencia en 4 h y diario (25), momentum RSI/MACD/ADX (15), volumen (10), fuerza relativa frente a BTC en 30 días (15), régimen de BTC (10), derivados: funding y open interest (15), historial propio de la moneda (10). Resta puntos si hay una resistencia muy cerca o una diaria antes del TP2. Suma 5 si la ruptura sale de una compresión de Bollinger.</p>
-
-    <h3>7. Análisis "fundamental" medible</h3>
-    <p>En futuros, lo que se puede medir con datos es el posicionamiento: <b>funding</b> (si los largos ya están saturados, se penaliza; si es negativo con tendencia alcista, hay combustible para un short squeeze), <b>open interest</b> (subida de precio con OI subiendo indica dinero nuevo entrando), <b>liquidez</b> y <b>fuerza relativa</b>. Noticias, tokenomics y desbloqueos de tokens no están en ninguna API gratuita: revísalos tú antes de entrar.</p>
-
-    <h3>8. Backtest por moneda</h3>
-    <p>Para cada señal el radar recorre unas 1500 velas de 4 h de esa misma moneda (~250 días), aplica las mismas reglas y simula: gana si toca el TP2 antes que el stop, pierde si toca el stop (si ambos ocurren en la misma vela, cuenta como pérdida), y cierra a mercado tras 90 velas. Descuenta 0,12 % de comisiones. Con objetivos de 3 R, acertar más del 25 % ya es rentable.</p>
-
+    <h3>3. Stop loss</h3>
+    <p>Bajo la estructura (el mínimo del retroceso o el último pivote) con 0,25 ATR de margen. Mínimo 1,2 ATR para que una mecha normal no te saque. Si la estructura exige más de 2,5 ATR, no hay señal.</p>
+    <h3>4. Plan de salida calibrado</h3>
+    <ul>
+      <li><b>TP1 (50 %):</b> la distancia en R que dio el mejor resultado en el historial, siempre que la alcanzara al menos la mitad de las señales. Si hay un techo antes, se cobra justo antes de él. Al tocarlo, el stop pasa a la entrada y la operación ya no puede perder.</li>
+      <li><b>TP2 (30 %):</b> primer nivel real a 2 R o más. Al tocarlo, el stop pasa a TP1.</li>
+      <li><b>TP3 (20 %):</b> primer nivel real a 3 R o más (ajustable en Ajustes). Es el objetivo de 3 veces el riesgo.</li>
+      <li><b>Cierre por tiempo:</b> si TP1 no llega en el doble del tiempo que suele tardar, se cierra a mercado.</li>
+    </ul>
+    <p>Cada TP muestra qué porcentaje de las señales pasadas lo alcanzó. El historial de cada moneda y el panel de calibración simulan exactamente este plan, con 0,12 % de comisión y el supuesto pesimista de que, si una vela toca stop y objetivo, cuenta el stop.</p>
+    <h3>5. Puntaje de confluencia (0–100)</h3>
+    <p>Tendencia en 4 h y diario (25), momentum RSI/MACD/ADX (15), volumen (10), fuerza relativa frente a BTC (15), régimen diario de BTC (10), funding y open interest (15), historial propio de la moneda (10), +5 por compresión de volatilidad, −5 si hay un nivel diario antes del TP2.</p>
+    <h3>6. Seguimiento</h3>
+    <p>La pestaña Seguimiento guarda cada señal mostrada y, en cada escaneo, la revisa con las velas reales. Así ves el resultado verdadero del método, no solo el simulado.</p>
     <h3>Límites</h3>
-    <p>Ningún método sabe si una moneda va a subir. Este filtra configuraciones con ventaja estadística y riesgo definido. Un backtest de pocas operaciones es orientativo. Arriesga poco por operación (1 % del capital es lo habitual) y usa margen aislado. No es asesoría financiera.</p>
+    <p>Ningún método sabe si una moneda va a subir. Aun con todo a favor, alrededor de 3 o 4 de cada 10 operaciones tocarán el stop antes que TP1; eso es normal y el plan lo tiene en cuenta. Arriesga 1 % por operación, usa margen aislado y no muevas el stop en contra. No es asesoría financiera.</p>
+    <p class="note">Universo: perpetuos USDT con más de <span id="m-minvol">20</span> millones de USD en 24 h (hasta 120).</p>
   </section>
-
   <section id="view-settings" hidden>
     <h2 style="font-size:20px;margin:18px 0 12px">Ajustes</h2>
     <div class="field"><label for="f-cap">Capital de la cuenta (USDT)</label><input id="f-cap" type="number" inputmode="decimal" min="1" step="1"></div>
     <div class="field"><label for="f-risk">Riesgo por operación (% del capital)</label><input id="f-risk" type="number" inputmode="decimal" min="0.1" max="10" step="0.1"><small>Con 1 % pierdes 1 % si salta el stop.</small></div>
+    <div class="field"><label for="f-final">Objetivo final (TP3)</label>
+      <select id="f-final"><option value="2">2 R · más señales, objetivo más cercano</option><option value="2.5">2,5 R</option><option value="3">3 R · tres veces el riesgo</option></select></div>
+    <div class="field"><label for="f-btc">Exigir que BTC acompañe</label>
+      <select id="f-btc"><option value="1">Sí (recomendado)</option><option value="0">No</option></select><small>Cambiarlo recalibra todo en el próximo escaneo.</small></div>
     <div class="field"><label for="f-min">Puntaje mínimo para mostrar</label>
-      <select id="f-min"><option value="50">50 · más señales</option><option value="60">60 · equilibrado</option><option value="70">70 · solo las mejores</option></select></div>
+      <select id="f-min"><option value="45">45 · más señales</option><option value="55">55 · equilibrado</option><option value="65">65 · solo las mejores</option></select></div>
     <div class="field"><label for="f-ex">Fuente de datos</label>
       <select id="f-ex"><option value="auto">Automática (Binance, si falla Bybit)</option><option value="binance">Binance Futures</option><option value="bybit">Bybit</option></select></div>
     <div class="field"><label for="f-vol">Volumen mínimo en 24 h (millones USD)</label><input id="f-vol" type="number" inputmode="decimal" min="1" step="1"></div>
   </section>
 </div>
-
 <nav class="tabs" role="tablist">
   <button class="tab" role="tab" data-v="signals" aria-selected="true">Señales</button>
+  <button class="tab" role="tab" data-v="track" aria-selected="false">Seguimiento</button>
   <button class="tab" role="tab" data-v="method" aria-selected="false">Método</button>
   <button class="tab" role="tab" data-v="settings" aria-selected="false">Ajustes</button>
 </nav>
-
 <script>
 "use strict";
+/* Radar Long · motor único espejado.
+   DIR = 1 (long) o -1 (short). Para shorts las velas se reflejan (precio → −precio),
+   así la misma lógica de "long" se aplica exactamente al revés y las R son idénticas. */
+const DIR = 1;
+const PFX = DIR===1 ? "rl2_" : "rs2_";
+const HOR = 60;          // horizonte máximo de una operación: 60 velas de 4 h = 10 días
+const W1=0.5, W2=0.3, W3=0.2;  // reparto de la posición en TP1 / TP2 / TP3
+const L = {chip:"LONG",chipCls:"l",tPull:"Retroceso en tendencia",tBreak:"Ruptura con volumen",slPull:"Bajo el mínimo del retroceso",slPivot:"Bajo el último mínimo pivote",slBase:"Bajo la base de la ruptura",lvPrev:"Máximo previo de 4 h",lvPeriod:"Máximo del periodo analizado",trigPull:"Retroceso a la zona EMA 20/50 con vela de giro alcista",trigBreak:"Ruptura del máximo de 20 velas con volumen y cierre fuerte",trendAligned:"EMA 20 > 50 > 200 en 4 h: tendencia alcista ordenada",trendBasic:"Precio sobre las EMA 200 y 300 en 4 h",d50ok:"En diario el precio está sobre la EMA 50",d50bad:"En diario el precio sigue bajo la EMA 50",d200ok:"En diario EMA 50 > EMA 200 (tendencia de fondo alcista)",d200bad:"En diario la EMA 50 aún está bajo la EMA 200",macd:"Histograma MACD creciendo",qty:"Cantidad a comprar",regGood:"BTC sobre sus EMA 50 y 200 diarias. Buen contexto para longs.",regBad:"BTC bajo sus EMA 50 y 200 diarias. Los longs fallan más: reduce tamaño o espera.",regimeBad:"BTC va en tendencia bajista: los longs fallan más",emptyWhy:"El filtro es estricto a propósito: tendencia alcista en 4 h y diario, BTC a favor, gatillo confirmado, stop razonable y espacio real hasta los objetivos.",dLevel:p=>`Resistencia diaria en ${p} antes del TP2`,
+ rsiOk:r=>`RSI ${r}: impulso sano, sin sobrecompra`, rsiStrong:r=>`RSI ${r}: impulso fuerte`, rsiExt:r=>`RSI ${r}: cerca de sobrecompra`,
+ rsOk:x=>`Supera a BTC por ${x} puntos en 30 días`, rsBad:x=>`Rinde ${x} puntos menos que BTC en 30 días`,
+ fundGood:f=>`Funding negativo (${f} %): hay cortos pagando, posible short squeeze`, fundNeutral:f=>`Funding neutral (${f} %): largos no saturados`,
+ fundHigh:f=>`Funding alto (${f} %): muchos largos apalancados`,
+ oiGood:x=>`Open interest +${x} % en 5 días con precio subiendo: entra dinero nuevo`, oiBad:x=>`Open interest ${x} % en 5 días: la subida no tiene dinero nuevo`,
+ ceil:x=>`Resistencia cercana (a ${x} R): el TP1 se colocó antes de ella`};
+
 /* ============ Ajustes ============ */
-const DEF = {cap:1000, risk:1, min:60, ex:"auto", vol:20};
-function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem("rl_cfg")||"{}")); }catch(e){ return {...DEF}; } }
-function saveCfg(){ try{ localStorage.setItem("rl_cfg", JSON.stringify(CFG)); }catch(e){} }
+const DEF = {cap:1000, risk:1, min:55, ex:"auto", vol:20, finalR:3, btc:1};
+function loadCfg(){ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(PFX+"cfg")||"{}")); }catch(e){ return {...DEF}; } }
+function saveCfg(){ try{ localStorage.setItem(PFX+"cfg", JSON.stringify(CFG)); }catch(e){} }
 let CFG = loadCfg();
+function lsGet(k,d){ try{ const v=JSON.parse(localStorage.getItem(PFX+k)||"null"); return v==null?d:v; }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(PFX+k, JSON.stringify(v)); }catch(e){} }
 
 /* ============ Red ============ */
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
 async function getJSON(url, tries=2){
   for(let k=0;k<=tries;k++){
-    const ac = new AbortController(); const tm = setTimeout(()=>ac.abort(), 15000);
+    const ac=new AbortController(); const tm=setTimeout(()=>ac.abort(),15000);
     try{
-      const r = await fetch(url,{signal:ac.signal}); clearTimeout(tm);
+      const r=await fetch(url,{signal:ac.signal}); clearTimeout(tm);
       if(r.status===429||r.status===418){ await sleep(3000*(k+1)); continue; }
       if(!r.ok) throw new Error("HTTP "+r.status);
       return await r.json();
     }catch(e){ clearTimeout(tm); if(k===tries) throw e; await sleep(600*(k+1)); }
   }
+  throw new Error("sin respuesta");
 }
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-const STABLE = new Set(["USDC","FDUSD","TUSD","BUSD","DAI","USDP","BTCDOM","DEFI","USDE","XUSD","USD1"]);
-
-const BIN = "https://fapi.binance.com";
-const BINANCE = {
-  name:"Binance", tv:"BINANCE", max4h:1500,
+const STABLE = new Set(["USDC","FDUSD","TUSD","BUSD","DAI","USDP","BTCDOM","DEFI","USDE","XUSD","USD1","PAXG","XAUT"]);
+const BIN="https://fapi.binance.com";
+const BINANCE={ name:"Binance", tv:"BINANCE", max4h:1500,
   async ping(){ await getJSON(BIN+"/fapi/v1/ping",0); },
   async universe(){
-    const [info,tick,prem] = await Promise.all([getJSON(BIN+"/fapi/v1/exchangeInfo"),getJSON(BIN+"/fapi/v1/ticker/24hr"),getJSON(BIN+"/fapi/v1/premiumIndex")]);
-    const ok = new Map(info.symbols.filter(s=>s.contractType==="PERPETUAL"&&s.quoteAsset==="USDT"&&s.status==="TRADING").map(s=>[s.symbol,s.baseAsset]));
-    const fr = new Map(prem.map(p=>[p.symbol,+p.lastFundingRate]));
+    const [info,tick,prem]=await Promise.all([getJSON(BIN+"/fapi/v1/exchangeInfo"),getJSON(BIN+"/fapi/v1/ticker/24hr"),getJSON(BIN+"/fapi/v1/premiumIndex")]);
+    const ok=new Map(info.symbols.filter(s=>s.contractType==="PERPETUAL"&&s.quoteAsset==="USDT"&&s.status==="TRADING").map(s=>[s.symbol,s.baseAsset]));
+    const fr=new Map(prem.map(p=>[p.symbol,+p.lastFundingRate]));
     return tick.filter(t=>ok.has(t.symbol)).map(t=>({sym:t.symbol,base:ok.get(t.symbol),price:+t.lastPrice,vol:+t.quoteVolume,chg:+t.priceChangePercent,funding:fr.has(t.symbol)?fr.get(t.symbol):null}));
   },
-  async klines(sym,tf,limit){
-    const d = await getJSON(`${BIN}/fapi/v1/klines?symbol=${sym}&interval=${tf==="4h"?"4h":"1d"}&limit=${limit}`);
-    return d.map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[7]}));
-  },
-  async oi(sym){ const d = await getJSON(`${BIN}/futures/data/openInterestHist?symbol=${sym}&period=4h&limit=31`); return d.map(x=>+x.sumOpenInterest); }
+  async klines(sym,tf,limit){ const d=await getJSON(`${BIN}/fapi/v1/klines?symbol=${sym}&interval=${tf==="4h"?"4h":"1d"}&limit=${limit}`); return d.map(k=>({t:k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[7]})); },
+  async oi(sym){ const d=await getJSON(`${BIN}/futures/data/openInterestHist?symbol=${sym}&period=4h&limit=31`); return d.map(x=>+x.sumOpenInterest); }
 };
-const BYB = "https://api.bybit.com";
-const BYBIT = {
-  name:"Bybit", tv:"BYBIT", max4h:1000,
+const BYB="https://api.bybit.com";
+const BYBIT={ name:"Bybit", tv:"BYBIT", max4h:1000,
   async ping(){ await getJSON(BYB+"/v5/market/time",0); },
   async universe(){
-    const [info,tick] = await Promise.all([getJSON(BYB+"/v5/market/instruments-info?category=linear&limit=1000"),getJSON(BYB+"/v5/market/tickers?category=linear")]);
-    const ok = new Map(info.result.list.filter(s=>s.contractType==="LinearPerpetual"&&s.quoteCoin==="USDT"&&s.status==="Trading").map(s=>[s.symbol,s.baseCoin]));
+    const [info,tick]=await Promise.all([getJSON(BYB+"/v5/market/instruments-info?category=linear&limit=1000"),getJSON(BYB+"/v5/market/tickers?category=linear")]);
+    const ok=new Map(info.result.list.filter(s=>s.contractType==="LinearPerpetual"&&s.quoteCoin==="USDT"&&s.status==="Trading").map(s=>[s.symbol,s.baseCoin]));
     return tick.result.list.filter(t=>ok.has(t.symbol)).map(t=>({sym:t.symbol,base:ok.get(t.symbol),price:+t.lastPrice,vol:+t.turnover24h,chg:+t.price24hPcnt*100,funding:t.fundingRate===""?null:+t.fundingRate}));
   },
-  async klines(sym,tf,limit){
-    const d = await getJSON(`${BYB}/v5/market/kline?category=linear&symbol=${sym}&interval=${tf==="4h"?"240":"D"}&limit=${Math.min(limit,1000)}`);
-    return d.result.list.slice().reverse().map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[6]}));
-  },
-  async oi(sym){ const d = await getJSON(`${BYB}/v5/market/open-interest?category=linear&symbol=${sym}&intervalTime=4h&limit=31`); return d.result.list.slice().reverse().map(x=>+x.openInterest); }
+  async klines(sym,tf,limit){ const d=await getJSON(`${BYB}/v5/market/kline?category=linear&symbol=${sym}&interval=${tf==="4h"?"240":"D"}&limit=${Math.min(limit,1000)}`); return d.result.list.slice().reverse().map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[6]})); },
+  async oi(sym){ const d=await getJSON(`${BYB}/v5/market/open-interest?category=linear&symbol=${sym}&intervalTime=4h&limit=31`); return d.result.list.slice().reverse().map(x=>+x.openInterest); }
 };
 
 /* ============ Indicadores ============ */
 function ema(a,p){const k=2/(p+1),o=new Array(a.length);let e=a[0];o[0]=e;for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);o[i]=e;}return o;}
 function sma(a,p){const o=new Array(a.length).fill(NaN);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=p)s-=a[i-p];if(i>=p-1)o[i]=s/p;}return o;}
 function rma(a,p){const o=new Array(a.length).fill(NaN);let s=0;for(let i=0;i<a.length;i++){if(i<p){s+=a[i];if(i===p-1)o[i]=s/p;}else o[i]=(o[i-1]*(p-1)+a[i])/p;}return o;}
-function rsi(c,p=14){const up=[0],dn=[0];for(let i=1;i<c.length;i++){const d=c[i]-c[i-1];up.push(Math.max(d,0));dn.push(Math.max(-d,0));}
-  const u=rma(up.slice(1),p),d=rma(dn.slice(1),p);const o=[NaN];for(let i=0;i<u.length;i++)o.push(d[i]===0?100:100-100/(1+u[i]/d[i]));return o;}
+function rsi(c,p=14){const up=[],dn=[];for(let i=1;i<c.length;i++){const d=c[i]-c[i-1];up.push(Math.max(d,0));dn.push(Math.max(-d,0));}
+  const u=rma(up,p),d=rma(dn,p);const o=[NaN];for(let i=0;i<u.length;i++)o.push(d[i]===0?100:100-100/(1+u[i]/d[i]));return o;}
 function trArr(h,l,c){const o=[h[0]-l[0]];for(let i=1;i<h.length;i++)o.push(Math.max(h[i]-l[i],Math.abs(h[i]-c[i-1]),Math.abs(l[i]-c[i-1])));return o;}
 function adx(h,l,c,p=14){const pdm=[0],mdm=[0];for(let i=1;i<h.length;i++){const u=h[i]-h[i-1],d=l[i-1]-l[i];pdm.push(u>d&&u>0?u:0);mdm.push(d>u&&d>0?d:0);}
-  const tr=rma(trArr(h,l,c),p),P=rma(pdm,p),M=rma(mdm,p);const dx=tr.map((t,i)=>{const pp=100*P[i]/t,mm=100*M[i]/t;return (pp+mm)?100*Math.abs(pp-mm)/(pp+mm):0;});
+  const tr=rma(trArr(h,l,c),p),P=rma(pdm,p),M=rma(mdm,p);const dx=tr.map((t,i)=>{const pp=100*P[i]/t,mm=100*M[i]/t;return isNaN(t)?NaN:((pp+mm)?100*Math.abs(pp-mm)/(pp+mm):0);});
   const first=dx.findIndex(x=>!isNaN(x));const o=new Array(h.length).fill(NaN);if(first<0)return o;const sub=rma(dx.slice(first),p);for(let i=0;i<sub.length;i++)o[first+i]=sub[i];return o;}
 function stdev(a,p){const m=sma(a,p);return a.map((_,i)=>{if(i<p-1)return NaN;let s=0;for(let k=i-p+1;k<=i;k++)s+=(a[k]-m[i])**2;return Math.sqrt(s/p);});}
 function maxOf(a,from,to){let m=-Infinity;for(let i=Math.max(0,from);i<=to;i++)if(a[i]>m)m=a[i];return m;}
 function minOf(a,from,to){let m=Infinity;for(let i=Math.max(0,from);i<=to;i++)if(a[i]<m)m=a[i];return m;}
-function pivots(h,l,L=3,R=3){const ph=[],pl=[];for(let k=L;k<h.length-R;k++){let isH=true,isL=true;for(let j=k-L;j<=k+R;j++){if(j===k)continue;if(h[j]>=h[k])isH=false;if(l[j]<=l[k])isL=false;}if(isH)ph.push(k);if(isL)pl.push(k);}return {ph,pl};}
+function pivots(h,l,L_=3,R_=3){const ph=[],pl=[];for(let k=L_;k<h.length-R_;k++){let isH=true,isL=true;for(let j=k-L_;j<=k+R_;j++){if(j===k)continue;if(h[j]>=h[k])isH=false;if(l[j]<=l[k])isL=false;}if(isH)ph.push(k);if(isL)pl.push(k);}return {ph,pl};}
 
-function prep(K){
-  const o=K.map(x=>x.o),h=K.map(x=>x.h),l=K.map(x=>x.l),c=K.map(x=>x.c),v=K.map(x=>x.v);
+/* Reflejo: en shorts se trabaja con −precio (máximos y mínimos se intercambian). */
+const M = x => DIR*x;                       // real ↔ espejo (es su propia inversa)
+function mirror(K){ return DIR===1?K:K.map(k=>({t:k.t,o:-k.o,h:-k.l,l:-k.h,c:-k.c,v:k.v})); }
+
+function prep(K){ // K ya reflejado
+  const t=K.map(x=>x.t),o=K.map(x=>x.o),h=K.map(x=>x.h),l=K.map(x=>x.l),c=K.map(x=>x.c),v=K.map(x=>x.v);
   const e12=ema(c,12),e26=ema(c,26),macd=e12.map((x,i)=>x-e26[i]),sig=ema(macd,9);
-  const sd=stdev(c,20),mid=sma(c,20);
-  const P=pivots(h,l,3,3);
-  return {o,h,l,c,v,n:c.length,E20:ema(c,20),E50:ema(c,50),E200:ema(c,200),RSI:rsi(c,14),ATR:rma(trArr(h,l,c),14),ADX:adx(h,l,c,14),
-    VS:sma(v,20),MH:macd.map((x,i)=>x-sig[i]),BBW:sd.map((s,i)=>4*s/mid[i]),ph:P.ph,pl:P.pl};
+  const sd=stdev(c,20),mid=sma(c,20),P=pivots(h,l,3,3);
+  return {t,o,h,l,c,v,n:c.length,E20:ema(c,20),E50:ema(c,50),E200:ema(c,200),E300:ema(c,300),RSI:rsi(c,14),ATR:rma(trArr(h,l,c),14),ADX:adx(h,l,c,14),
+    VS:sma(v,20),MH:macd.map((x,i)=>x-sig[i]),BBW:sd.map((s,i)=>4*s/Math.abs(mid[i])),ph:P.ph,pl:P.pl};
 }
 
-/* ============ Reglas de señal (idénticas en vivo y en backtest) ============ */
-function evalAt(D,i){
-  const {o,h,l,c,v,E20,E50,E200,RSI,ATR,ADX,VS,BBW}=D;
-  if(i<260) return null;
+/* ============ Detección (idéntica en vivo, en calibración y en backtest) ============ */
+function detect(D,i,btcOk){
+  const {o,h,l,c,v,E20,E50,E200,E300,RSI,ATR,ADX,VS,BBW}=D;
+  if(i<320) return null;
   const a=ATR[i]; if(!(a>0)) return null;
-  if(!(c[i]>E200[i]&&E50[i]>E200[i])) return null;
+  // Filtros duros de tendencia: 4 h (EMA 50 > 200) y diario aproximado (EMA 300 de 4 h ≈ EMA 50 diaria)
+  if(!(c[i]>E200[i]&&E50[i]>E200[i]&&c[i]>E300[i])) return null;
+  if(btcOk&&btcOk.get(D.t[i])===false) return null;
+  const rg=h[i]-l[i]; if(!(rg>0)) return null;
+  const pos=(c[i]-l[i])/rg, body=Math.abs(c[i]-o[i])/rg;
   let type=null;
   const hh=maxOf(h,i-20,i-1);
-  if(c[i]>hh&&v[i]>1.5*VS[i]&&ADX[i]>18&&(c[i]-E20[i])<2.5*a&&RSI[i]<75&&E20[i]>E50[i]) type="breakout";
+  if(c[i]>hh&&v[i]>1.5*VS[i]&&ADX[i]>20&&(c[i]-E20[i])<2*a&&RSI[i]<72&&E20[i]>E50[i]&&pos>=0.7&&body>=0.5) type="breakout";
   else{
     const lw=minOf(l,i-5,i),rm=minOf(RSI,i-6,i-1);
-    if(c[i]>E20[i]&&c[i]>o[i]&&c[i]>c[i-1]&&lw<=E20[i]+0.2*a&&lw>=E50[i]-0.6*a&&rm>=35&&rm<=52&&RSI[i]>=50&&RSI[i]<=68) type="pullback";
+    if(c[i]>E20[i]&&c[i]>o[i]&&c[i]>(h[i-1]+l[i-1])/2&&pos>=0.6&&lw<=E20[i]+0.2*a&&lw>=E50[i]-0.6*a&&rm>=35&&rm<=52&&RSI[i]>=50&&RSI[i]<=68) type="pullback";
   }
   if(!type) return null;
-  const e=c[i];
-  // Stop estructural
-  let sl,slSrc;
-  if(type==="pullback"){ sl=minOf(l,i-5,i)-0.25*a; slSrc="Bajo el mínimo del retroceso"; }
+  const e=c[i]; let sl,slSrc;
+  if(type==="pullback"){ sl=minOf(l,i-5,i)-0.25*a; slSrc=L.slPull; }
   else{
     let pv=null; for(let q=D.pl.length-1;q>=0;q--){const k=D.pl[q]; if(k+3>i) continue; if(k<i-15) break; if(l[k]<e){pv=k;break;}}
-    if(pv!==null){ sl=l[pv]-0.25*a; slSrc="Bajo el último mínimo pivote"; } else { sl=minOf(l,i-4,i)-0.25*a; slSrc="Bajo la base de la ruptura"; }
+    if(pv!==null){ sl=l[pv]-0.25*a; slSrc=L.slPivot; } else { sl=minOf(l,i-4,i)-0.25*a; slSrc=L.slBase; }
   }
-  if(e-sl<a){ sl=e-a; slSrc+=" (ampliado a 1 ATR)"; }
-  const R=e-sl; if(R>3*a||R<=0) return null;
-  // Niveles de objetivo: pivotes altos 4h + extensiones Fibonacci del último impulso
+  if(e-sl<1.2*a){ sl=e-1.2*a; slSrc+=" (ampliado a 1,2 ATR para evitar mechas)"; }
+  const R=e-sl; if(R>2.5*a||R<=0) return null;
+  // Niveles reales en la dirección de la operación
   const lv=[];
-  for(let q=D.ph.length-1;q>=0;q--){const k=D.ph[q]; if(k+3>i) continue; if(k<i-500) break; if(h[k]>e) lv.push({p:h[k],src:"Máximo previo de 4 h"});}
-  const b=(()=>{let bi=i-30,bm=-Infinity;for(let k=i-30;k<=i;k++)if(h[k]>bm){bm=h[k];bi=k;}return bi;})();
-  const B=h[b], A=minOf(l,b-40,b), C=minOf(l,b,i);
+  for(let q=D.ph.length-1;q>=0;q--){const k=D.ph[q]; if(k+3>i) continue; if(k<i-500) break; if(h[k]>e) lv.push({p:h[k],src:L.lvPrev});}
+  let b=i-30,bm=-Infinity; for(let k=i-30;k<=i;k++) if(h[k]>bm){bm=h[k];b=k;}
+  const B=h[b],A=minOf(l,b-40,b),C=minOf(l,b,i);
   if(B>A) for(const f of [1,1.272,1.618,2]){const p=C+f*(B-A); if(p>e) lv.push({p,src:"Extensión Fibonacci "+String(f).replace(".",",")});}
-  const ath=maxOf(h,i-500,i); if(ath>e) lv.push({p:ath,src:"Máximo del periodo analizado"});
+  const ext=maxOf(h,i-500,i); if(ext>e) lv.push({p:ext,src:L.lvPeriod});
   lv.sort((x,y)=>x.p-y.p);
-  // agrupar niveles cercanos (0,3 ATR) y adelantarse 0,1 ATR
-  const cl=[]; for(const x of lv){ const last=cl[cl.length-1]; if(last&&x.p-last.p<0.3*a){ if(!last.src.includes(x.src.split(" ")[0])) last.src+=" + "+x.src.toLowerCase(); } else cl.push({...x}); }
-  const T=cl.map(x=>({p:x.p-0.1*a,raw:x.p,src:x.src,r:(x.p-0.1*a-e)/R})).filter(x=>x.r>0);
-  const tp2=T.find(x=>x.r>=3); if(!tp2) return null;
-  const tp1=T.find(x=>x.r>=1&&x.p<tp2.p)||{p:e+(tp2.p-e)/2,src:"Mitad del recorrido a TP2 (sin nivel intermedio)",r:(tp2.p-e)/2/R};
-  const tp3=T.find(x=>x.p>=tp2.p+R)||null;
+  const cl=[]; for(const x of lv){const last=cl[cl.length-1]; if(last&&x.p-last.p<0.3*a){ if(!last.src.includes(x.src.split(" ")[0])) last.src+=" + "+x.src.toLowerCase(); } else cl.push({...x});}
+  const T=cl.map(x=>({p:x.p-0.1*a,raw:x.p,src:x.src,r:(x.p-0.1*a-e)/R})).filter(x=>x.r>0&&M(x.p)>0);
   const ceilR=T.length?T[0].r:99;
+  if(ceilR<0.5) return null;   // techo pegado a la entrada: no hay espacio
   let squeeze=false; if(i>130){const w=[];for(let k=i-121;k<=i-1;k++)if(!isNaN(BBW[k]))w.push(BBW[k]);w.sort((x,y)=>x-y);squeeze=BBW[i-1]<=w[Math.floor(w.length*0.2)];}
-  return {type,i,e,sl,slSrc,R,a,tp1,tp2,tp3,ceilR,squeeze};
+  return {type,i,e,sl,slSrc,R,a,T,ceilR,squeeze};
 }
 
-function backtest(D){
-  const res=[]; let i=260; const last=D.n-2;
-  while(i<=last){
-    const s=evalAt(D,i); if(!s){i++;continue;}
-    let out=null,j=i+1,tp1=false; const fee=0.0012*s.e/s.R;
-    for(;j<=Math.min(i+90,last);j++){
-      if(D.l[j]<=s.sl){out=-1;break;}
-      if(D.h[j]>=s.tp1.p) tp1=true;
-      if(D.h[j]>=s.tp2.p){out=s.tp2.r;break;}
-    }
-    if(out===null){ if(j>last) break; out=(D.c[j-1]-s.e)/s.R; }
-    res.push({r:out-fee,win:out>=3,tp1}); i=j+1;
+/* Plan de salida: TP1 calibrado (o antes de un nivel cercano), TP2 nivel real ≥ 2 R, TP3 nivel real ≥ objetivo final */
+function plan(s,c,finalR){
+  const {e,R,T}=s, k1=c.k, cap3=Math.max(finalR,c.cap3||finalR), cap2=Math.max(2,Math.min(c.cap2||2.5,cap3-0.5));
+  const first=T[0];
+  let tp1;
+  if(first&&first.r>=0.5&&first.r<k1) tp1={p:first.p,r:first.r,src:first.src+" · se cobra antes de que frene"};
+  else tp1={p:e+k1*R,r:k1,src:"Distancia calibrada con el historial"};
+  // TP3: nivel real ≥ objetivo final; si está más lejos de lo que el precio suele llegar, se recorta a ese límite estadístico
+  let tp3=T.find(x=>x.r>=finalR&&x.r>tp1.r+0.8);
+  if(!tp3) return null;   // no hay espacio real hasta el objetivo final
+  if(tp3.r>cap3+0.05) tp3={p:e+cap3*R,r:cap3,src:"Límite estadístico: recorrido máximo habitual de señales pasadas"};
+  const mids=T.filter(x=>x.r>tp1.r+0.5&&x.r<tp3.r-0.3&&x.r<=cap2+0.05);
+  let tp2=mids.find(x=>x.r>=2)||mids[mids.length-1];
+  if(!tp2){ const r2=Math.min(Math.max(2,tp1.r+0.5),tp3.r-0.3,cap2); tp2={p:e+r2*R,r:r2,src:"Límite estadístico: recorrido habitual de señales pasadas"}; }
+  return {tp1:{...tp1},tp2:{p:tp2.p,r:tp2.r,src:tp2.src},tp3:{p:tp3.p,r:tp3.r,src:tp3.src}};
+}
+
+/* Simula el plan real: 50 % en TP1 y stop a la entrada, 30 % en TP2 y stop a TP1, 20 % en TP3.
+   Si una vela toca stop y objetivo a la vez, cuenta el stop (supuesto pesimista). */
+function simulate(D,s,pl,timeStop,last){
+  const {h,l,c}=D,e=s.e,R=s.R; let stop=s.sl,rem=1,got=0,st=0,how="horizon",j=s.i+1,b1=null;
+  const end=Math.min(s.i+HOR,last);
+  for(;j<=end;j++){
+    if(l[j]<=stop){ got+=rem*(stop-e)/R; rem=0; how=st===0?"stop":st===1?"be":"trail"; break; }
+    if(st===0&&h[j]>=pl.tp1.p){ got+=W1*pl.tp1.r; rem=1-W1; stop=e; st=1; b1=j-s.i; }
+    if(st===1&&h[j]>=pl.tp2.p){ got+=W2*pl.tp2.r; rem=W3; stop=pl.tp1.p; st=2; }
+    if(st===2&&h[j]>=pl.tp3.p){ got+=W3*pl.tp3.r; rem=0; st=3; how="tp3"; break; }
+    if(st===0&&timeStop&&j-s.i>=timeStop){ got+=rem*(c[j]-e)/R; rem=0; how="time"; break; }
   }
-  const n=res.length, wins=res.filter(x=>x.win).length;
-  const gp=res.filter(x=>x.r>0).reduce((s,x)=>s+x.r,0), gl=-res.filter(x=>x.r<0).reduce((s,x)=>s+x.r,0);
-  return {n,wins,wr:n?wins/n:0,tp1:n?res.filter(x=>x.tp1||x.win).length/n:0,exp:n?res.reduce((s,x)=>s+x.r,0)/n:0,pf:gl?gp/gl:(gp?99:0)};
+  let open=false, jj=Math.min(j,end);
+  if(rem>0){ if(j>end&&s.i+HOR>last){ open=true; how="open"; } got+=rem*(c[jj]-e)/R; }
+  return {r:got-0.0012*Math.abs(e)/R,st,how,b1,open,bars:jj-s.i};
+}
+
+/* Excursión favorable máxima antes de tocar el stop (para calibrar el TP1) */
+function excursion(D,s,last){
+  if(s.i+HOR>last) return null;
+  let m=0,b=null;
+  for(let j=s.i+1;j<=s.i+HOR;j++){ if(D.l[j]<=s.sl) break; const x=(D.h[j]-s.e)/s.R; if(x>m)m=x; if(b===null&&x>=1)b=j-s.i; }
+  return {m,b};
+}
+
+/* Calibración global con todas las señales pasadas del escaneo */
+function fit(arr){
+  if(arr.length<25) return null;
+  const bs=arr.map(x=>x.ex.b).filter(b=>b!=null).sort((a,b)=>a-b);
+  const ts=bs.length?Math.min(42,Math.max(9,Math.round(bs[Math.floor(bs.length/2)]*2))):30;
+  const ms=arr.map(x=>x.ex.m).sort((a,b)=>b-a);
+  const cap2=Math.max(1.5,ms[Math.floor(ms.length*0.35)]), cap3=Math.max(2,ms[Math.floor(ms.length*0.20)]);
+  let best=null;
+  for(const k of [0.6,0.7,0.8,0.9,1,1.1,1.2,1.35,1.5]){
+    const hit=arr.filter(x=>x.ex.m>=k).length/arr.length;
+    if(hit<0.5) continue;
+    let sum=0,n=0,h1=0,h2=0,h3=0,st=0;
+    for(const x of arr){ const pl=plan(x.s,{k,cap2,cap3},CFG.finalR); if(!pl) continue; const r=simulate(x.D,x.s,pl,ts,x.D.n-2); if(r.open) continue; sum+=r.r;n++; if(r.st>=1)h1++; if(r.st>=2)h2++; if(r.st>=3)h3++; if(r.how==="stop")st++; }
+    if(n<20) continue;
+    const avg=sum/n; if(!best||avg>best.avg) best={k,cap2,cap3,avg,n,h1:h1/n,h2:h2/n,h3:h3/n,stop:st/n,ts,hitMfe:hit};
+  }
+  return best;
+}
+function calibrate(samples){
+  const all=samples.filter(x=>x.ex);
+  const gen=fit(all)||{k:1,cap2:2.5,cap3:CFG.finalR,ts:30,avg:null,n:0,h1:null,h2:null,h3:null,stop:null,def:true};
+  const out={all:gen};
+  for(const t of ["pullback","breakout"]) out[t]=fit(all.filter(x=>x.s.type===t))||gen;
+  return out;
 }
 
 /* ============ Escaneo ============ */
-let EX=null, running=false;
+let EX=null,running=false;
 async function pickExchange(){
-  const order = CFG.ex==="binance"?[BINANCE]:CFG.ex==="bybit"?[BYBIT]:[BINANCE,BYBIT];
-  let lastErr;
-  for(const x of order){ try{ await x.ping(); return x; }catch(e){ lastErr=e; } }
-  throw lastErr||new Error("sin conexión");
+  const order=CFG.ex==="binance"?[BINANCE]:CFG.ex==="bybit"?[BYBIT]:[BINANCE,BYBIT];
+  let err; for(const x of order){ try{ await x.ping(); return x; }catch(e){ err=e; } } throw err||new Error("sin conexión");
 }
 async function pool(items,n,fn){let idx=0;const run=async()=>{while(idx<items.length){const k=idx++;await fn(items[k],k);}};await Promise.all(Array.from({length:n},run));}
 const ret=(c,bars)=>c.length>bars?c[c.length-1]/c[c.length-1-bars]-1:0;
+const tick=()=>new Promise(r=>setTimeout(r,0));
 
 async function scan(){
   if(running) return; running=true;
@@ -357,169 +437,208 @@ async function scan(){
     EX=await pickExchange();
     $("#subtitle").textContent=`${EX.name} · perps USDT · 4 h`;
     setProg(3,"Leyendo lista de contratos…");
-    let U=(await EX.universe()).filter(u=>!STABLE.has(u.base)&&u.vol>=CFG.vol*1e6&&u.price>0).sort((a,b)=>b.vol-a.vol).slice(0,120);
+    const U=(await EX.universe()).filter(u=>!STABLE.has(u.base)&&u.vol>=CFG.vol*1e6&&u.price>0).sort((a,b)=>b.vol-a.vol).slice(0,120);
     const btcSym=U.find(u=>u.base==="BTC")?.sym||"BTCUSDT";
-    setProg(6,"Leyendo BTC para el régimen de mercado…");
+    setProg(5,"Leyendo BTC…");
     const [b4,b1]=await Promise.all([EX.klines(btcSym,"4h",EX.max4h),EX.klines(btcSym,"1d",400)]);
-    const bc1=b1.map(x=>x.c), be50=ema(bc1,50), be200=ema(bc1,200), bl=bc1.length-1;
-    const regime={above200:bc1[bl]>be200[bl],above50:bc1[bl]>be50[bl],price:bc1[bl],e50:be50[bl],e200:be200[bl]};
+    // Régimen real de BTC (sin reflejar) para mostrar
+    const bc1=b1.map(x=>x.c),be50=ema(bc1,50),be200=ema(bc1,200),bl=bc1.length-1;
+    const regime={above200:bc1[bl]>be200[bl],above50:bc1[bl]>be50[bl],price:bc1[bl]};
+    // Filtro BTC para cada vela de 4 h (reflejado): BTC sobre su EMA 300 de 4 h en la dirección de la operación
+    const bm=mirror(b4),bc=bm.map(x=>x.c),be300=ema(bc,300);
+    const btcOk=CFG.btc?new Map(bm.map((x,k)=>[x.t,k<300?true:bc[k]>be300[k]])):null;
     const btcRet30=ret(b4.map(x=>x.c),180);
     renderRegime(regime);
-    let done=0,trend=0; const cands=[];
+    const samples=[],cands=[],lite=new Map(); let done=0,trend=0;
     await pool(U,6,async(u)=>{
       try{
         const K=await EX.klines(u.sym,"4h",EX.max4h);
-        if(K.length>=300){
-          const D=prep(K); const n=D.n;
+        if(K.length>=400){
+          const D=prep(mirror(K)),n=D.n;
           if(D.c[n-2]>D.E200[n-2]&&D.E50[n-2]>D.E200[n-2]) trend++;
-          for(const i of [n-2,n-3,n-4]){
-            const s=evalAt(D,i); if(!s) continue;
-            let broken=false,advanced=false;
-            for(let j=i+1;j<n;j++){ if(D.l[j]<=s.sl) broken=true; if(D.h[j]>=s.tp1.p) advanced=true; }
-            if(!broken&&!advanced){ cands.push({u,D,s,K}); }
+          const mine=[];
+          for(let i=320;i<=n-3;i++){ const s=detect(D,i,btcOk); if(s){ const x={sym:u.sym,s,D,ex:excursion(D,s,n-2)}; samples.push(x); mine.push(x); i+=5; } }
+          lite.set(u.sym,{D,mine});
+          for(const i of [n-2,n-3]){
+            const s=detect(D,i,btcOk); if(!s) continue;
+            let broken=false; for(let j=i+1;j<n;j++) if(D.l[j]<=s.sl) broken=true;
+            if(!broken) cands.push({u,D,s,realC:K.map(x=>x.c)});
             break;
           }
+          if(!cands.some(x=>x.D===D)) for(const k of Object.keys(D)) if(!["t","h","l","c","n"].includes(k)) delete D[k];
         }
       }catch(e){}
-      done++; setProg(6+80*done/U.length,`Analizando ${u.base} · ${done}/${U.length}`);
+      done++; setProg(5+75*done/U.length,`Analizando ${u.base} · ${done}/${U.length}`);
+      if(done%10===0) await tick();
     });
-    setProg(88,`Verificando ${cands.length} candidatas (diario, open interest, historial)…`);
+    setProg(82,`Calibrando take profits con ${samples.length} señales pasadas…`); await tick();
+    const cal=calibrate(samples);
+    setProg(86,`Verificando ${cands.length} candidatas…`);
     const out=[]; let k2=0;
     await pool(cands,4,async(cd)=>{
-      try{ out.push(await deepen(cd,regime,btcRet30)); }catch(e){}
-      k2++; setProg(88+11*k2/Math.max(1,cands.length),`Verificando candidatas · ${k2}/${cands.length}`);
+      try{ const r=await deepen(cd,regime,btcRet30,cal,lite.get(cd.u.sym)); if(r) out.push(r); }catch(e){}
+      k2++; setProg(86+12*k2/Math.max(1,cands.length),`Verificando candidatas · ${k2}/${cands.length}`);
     });
     out.sort((a,b)=>b.score-a.score);
-    const state={ts:Date.now(),ex:EX.name,tv:EX.tv,regime,analyzed:U.length,trend,signals:out};
-    try{ localStorage.setItem("rl_last",JSON.stringify(state)); }catch(e){}
+    const calOut={}; for(const k of ["all","pullback","breakout"]){ const c=cal[k]; calOut[k]={k:c.k,cap2:c.cap2,cap3:c.cap3,ts:c.ts,avg:c.avg,n:c.n,h1:c.h1,h2:c.h2,h3:c.h3,stop:c.stop,def:!!c.def}; }
+    const state={ts:Date.now(),ex:EX.name,tv:EX.tv,regime,analyzed:U.length,trend,cal:calOut,samples:samples.filter(x=>x.ex).length,signals:out};
+    lsSet("last",state);
+    updateTracking(lite,out);
     setProg(100,"Listo"); setTimeout(()=>$("#progress").hidden=true,600);
-    render(state);
+    render(state); renderTrack();
   }catch(e){
     $("#progress").hidden=true;
-    showErr("No se pudieron leer los datos del exchange ("+(e.message||e)+"). Revisa tu conexión. Si usas una red que bloquea Binance, cambia la fuente a Bybit en Ajustes. La página debe abrirse desde una dirección web (https), no como archivo local.");
+    showErr("No se pudieron leer los datos del exchange ("+(e.message||e)+"). Revisa tu conexión o cambia la fuente a Bybit en Ajustes. La página debe abrirse desde una dirección web (https), no como archivo local.");
   }finally{ running=false; $("#scan").disabled=false; }
 }
 
-async function deepen({u,D,s},regime,btcRet30){
-  const n=D.n,i=s.i;
+async function deepen({u,D,s,realC},regime,btcRet30,cal,lt){
+  const n=D.n,i=s.i,c=cal[s.type];
+  const pl=plan(s,c,CFG.finalR); if(!pl) return null;
+  // Frescura: no perseguir. Si el precio ya se alejó 0,3 R a favor o ya tocó TP1, se descarta.
+  const price=D.c[n-1];
+  let hitTp1=false; for(let j=i+1;j<n;j++) if(D.h[j]>=pl.tp1.p) hitTp1=true;
+  if(hitTp1||price>s.e+0.3*s.R) return null;
+  // Historial propio con el mismo plan calibrado
+  let bn=0,bsum=0,b1=0,bstop=0;
+  for(const x of (lt?lt.mine:[])){ if(x.s.i>=i) continue; const p2=plan(x.s,c,CFG.finalR); if(!p2) continue; const r=simulate(D,x.s,p2,c.ts,n-2); if(r.open) continue; bn++; bsum+=r.r; if(r.st>=1)b1++; if(r.how==="stop")bstop++; }
+  const bt={n:bn,avg:bn?bsum/bn:0,h1:bn?b1/bn:0,stop:bn?bstop/bn:0};
+  if(bn>=6&&bt.avg<-0.15) return null;   // en esta moneda el método pierde dinero: fuera
+  const f=u.funding, fm=f==null?null:M(f); // funding en el sentido de la operación
+  if(fm!==null&&fm>0.0005) return null;   // posicionamiento extremo en contra: fuera
   const [K1,oi]=await Promise.all([EX.klines(u.sym,"1d",400).catch(()=>null),EX.oi(u.sym).catch(()=>null)]);
-  const bt=backtest(D);
   const why=[],warn=[]; let sc=0;
-  // Tendencia (25)
-  if(D.E20[i]>D.E50[i]&&D.E50[i]>D.E200[i]){sc+=10;why.push("EMA 20 > 50 > 200 en 4 h: tendencia alcista ordenada");} else {sc+=5;why.push("Precio sobre EMA 200 y EMA 50 > 200 en 4 h");}
-  let dTrend=null, dRes=null;
+  why.push(s.type==="breakout"?L.trigBreak:L.trigPull);
+  if(D.E20[i]>D.E50[i]&&D.E50[i]>D.E200[i]){sc+=10;why.push(L.trendAligned);} else {sc+=5;why.push(L.trendBasic);}
   if(K1&&K1.length>60){
-    const c1=K1.map(x=>x.c),h1=K1.map(x=>x.h),l1=K1.map(x=>x.l),e50=ema(c1,50),e200=ema(c1,200),m=c1.length-1;
-    const a50=c1[m]>e50[m], x200=K1.length>=200?e50[m]>e200[m]:null;
-    if(a50){sc+=8;why.push("En diario el precio está sobre la EMA 50");} else warn.push("En diario el precio sigue bajo la EMA 50");
-    if(x200){sc+=7;why.push("En diario EMA 50 > EMA 200 (tendencia de fondo alcista)");} else if(x200===false) warn.push("En diario la EMA 50 aún está bajo la EMA 200");
-    dTrend={a50,x200};
-    const P=pivots(h1,l1,2,2); const lv=P.ph.filter(k=>k<m-1&&h1[k]>s.e&&h1[k]<s.tp2.raw).map(k=>h1[k]).sort((a,b)=>a-b);
-    if(lv.length){dRes=lv[0];sc-=5;warn.push(`Resistencia diaria en ${fp(lv[0])} antes del TP2`);}
+    const Km=mirror(K1),c1=Km.map(x=>x.c),h1=Km.map(x=>x.h),l1=Km.map(x=>x.l),e50=ema(c1,50),e200=ema(c1,200),m=c1.length-1;
+    if(c1[m]>e50[m]){sc+=8;why.push(L.d50ok);} else warn.push(L.d50bad);
+    if(K1.length>=200){ if(e50[m]>e200[m]){sc+=7;why.push(L.d200ok);} else warn.push(L.d200bad); }
+    const P=pivots(h1,l1,2,2); const lv=P.ph.filter(k=>k<m-1&&h1[k]>s.e&&h1[k]<pl.tp2.p).map(k=>h1[k]).sort((a,b)=>a-b);
+    if(lv.length){sc-=5;warn.push(L.dLevel(fp(M(lv[0]))));}
   } else warn.push("Poco historial diario (moneda reciente)");
-  // Momentum (15)
-  const r=D.RSI[i];
-  if(r>=50&&r<=65){sc+=7;why.push(`RSI ${nf(r,0)}: impulso sano, sin sobrecompra`);} else if(r<=70){sc+=4;why.push(`RSI ${nf(r,0)}: impulso fuerte`);} else warn.push(`RSI ${nf(r,0)}: cerca de sobrecompra`);
-  if(D.MH[i]>D.MH[i-1]){sc+=4;why.push("Histograma MACD creciendo");}
+  const r=D.RSI[i], rr=DIR===1?r:100-r;
+  if(r>=50&&r<=65){sc+=7;why.push(L.rsiOk(nf(rr,0)));} else if(r<=70){sc+=4;why.push(L.rsiStrong(nf(rr,0)));} else warn.push(L.rsiExt(nf(rr,0)));
+  if(D.MH[i]>D.MH[i-1]){sc+=4;why.push(L.macd);}
   if(D.ADX[i]>20){sc+=4;why.push(`ADX ${nf(D.ADX[i],0)}: la tendencia tiene fuerza`);}
-  // Volumen (10)
   const vr=D.v[i]/D.VS[i];
-  if(vr>=2){sc+=10;why.push(`Volumen ${nf(vr,1)}× su media`);} else if(vr>=1.5){sc+=7;why.push(`Volumen ${nf(vr,1)}× su media`);} else if(vr>=1){sc+=4;} else if(s.type==="breakout") warn.push("Volumen por debajo de su media");
-  // Fuerza relativa (15)
-  const rs=(ret(D.c,180)-btcRet30)*100;
-  if(u.base!=="BTC"){ if(rs>15){sc+=15;} else if(rs>5){sc+=10;} else if(rs>0){sc+=6;}
-    if(rs>0) why.push(`Supera a BTC por ${nf(rs,1)} puntos en 30 días`); else warn.push(`Rinde ${nf(Math.abs(rs),1)} puntos menos que BTC en 30 días`);
+  if(vr>=2){sc+=10;why.push(`Volumen ${nf(vr,1)}× su media`);} else if(vr>=1.5){sc+=7;why.push(`Volumen ${nf(vr,1)}× su media`);} else if(vr>=1){sc+=4;}
+  const rs=M(ret(realC,180)-btcRet30)*100;
+  if(u.base!=="BTC"){ if(rs>15)sc+=15; else if(rs>5)sc+=10; else if(rs>0)sc+=6;
+    if(rs>0) why.push(L.rsOk(nf(Math.abs(rs),1))); else warn.push(L.rsBad(nf(Math.abs(rs),1)));
   } else sc+=8;
-  // Régimen BTC (10)
-  if(regime.above200) sc+=5; if(regime.above50) sc+=5;
-  if(!regime.above200) warn.push("BTC está bajo su EMA 200 diaria: los longs fallan más");
-  // Derivados (15)
-  const f=u.funding;
-  if(f!==null){
-    const fpc=f*100;
-    if(f<0){sc+=8;why.push(`Funding negativo (${nf(fpc,4)} %): hay cortos pagando, posible short squeeze`);}
-    else if(f<=0.0001){sc+=8;why.push(`Funding neutral (${nf(fpc,4)} %): largos no saturados`);}
-    else if(f<=0.0003){sc+=4;}
-    else if(f<=0.0006){sc+=1;warn.push(`Funding alto (${nf(fpc,4)} %): muchos largos apalancados`);}
-    else {sc-=5;warn.push(`Funding muy alto (${nf(fpc,4)} %): riesgo de barrida de largos`);}
+  const fav=DIR===1?[regime.above200,regime.above50]:[!regime.above200,!regime.above50];
+  if(fav[0])sc+=5; if(fav[1])sc+=5; if(!fav[0]&&!fav[1]) warn.push(L.regimeBad);
+  if(fm!==null){ const fpc=nf(f*100,4);
+    if(fm<0){sc+=8;why.push(L.fundGood(fpc));}
+    else if(fm<=0.0001){sc+=8;why.push(L.fundNeutral(fpc));}
+    else if(fm<=0.0003){sc+=4;}
+    else {sc+=0;warn.push(L.fundHigh(fpc));}
   }
   let oiChg=null;
-  if(oi&&oi.length>=31){ oiChg=(oi[oi.length-1]/oi[oi.length-31]-1)*100; const pchg=(D.c[n-1]/D.c[Math.max(0,n-31)]-1)*100;
-    if(oiChg>5&&pchg>0){sc+=7;why.push(`Open interest +${nf(oiChg,0)} % en 5 días con precio subiendo: entra dinero nuevo`);}
-    else if(oiChg>0){sc+=4;}
-    else {sc+=1;warn.push(`Open interest ${nf(oiChg,0)} % en 5 días: la subida no tiene dinero nuevo`);}
+  if(oi&&oi.length>=31){ oiChg=(oi[oi.length-1]/oi[oi.length-31]-1)*100; const pchg=(D.c[n-1]-D.c[n-31])/Math.abs(D.c[n-31])*100;
+    if(oiChg>5&&pchg>0){sc+=7;why.push(L.oiGood(nf(oiChg,0)));} else if(oiChg>0){sc+=4;} else {sc+=1;warn.push(L.oiBad(nf(oiChg,0)));}
   }
-  // Historial (10)
-  if(bt.n>=4){ if(bt.exp>0.5)sc+=10; else if(bt.exp>0)sc+=6; else warn.push("En su historial esta configuración perdió dinero"); } else sc+=3;
-  // Ajustes
-  if(s.ceilR<0.7){sc-=8;warn.push(`Hay una resistencia muy cerca (a ${nf(s.ceilR,1)} R)`);}
+  if(bn>=4){ if(bt.avg>0.3)sc+=10; else if(bt.avg>0)sc+=6; else warn.push("En su historial este plan quedó en pérdida"); } else sc+=4;
+  if(s.ceilR<0.9) warn.push(L.ceil(nf(s.ceilR,1)));
   if(s.squeeze){sc+=5;why.push("Sale de una compresión de volatilidad (Bollinger estrecho)");}
-  if(s.type==="breakout") why.unshift(`Ruptura del máximo de 20 velas con volumen`); else why.unshift("Retroceso a la zona EMA 20/50 con giro alcista del RSI");
   sc=Math.max(0,Math.min(100,Math.round(sc)));
-  const price=D.c[n-1];
-  return {sym:u.sym,base:u.base,price,chg:u.chg,funding:f,oiChg,type:s.type,e:s.e,sl:s.sl,slSrc:s.slSrc,R:s.R,
-    tp1:{p:s.tp1.p,src:s.tp1.src,r:s.tp1.r},tp2:{p:s.tp2.p,src:s.tp2.src,r:s.tp2.r},tp3:s.tp3?{p:s.tp3.p,src:s.tp3.src,r:s.tp3.r}:null,
-    atr:s.a,bars:n-2-i,bt,score:sc,why,warn,squeeze:s.squeeze,t:D.c.length};
+  const R_=s.R, toReal=o=>({p:M(o.p),r:o.r,src:o.src});
+  return {sym:u.sym,base:u.base,t:D.t[i],price:M(price),chg:u.chg,type:s.type,e:M(s.e),sl:M(s.sl),slSrc:s.slSrc,R:R_,
+    tp1:toReal(pl.tp1),tp2:toReal(pl.tp2),tp3:toReal(pl.tp3),limit:M(s.e+0.3*s.R),atr:s.a,bars:n-2-i,bt,score:sc,why,warn,
+    squeeze:s.squeeze,k:c.k,ts:c.ts,cal:{h1:c.h1,h2:c.h2,h3:c.h3,avg:c.avg,n:c.n}};
+}
+
+/* ============ Seguimiento de señales mostradas ============ */
+function updateTracking(lite,signals){
+  let tr=lsGet("track",[]);
+  const now=Date.now();
+  for(const s of signals.filter(x=>x.score>=CFG.min)){
+    const id=s.sym+"@"+s.t; if(tr.some(x=>x.id===id)) continue;
+    tr.unshift({id,sym:s.sym,base:s.base,type:s.type,t:s.t,added:now,e:s.e,sl:s.sl,tp1:s.tp1.p,tp2:s.tp2.p,tp3:s.tp3.p,r1:s.tp1.r,r2:s.tp2.r,r3:s.tp3.r,ts:s.ts,score:s.score,status:"open",r:0,how:"open",st:0});
+  }
+  for(const x of tr){
+    if(x.status!=="open") continue;
+    const lt=lite.get(x.sym); if(!lt) continue;
+    const D=lt.D, i=D.t.indexOf(x.t); if(i<0) continue;
+    const s={i,e:M(x.e),sl:M(x.sl),R:M(x.e)-M(x.sl)};
+    const pl={tp1:{p:M(x.tp1),r:x.r1},tp2:{p:M(x.tp2),r:x.r2},tp3:{p:M(x.tp3),r:x.r3}};
+    const r=simulate(D,s,pl,x.ts,D.n-1);
+    x.r=r.r; x.how=r.how; x.st=r.st; x.bars=r.bars; if(!r.open) x.status="closed";
+  }
+  lsSet("track",tr.slice(0,200));
 }
 
 /* ============ Vista ============ */
 const $=q=>document.querySelector(q);
+const nf=(x,d)=>(+x).toFixed(d).replace(".",",");
 function fp(x){ if(!isFinite(x))return "–"; const d=Math.min(10,Math.max(2,4-Math.floor(Math.log10(Math.abs(x))))); return x.toLocaleString("es-BO",{minimumFractionDigits:d,maximumFractionDigits:d}); }
-const nf=(x,d)=>x.toFixed(d).replace(".",",");
 const pct=(a,b)=>((a/b-1)*100);
-const sgn=x=>(x>=0?"+":"")+x.toFixed(2).replace(".",",")+" %";
+const sgn=x=>(x>=0?"+":"")+nf(x,2)+" %";
+const pc0=x=>x==null?"–":Math.round(x*100)+" %";
+const hrs=b=>{const h=b*4; return h>=48?nf(h/24,h%24?1:0)+" días":h+" h";};
 function setProg(p,t){ $("#bar").style.width=p+"%"; $("#ptext").textContent=t; }
 function showErr(m){ const e=$("#error"); e.textContent=m; e.hidden=false; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
 function renderRegime(g){
-  const el=$("#regime"); el.className="regime "+(g.above200&&g.above50?"bull":g.above200?"neutral":"bear");
-  const t=g.above200&&g.above50?"Mercado alcista":g.above200?"Mercado en corrección":"Mercado bajista";
-  const d=g.above200&&g.above50?"BTC sobre sus EMA 50 y 200 diarias. Buen contexto para longs."
-    :g.above200?"BTC sobre la EMA 200 pero bajo la EMA 50 diaria. Sé selectivo."
-    :"BTC bajo su EMA 200 diaria. Los longs tienen menos probabilidad; reduce tamaño o espera.";
+  const up=g.above200&&g.above50, down=!g.above200&&!g.above50;
+  const good=DIR===1?up:down, bad=DIR===1?down:up;
+  const el=$("#regime"); el.className="regime "+(good?"bull":bad?"bear":"neutral");
+  const t=up?"Mercado alcista":down?"Mercado bajista":g.above200?"Mercado en corrección":"Mercado en rebote";
+  const d=good?L.regGood:bad?L.regBad:"BTC está entre sus EMA 50 y 200 diarias. Sé selectivo y usa tamaño menor.";
   el.innerHTML=`<div class="dot"></div><div><b>${t}</b><span>${d} BTC <span class="num">${fp(g.price)}</span></span></div>`;
 }
 
+function renderCal(st){
+  const c=st.cal&&st.cal.all; const el=$("#calib"); if(!c){el.hidden=true;return;} el.hidden=false;
+  if(c.def||c.avg==null){ el.innerHTML=`<b>Calibración</b><p>Hubo pocas señales pasadas (${st.samples}) para calibrar. Se usa TP1 a 1 R y cierre por tiempo a las 30 velas.</p>`; return; }
+  const neg=c.avg<=0;
+  el.className="calib"+(neg?" neg":"");
+  el.innerHTML=`<b>Calibrado con ${c.n} operaciones pasadas en ${st.analyzed} monedas</b>
+   <div class="cal-grid"><div><span class="v">${pc0(c.h1)}</span><span class="k">llegó a TP1</span></div><div><span class="v">${pc0(c.h2)}</span><span class="k">a TP2</span></div><div><span class="v">${pc0(c.h3)}</span><span class="k">a TP3</span></div><div><span class="v" style="color:${neg?"var(--stop)":"var(--long)"}">${c.avg>=0?"+":""}${nf(c.avg,2)} R</span><span class="k">por operación</span></div></div>
+   <p>${neg?"<b style='color:var(--stop)'>En el mercado actual este método no muestra ventaja. Lo prudente es no operar o usar la mitad de tamaño.</b> ":""}TP1 a ${nf(c.k,2)} R. Si no llega en ${hrs(c.ts)}, se cierra.</p>`;
+}
+
 function ring(sc){
-  const C=2*Math.PI*26, col=sc>=75?"var(--long)":sc>=60?"var(--accent)":"var(--warn)";
+  const C=2*Math.PI*26,col=sc>=75?"var(--long)":sc>=60?"var(--accent)":"var(--warn)";
   return `<div class="score"><svg viewBox="0 0 62 62"><circle cx="31" cy="31" r="26" fill="none" stroke="var(--surface2)" stroke-width="6"/><circle cx="31" cy="31" r="26" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C*sc/100} ${C}"/></svg><div class="t"><div>${sc}<small>PTS</small></div></div></div>`;
 }
 
 function ladder(s){
-  const top=(s.tp3||s.tp2).p, lo=s.sl, W=320, pad=8, x=p=>pad+(p-lo)/(top-lo)*(W-2*pad);
-  const marks=[["SL",s.sl,"var(--stop)"],["E",s.e,"var(--accent)"],["1",s.tp1.p,"var(--long)"],["2",s.tp2.p,"var(--long)"]];
-  if(s.tp3) marks.push(["3",s.tp3.p,"var(--long)"]);
-  const now=Math.min(Math.max(s.price,lo),top);
-  return `<div class="ladder"><svg viewBox="0 0 ${W} 44" preserveAspectRatio="none" role="img" aria-label="Distancia entre stop, entrada y objetivos">
-    <rect x="${x(s.sl)}" y="18" width="${x(s.e)-x(s.sl)}" height="8" rx="2" fill="var(--stop-dim)"/>
-    <rect x="${x(s.e)}" y="18" width="${x(top)-x(s.e)}" height="8" rx="2" fill="var(--long-dim)"/>
+  // en espejo todo va de izquierda (stop) a derecha (TP3)
+  const sl=M(s.sl),e=M(s.e),t1=M(s.tp1.p),t2=M(s.tp2.p),t3=M(s.tp3.p),pr=M(s.price);
+  const W=320,pad=8,x=p=>pad+(p-sl)/(t3-sl)*(W-2*pad);
+  const marks=[["SL",sl,"var(--stop)"],["E",e,"var(--accent)"],["1",t1,"var(--long)"],["2",t2,"var(--long)"],["3",t3,"var(--long)"]];
+  const now=Math.min(Math.max(pr,sl),t3);
+  return `<div class="ladder"><svg viewBox="0 0 ${W} 44" preserveAspectRatio="none" role="img" aria-label="Stop, entrada y objetivos">
+    <rect x="${x(sl)}" y="18" width="${x(e)-x(sl)}" height="8" rx="2" fill="var(--stop-dim)"/>
+    <rect x="${x(e)}" y="18" width="${x(t3)-x(e)}" height="8" rx="2" fill="var(--long-dim)"/>
     ${marks.map(([t,p,c])=>`<line x1="${x(p)}" x2="${x(p)}" y1="14" y2="30" stroke="${c}" stroke-width="2"/><text x="${x(p)}" y="42" fill="${c}" font-size="10" font-family="JetBrains Mono,monospace" text-anchor="middle">${t}</text>`).join("")}
-    <polygon points="${x(now)-5},4 ${x(now)+5},4 ${x(now)},12" fill="var(--fg)"/>
-  </svg></div>`;
+    <polygon points="${x(now)-5},4 ${x(now)+5},4 ${x(now)},12" fill="var(--fg)"/></svg></div>`;
 }
 
 function card(s,tv,idx){
-  const ext=s.price>s.e+0.5*s.R;
-  const row=(cls,lbl,p,src,r)=>`<div class="row ${cls}"><div class="lbl">${lbl}${r!=null?`<span class="rr">${r.toFixed(1).replace(".",",")} R</span>`:""}</div><div class="px">${fp(p)}</div><div class="src">${esc(src)}</div><div class="pc">${sgn(pct(p,s.e))}</div></div>`;
-  const bt=s.bt;
-  const btHtml=bt.n>=1?`<div class="bt"><div><div class="v">${bt.n}</div><div class="k">señales previas</div></div><div><div class="v">${(bt.wr*100).toFixed(0)} %</div><div class="k">llegaron a TP2</div></div><div><div class="v" style="color:${bt.exp>0?"var(--long)":"var(--stop)"}">${bt.exp>=0?"+":""}${bt.exp.toFixed(2).replace(".",",")} R</div><div class="k">resultado medio</div></div></div>
-    <p class="note">${(bt.tp1*100).toFixed(0)} % tocaron TP1. Con objetivos de 3 R, acertar más del 25 % ya es rentable.${bt.n<5?" Muestra pequeña: tómalo como orientación.":""}</p>`
-    :`<p class="note">Esta configuración no apareció antes en el historial de ${esc(s.base)}. Sin datos propios de acierto.</p>`;
+  const row=(cls,lbl,p,src,r,prob)=>`<div class="row ${cls}"><div class="lbl">${lbl}${r!=null?`<span class="rr">${nf(r,1)} R</span>`:""}${prob!=null?`<span class="prob">${pc0(prob)} lo alcanzó</span>`:""}</div><div class="px">${fp(p)}</div><div class="src">${esc(src)}</div><div class="pc">${sgn(pct(p,s.e))}</div></div>`;
+  const b=s.bt;
+  const bt=b.n>=1?`<div class="bt"><div><div class="v">${b.n}</div><div class="k">operaciones previas</div></div><div><div class="v">${pc0(b.h1)}</div><div class="k">llegaron a TP1</div></div><div><div class="v" style="color:${b.avg>0?"var(--long)":"var(--stop)"}">${b.avg>=0?"+":""}${nf(b.avg,2)} R</div><div class="k">resultado medio</div></div></div>
+    <p class="note">Simulado con este mismo plan (parciales, stop a entrada y cierre por tiempo) y 0,12 % de comisión.${b.n<5?" Muestra pequeña: tómalo como orientación.":""}</p>`
+    :`<p class="note">Esta configuración no apareció antes en ${esc(s.base)}. Se usa la calibración global.</p>`;
   return `<article class="card">
     <div class="card-h"><div><div class="sym">${esc(s.base)}<small>USDT · perp</small></div>
-      <div class="chips"><span class="chip l">LONG</span><span class="chip a">${s.type==="breakout"?"Ruptura con volumen":"Retroceso en tendencia"}</span>${s.squeeze?'<span class="chip a">Compresión</span>':""}${ext?'<span class="chip w">Extendida: usa orden límite</span>':""}${s.bars>0?`<span class="chip">Hace ${s.bars*4} h</span>`:'<span class="chip">Vela recién cerrada</span>'}</div></div>
+      <div class="chips"><span class="chip ${L.chipCls}">${L.chip}</span><span class="chip a">${s.type==="breakout"?L.tBreak:L.tPull}</span>${s.squeeze?'<span class="chip a">Compresión</span>':""}<span class="chip">${s.bars>0?"Señal hace "+s.bars*4+" h":"Vela recién cerrada"}</span></div></div>
       ${ring(s.score)}</div>
     <div class="now">Precio actual <b>${fp(s.price)}</b> · 24 h <span class="num" style="color:${s.chg>=0?"var(--long)":"var(--stop)"}">${sgn(s.chg)}</span></div>
     ${ladder(s)}
     <div class="plan">
-      ${row("en","Entrada",s.e,ext?"Orden límite al cierre de la vela de señal":"Cierre de la vela de señal",null)}
-      ${row("sl","Stop loss",s.sl,s.slSrc,null)}
-      ${row("tp","TP1",s.tp1.p,s.tp1.src+" · cierra 40 % y stop a entrada",s.tp1.r)}
-      ${row("tp","TP2",s.tp2.p,s.tp2.src+" · cierra 40 %",s.tp2.r)}
-      ${s.tp3?row("tp","TP3",s.tp3.p,s.tp3.src+" · resto",s.tp3.r):`<div class="row tp"><div class="lbl">TP3</div><div class="px">–</div><div class="src">Sin nivel superior claro: sigue el 20 % restante con stop dinámico de 2 ATR (${fp(2*s.atr)})</div><div class="pc"></div></div>`}
+      ${row("en","Entrada",s.e,`Orden límite. No entres si el precio ya pasó ${fp(s.limit)}`,null,null)}
+      ${row("sl","Stop loss",s.sl,s.slSrc,null,null)}
+      ${row("tp","TP1 · 50 %",s.tp1.p,s.tp1.src+". Al tocarlo, mueve el stop a la entrada",s.tp1.r,s.cal.h1)}
+      ${row("tp","TP2 · 30 %",s.tp2.p,s.tp2.src+". Al tocarlo, mueve el stop a TP1",s.tp2.r,s.cal.h2)}
+      ${row("tp","TP3 · 20 %",s.tp3.p,s.tp3.src,s.tp3.r,s.cal.h3)}
+      <div class="row tm"><div class="lbl">Cierre por tiempo</div><div class="px">${hrs(s.ts)}</div><div class="src">Si en ese plazo no toca TP1, cierra a mercado: la señal perdió su impulso. Plazo medido en el historial.</div><div class="pc"></div></div>
     </div>
-    <div class="sec"><h4>Historial de esta configuración en ${esc(s.base)}</h4>${btHtml}</div>
+    <div class="sec"><h4>Historial del plan en ${esc(s.base)}</h4>${bt}</div>
     <div class="sec"><h4>Por qué aparece</h4><ul class="why">${s.why.map(w=>`<li>${esc(w)}</li>`).join("")}${s.warn.map(w=>`<li class="w">${esc(w)}</li>`).join("")}</ul></div>
     <div class="actions">
       <a class="ghost" href="https://www.tradingview.com/chart/?symbol=${tv}:${esc(s.sym)}.P" target="_blank" rel="noopener">Ver en TradingView</a>
@@ -531,51 +650,68 @@ function card(s,tv,idx){
 
 function calcHtml(s){
   const riskUsd=CFG.cap*CFG.risk/100, qty=riskUsd/s.R, notional=qty*s.e, lev=notional/CFG.cap;
-  const slPct=s.R/s.e, maxLev=Math.max(1,Math.floor(1/(slPct+0.006)));
-  const gain2=qty*(s.tp2.p-s.e);
+  const maxLev=Math.max(1,Math.floor(1/(s.R/s.e+0.006)));
+  const g=(w,r)=>w*r*riskUsd;
   return `<div>Riesgo si salta el stop</div><div class="v">${nf(riskUsd,2)} USDT</div>
-    <div>Cantidad</div><div class="v">${qty>=1?nf(qty,2):qty.toPrecision(3)} ${esc(s.base)}</div>
+    <div>${L.qty}</div><div class="v">${qty>=1?nf(qty,2):qty.toPrecision(3)} ${esc(s.base)}</div>
     <div>Tamaño de la posición</div><div class="v">${nf(notional,2)} USDT</div>
     <div>Apalancamiento mínimo</div><div class="v">${lev<1?"1×":Math.ceil(lev)+"×"}</div>
     <div>Apalancamiento máximo seguro</div><div class="v">${maxLev}×</div>
-    <div>Ganancia si llega a TP2</div><div class="v" style="color:var(--long)">+${nf(gain2,2)} USDT</div>
+    <div>Cobras en TP1 (50 %)</div><div class="v" style="color:var(--long)">+${nf(g(W1,s.tp1.r),2)} USDT</div>
+    <div>Cobras en TP2 (30 %)</div><div class="v" style="color:var(--long)">+${nf(g(W2,s.tp2.r),2)} USDT</div>
+    <div>Cobras en TP3 (20 %)</div><div class="v" style="color:var(--long)">+${nf(g(W3,s.tp3.r),2)} USDT</div>
     <div class="full">Con margen aislado y más de ${maxLev}× la liquidación quedaría antes que tu stop. Capital ${CFG.cap} USDT y riesgo ${CFG.risk} % (cámbialos en Ajustes).</div>`;
 }
 
 let LAST=null;
 function render(st){
-  LAST=st; renderRegime(st.regime);
+  LAST=st; renderRegime(st.regime); renderCal(st);
   $("#stats").hidden=false; $("#s-an").textContent=st.analyzed; $("#s-tr").textContent=st.trend;
   const list=st.signals.filter(s=>s.score>=CFG.min); $("#s-si").textContent=list.length;
-  const when=new Date(st.ts), age=(Date.now()-st.ts)/36e5;
-  const head=`<p class="note" style="margin:0 0 12px">Escaneo de ${st.ex} a las ${when.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})} del ${when.toLocaleDateString("es-BO")}.${age>4?" <b style='color:var(--warn)'>Tiene más de 4 h: vuelve a escanear.</b>":""}</p>`;
+  const when=new Date(st.ts),age=(Date.now()-st.ts)/36e5;
+  const head=`<p class="note" style="margin:0 0 12px">Escaneo de ${st.ex} a las ${when.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})} del ${when.toLocaleDateString("es-BO")}.${age>4?" <b style='color:var(--warn)'>Tiene más de 4 h: vuelve a escanear antes de entrar.</b>":""}</p>`;
   if(!list.length){
     const hidden=st.signals.length;
-    $("#list").innerHTML=head+`<div class="empty"><b>Ninguna moneda cumple todo ahora mismo</b>El filtro es estricto a propósito: tendencia, gatillo, stop razonable y un objetivo real a 3 R o más.${hidden?` Hay ${hidden} con puntaje menor a ${CFG.min}; baja el mínimo en Ajustes para verlas.`:""} Las velas de 4 h cierran a las 00, 04, 08, 12, 16 y 20 h (hora de Bolivia); escanea justo después.</div>`;
+    $("#list").innerHTML=head+`<div class="empty"><b>Ninguna moneda cumple todo ahora mismo</b>${L.emptyWhy}${hidden?` Hay ${hidden} con puntaje menor a ${CFG.min}; baja el mínimo en Ajustes para verlas.`:""} Las velas de 4 h cierran a las 00, 04, 08, 12, 16 y 20 h (hora de Bolivia): escanea justo después.</div>`;
     return;
   }
   $("#list").innerHTML=head+list.map((s,k)=>card(s,st.tv,k)).join("");
   $("#list").querySelectorAll("[data-calc]").forEach(b=>b.addEventListener("click",()=>{
-    const k=+b.dataset.calc, box=$("#calc-"+k); if(box.hidden){ box.innerHTML=calcHtml(list[k]); box.hidden=false; b.textContent="Ocultar cálculo"; } else { box.hidden=true; b.textContent="Calcular posición"; }
+    const k=+b.dataset.calc,box=$("#calc-"+k); if(box.hidden){box.innerHTML=calcHtml(list[k]);box.hidden=false;b.textContent="Ocultar cálculo";} else {box.hidden=true;b.textContent="Calcular posición";}
   }));
+}
+
+const HOW={open:"Abierta",stop:"Stop",be:"TP1 y salida en entrada",trail:"TP2 y salida en TP1",tp3:"TP3 completo",time:"Cierre por tiempo",horizon:"Cierre a los 10 días"};
+function renderTrack(){
+  const tr=lsGet("track",[]); const el=$("#track");
+  if(!tr.length){ el.innerHTML=`<div class="empty"><b>Aún no hay señales registradas</b>Cada señal que aparezca en la pestaña Señales se guarda aquí. En cada escaneo se revisa con las velas reales si tocó TP1, TP2, TP3 o el stop. Es la prueba honesta del método.</div>`; return; }
+  const cl=tr.filter(x=>x.status==="closed"), op=tr.filter(x=>x.status!=="closed");
+  const tot=cl.reduce((a,x)=>a+x.r,0), wins=cl.filter(x=>x.r>0).length, t1=cl.filter(x=>x.st>=1).length;
+  el.innerHTML=`<div class="stats"><div class="stat"><div class="v">${cl.length}</div><div class="k">Cerradas</div></div><div class="stat"><div class="v">${cl.length?Math.round(100*t1/cl.length)+" %":"–"}</div><div class="k">Tocaron TP1</div></div><div class="stat"><div class="v" style="color:${tot>=0?"var(--long)":"var(--stop)"}">${tot>=0?"+":""}${nf(tot,1)} R</div><div class="k">Total</div></div></div>
+   <p class="note" style="margin:0 0 10px">Abiertas: ${op.length}. Resultados en R: 1 R es lo que arriesgas por operación. Se asume que seguiste el plan exacto.${wins?` ${wins} de ${cl.length} cerraron en positivo.`:""}</p>
+   <div class="tlist">${tr.map(x=>{const d=new Date(x.t+4*36e5);return `<div class="trow"><div><b>${esc(x.base)}</b> <span class="muted">${x.type==="breakout"?L.tBreak:L.tPull}</span><div class="muted small">${d.toLocaleDateString("es-BO")} ${d.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})} · entrada ${fp(x.e)}</div></div><div class="tr-r"><span class="chip ${x.status==="closed"?(x.r>0?"l":"s"):"a"}">${HOW[x.how]||x.how}${x.status!=="closed"&&x.st>=1?" · TP"+x.st:""}</span><div class="num" style="color:${x.r>=0?"var(--long)":"var(--stop)"}">${x.r>=0?"+":""}${nf(x.r,2)} R</div></div></div>`;}).join("")}</div>
+   <button class="ghost" id="clr" style="margin-top:14px;width:100%">Borrar seguimiento</button>`;
+  $("#clr").addEventListener("click",e=>{ const b=e.currentTarget; if(b.dataset.ok){ lsSet("track",[]); renderTrack(); } else { b.dataset.ok=1; b.textContent="Toca otra vez para confirmar"; } });
 }
 
 /* ============ Pestañas y ajustes ============ */
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
-  for(const v of ["signals","method","settings"]) $("#view-"+v).hidden=v!==t.dataset.v;
+  for(const v of ["signals","track","method","settings"]) $("#view-"+v).hidden=v!==t.dataset.v;
+  if(t.dataset.v==="track") renderTrack();
   window.scrollTo(0,0);
 }));
 function bindCfg(){
-  const m={cap:"#f-cap",risk:"#f-risk",min:"#f-min",ex:"#f-ex",vol:"#f-vol"};
-  for(const [k,s] of Object.entries(m)){ const el=$(s); el.value=CFG[k];
-    el.addEventListener("change",()=>{ const v=el.value; CFG[k]=(k==="ex")?v:(parseFloat(v)||DEF[k]); saveCfg(); $("#m-minvol").textContent=CFG.vol; if(LAST) render(LAST); }); }
+  const m={cap:"#f-cap",risk:"#f-risk",min:"#f-min",ex:"#f-ex",vol:"#f-vol",finalR:"#f-final",btc:"#f-btc"};
+  for(const [k,s] of Object.entries(m)){ const el=$(s); el.value=String(CFG[k]);
+    el.addEventListener("change",()=>{ const v=el.value; CFG[k]=k==="ex"?v:(parseFloat(v)); if(k!=="ex"&&!isFinite(CFG[k])) CFG[k]=DEF[k]; saveCfg(); $("#m-minvol").textContent=CFG.vol; if(LAST) render(LAST); }); }
   $("#m-minvol").textContent=CFG.vol;
 }
 bindCfg();
 $("#scan").addEventListener("click",scan);
-try{ const s=JSON.parse(localStorage.getItem("rl_last")||"null"); if(s&&s.signals) render(s); }catch(e){}
-if(typeof window!=="undefined") window.__RL={prep,evalAt,backtest,deepen,BINANCE,BYBIT};
+{ const s=lsGet("last",null); if(s&&s.signals) render(s); }
+window.__R={prep,detect,plan,simulate,calibrate,mirror};
+
 </script>
 </body>
 </html>
