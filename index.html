@@ -6,10 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Longs">
+<meta name="apple-mobile-web-app-title" content="Radar">
 <meta name="theme-color" content="#0d1015">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAAEF0lEQVR4nO3dS24aQRSF4eso40iZZMZKvB6vKuvxSrKRDEpCCDjQj3qcW/V/I9uRoaX+udUFBH/8+v0ngGd+jD4A+CIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4kjv8v3V6JaJI7d2ZQRxpHYto1EixJFV05lREEdKHcoI4sjoaRktciGOZPrMjII4MulZRhBHIp3LCOLIYksZ1eshjgT6z4yCONyNKiOIw9zeMuqWRBy+Bs6MgjhMDS8jiMPTmTIqVkUcdhxmRkEcXnzKCOKwUquMWrdDHC6sZkZBHBYMywjicNCijCq3SRyDec6M4ufoA1jdv8+/5QvDSpgckIjDgudlB3GMZ7igFMQxmG0ZEfHBX6QeaG8Z16vX7b97+yt7sVsZ5kwZ0WWbQxxjnCxD/VPdUFhWBqhYxpa7OLyyMDm6OvDIPnZqqyw6TI5+upVRC1vZTtKVEcTRR8Yygjg6SFpGEEdrecsI4mgqdRnBVradDk9mtMbkaGKCMoI4HHiWEcTRwq6xYVtGEEd105QRxDGQeRlBHHVtHxv+ZQRxVDRZGUEctTi/FfQw4ugty9gI4qhivgWlII6zplxQCuLoJ9fYCOI4adYFpSCO4+YuI4gDLxDHQdOPjSCOY1YoI4jjgIn3rneIo6HUYyOIY69FFpSCOHZYZ0EpiKOJCcZGEMd2Sy0oBXFssmAZQRx4gTjeW3NsBHG8tWwZQRx4gTheWXlsBHG8sHgZQRzKak+GPkUcZ806NoI4nmJBKVJ+ss/dyat7hlhQrvLF8Xjyrj/p/Diee2xEuk8w3vKwPnPOWFBupYmjwyfzUcadHBekx64DLt9fXECc4T45Kp7d1w93xsYj6zgaPe4fzy5lPGW6W2m6HJQbd/5rvyYcJ4ft2VpqbITb5LDNItYrI6x2K85lrMlicvhnseDYCIfJQRm2Bk+OM2X02W4sW0YMjKNKFnff+g+hXMZsZSuWUffG997X3HrH0TSLivd14O7m03VZ6VlGsNyc1mlydM7i/DEwNqJPHA5l3Hp7PJRRtI3DLYtb6tgo46phHM5l3Lp8fxHEU03iYJswh/q7lSwDA2/Vf23l8AmmDDcWr8qShacmr8ruOtmUYWvkboUszA17Pwdl+BvwJBhZZNF2cjx2QBmJ9NutkEU6za85ShOUkZHjf2qCifHvPoct4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJCIAxJxQCIOSMQBiTggEQck4oBEHJD+A8vqPTjhCULVAAAAAElFTkSuQmCC">
-<title>Radar Long Cripto</title>
+<title>Radar Cripto</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -152,24 +152,35 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,16,21,.94);ba
 .verdict.stop{background:var(--stop-dim)} .verdict.stop b{color:var(--stop)}
 .mlist{display:grid;gap:8px} .mrow{background:var(--surface2);border-radius:10px;padding:9px 11px;display:grid;gap:3px;font-size:13.5px}
 .wchip span{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:500;margin-left:4px}
+
+.mk{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.mk-h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.mk-h b{font-size:15px} .mk-h span{color:var(--muted);font-size:12.5px}
+.mk p{font-size:13.5px;color:#c9d2dc;margin:8px 0}
+.st{border-radius:11px;padding:10px 12px;margin-top:8px;display:grid;gap:2px}
+.st b{font-size:14px} .st span{font-size:12.5px;color:var(--fg)}
+.st.go{background:var(--long-dim)} .st.go b{color:var(--long)}
+.st.wait{background:var(--warn-dim)} .st.wait b{color:var(--warn)}
+.st.stop{background:var(--stop-dim)} .st.stop b{color:var(--stop)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);padding:5px;border-radius:12px;margin-bottom:12px}
+.seg button{border:0;background:none;color:var(--muted);font-weight:800;padding:10px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"][data-s="1"]{background:var(--long-dim);color:var(--long)}
+.seg button[aria-pressed="true"][data-s="-1"]{background:var(--stop-dim);color:var(--stop)}
+.timing{background:var(--accent-dim);border-radius:12px;padding:10px 12px;margin-bottom:12px;display:grid;gap:3px}
+.timing b{color:var(--accent);font-size:13.5px} .timing span{font-size:13px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand">Radar Long<small id="subtitle">Perps USDT · 4 h</small></div>
+    <div class="brand">Radar Cripto<small id="subtitle">Longs y shorts · perps USDT · 4 h</small></div>
     <button class="scanbtn" id="scan">Escanear</button>
   </header>
   <section id="view-signals">
-    <div class="regime" id="regime"><div class="dot"></div><div><b>Régimen de mercado</b><span>Pulsa Escanear para leer el mercado en vivo.</span></div></div>
-    <div class="calib" id="calib" hidden></div>
+    <div id="market"><div class="mk"><b>Estado del mercado</b><p>Pulsa Escanear para leer el mercado en vivo (tarda unos 30–60 s).</p></div></div>
     <div class="progress" id="progress" hidden><div class="bar"><i id="bar"></i></div><p id="ptext">Conectando…</p></div>
     <div id="error" class="err" hidden></div>
-    <div class="stats" id="stats" hidden>
-      <div class="stat"><div class="v" id="s-an">0</div><div class="k">Analizadas</div></div>
-      <div class="stat"><div class="v" id="s-tr">0</div><div class="k">En tendencia</div></div>
-      <div class="stat"><div class="v" id="s-si">0</div><div class="k">Señales</div></div>
-    </div>
+    <div class="seg" role="group" aria-label="Lado"><button data-s="1" aria-pressed="true">LONGS</button><button data-s="-1" aria-pressed="false">SHORTS</button></div>
     <div id="list"></div>
   </section>
   <section id="view-pos" hidden>
@@ -186,41 +197,42 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,16,21,.94);ba
     <h2 style="font-size:20px;margin:18px 0 12px">Seguimiento real</h2>
     <div id="track"></div>
   </section>
-  <section id="view-method" class="doc" hidden>
-    <h2>Qué hace y qué no hace</h2>
-    <p><b>No predice el futuro.</b> Ninguna app puede saber qué moneda va a subir. Lo que hace es aplicar una regla fija que, en el historial real, ganó más de lo que perdió. Además la vuelve a comprobar en cada escaneo y se calla cuando deja de funcionar.</p>
-    <h3>Por qué esta regla y no otra</h3>
-    <p>El 29/9/2026 probé con datos reales de Binance (98 monedas, unos 250 días) siete métodos: retrocesos, rupturas, RSI de 2 periodos, compresión de Bollinger y canales de Donchian, con take profits fijos y dinámicos. Los que buscan un take profit corto y seguro, incluida la primera versión de esta app, quedaron en cero o en pérdida después de comisiones: aciertan seguido, pero cada stop cuesta más que cada acierto. Solo esta regla ganó en los periodos independientes. Ojo: la elegí mirando ese mismo historial, así que la prueba de verdad es la pestaña Seguimiento con operaciones nuevas.</p>
-    <p>Prueba del 1/10/2026 (95 monedas, marzo a octubre): longs con TP1 a 0,75 R: +0,20 R por operación y 56 % de ganadoras; a 1 R: +0,22 R y 49 %; a 1,5 R: +0,32 R y 43 %.</p>
-    <h3>La regla</h3>
-    <ul>
-      <li><b>Gatillo:</b> en velas de 4 h, la EMA 20 cruza sobre la EMA 50 y el precio está sobre la EMA 200.</li>
-      <li><b>BTC a favor:</b> BTC sobre su EMA 300 de 4 h. Sin este filtro la regla perdía en los periodos bajistas.</li>
-      <li><b>Entrada:</b> al cierre de la vela del cruce, con orden límite. La señal vale 12 h y solo si el precio no se alejó más de 0,3 R. Si llegas tarde, la app lo dice y no debes entrar.</li>
-      <li><b>Stop:</b> bajo el mínimo de las últimas 10 velas con 0,25 ATR de margen (entre 1,5 y 4 ATR).</li>
-      <li><b>TP1 (50 %):</b> a 0,75, 1 o 1,5 R según elijas en Ajustes. Al tocarlo, el stop pasa a la entrada. Probé además colocar el TP1 justo antes del máximo previo más cercano: con datos reales rindió peor (+0,04 R frente a +0,22 R), así que no se usa; solo se avisa si hay uno antes del TP1.</li>
-      <li><b>El otro 50 %:</b> stop dinámico a 3 ATR del cierre más alto. Ahí está la ganancia grande; no le pongas TP fijo.</li>
-    </ul>
-    <h3>Verificación en cada escaneo</h3>
-    <p>Cada escaneo simula esta misma regla, con este mismo TP, en el historial real de todas las monedas, en tres periodos y con comisiones. Si el total o el periodo reciente salen negativos, no muestra señales. Si el panel dice que la regla no tiene ventaja, lo correcto es no operar.</p>
-    <h3>Monedas que se movieron fuerte sin aviso</h3>
-    <p>La regla entra al comienzo de una tendencia ordenada. Los saltos de un día por noticias, listados o liquidaciones no dejan rastro previo en las velas; nadie los avisa con honestidad. La sección de las que más se movieron explica cada caso y si entrar ahora sería perseguir el precio.</p>
-    <h3>Mi posición</h3>
-    <p>Para operaciones ya abiertas, aunque vengan de otra app o de una versión anterior. Si la tendencia de 4 h se dio vuelta o el precio rompió la estructura, te dice que cierres. Mantener una posición perdedora esperando que vuelva es la forma más común de perder la cuenta.</p>
-    <h3>Puntaje</h3>
-    <p>Solo ordena las señales por contexto. No filtra, porque esos factores no mostraron ventaja propia.</p>
-    <h3>Límites</h3>
-    <p>Casi la mitad de las operaciones pierde o sale en cero; la ganancia viene de las que corren. Arriesga como máximo 1–2 % de tu cuenta por operación, usa margen aislado y no muevas nunca el stop en contra. No es asesoría financiera.</p>
-    <p class="note">Universo: perpetuos USDT con más de <span id="m-minvol">20</span> millones de USD en 24 h (hasta 120).</p>
-  </section>
+  <section id="view-method" class="doc" hidden><h2>Qué hace y qué no hace</h2>
+<p><b>No predice el futuro.</b> Ninguna app puede saber qué moneda va a subir o bajar. Esta aplica una sola regla, igual para longs y shorts, que en el historial real de Binance ganó más de lo que perdió en longs. Además la vuelve a comprobar en cada escaneo y deja de mostrar señales del lado que no esté ganando.</p>
+<h3>La regla (velas de 4 h)</h3>
+<ul>
+<li><b>Gatillo long:</b> la EMA 20 cruza sobre la EMA 50 con el precio sobre la EMA 200. <b>Short:</b> exactamente al revés.</li>
+<li><b>BTC a favor:</b> para longs, BTC sobre su EMA 300 de 4 h; para shorts, bajo ella. Las altcoins siguen a BTC.</li>
+<li><b>Entrada:</b> orden límite al cierre de la vela del cruce. La señal vale 12 h y solo si el precio no se alejó más de 0,3 R.</li>
+<li><b>Stop:</b> detrás del extremo de las últimas 10 velas con 0,25 ATR de margen (entre 1,5 y 4 ATR).</li>
+<li><b>TP1 (50 %):</b> a 0,75, 1 o 1,5 R (Ajustes). Al tocarlo, el stop pasa a la entrada.</li>
+<li><b>El otro 50 %:</b> stop dinámico a 3 ATR del mejor cierre. Ahí está la ganancia grande.</li>
+</ul>
+<h3>Datos reales (Binance, 2/10/2026)</h3>
+<ul>
+<li>Longs con BTC a favor: 295 señales en ~250 días. 61 % llegó a TP1 antes del stop. El TP1 tardó 48 h de mediana y 3 de cada 4 llegaron en menos de 88 h.</li>
+<li>El 54 % de las que terminaron ganando pasaron antes por −0,3 R o peor. Estar en rojo uno o dos días es normal.</li>
+<li>Shorts: la misma regla perdió entre 0,06 y 0,11 R por operación. En los últimos 5 días, 4 de 6 cruces bajistas tocaron el stop. Por eso la parte de shorts suele decir «no operar», y es lo correcto mientras el mercado de fondo sea alcista.</li>
+</ul>
+<h3>Por qué no avisa de muchas monedas que suben o caen fuerte</h3>
+<p>La regla entra al comienzo de una tendencia ordenada. Los saltos de un día por noticias o liquidaciones no dejan rastro previo en las velas. Una moneda que cae 8 % en un día dentro de una tendencia alcista no está en tendencia bajista: está corrigiendo, y shortearla suele perder.</p>
+<h3>Cómo usarla</h3>
+<ol>
+<li>Escanea justo después del cierre de cada vela de 4 h (00, 04, 08, 12, 16 y 20 h de Bolivia).</li>
+<li>Mira primero «Estado del mercado»: te dice qué lado se puede operar.</li>
+<li>Entra solo con tarjetas que digan «Buen momento para entrar», con orden límite, stop y TP1 puestos al abrir.</li>
+<li>Después, no cierres por nervios: deja que decidan el stop y el TP1. Revisa tus posiciones en «Mi posición».</li>
+<li>Arriesga como máximo 1 % de tu cuenta por operación. Con 10 stops seguidos (pasa) perderías ~10 %, no la cuenta.</li>
+</ol>
+<p>Ojo: elegí la regla mirando el mismo historial con el que la mido, así que el número real lo dará la pestaña Seguimiento con operaciones nuevas. No es asesoría financiera.</p></section>
   <section id="view-settings" hidden>
     <h2 style="font-size:20px;margin:18px 0 12px">Ajustes</h2>
     <div class="field"><label for="f-cap">Capital de la cuenta (USDT)</label><input id="f-cap" type="number" inputmode="decimal" min="1" step="1"></div>
     <div class="field"><label for="f-risk">Riesgo por operación (% del capital)</label><input id="f-risk" type="number" inputmode="decimal" min="0.1" max="10" step="0.1"><small>Con 1 % pierdes 1 % si salta el stop.</small></div>
     <div class="field"><label for="f-tp1">Distancia del TP1 (cierras el 50 %)</label>
-      <select id="f-tp1"><option value="0.75">0,75 R · más aciertos (56 %), +0,20 R de media</option><option value="1">1 R · equilibrado (49 %), +0,22 R</option><option value="1.5">1,5 R · menos aciertos (43 %), +0,32 R</option></select><small>Cifras medidas con datos reales de Binance el 1/10/2026. Cambiarlo recalcula la verificación en el próximo escaneo.</small></div>
+      <select id="f-tp1"><option value="0.75">0,75 R · más aciertos</option><option value="1">1 R · equilibrado</option><option value="1.5">1,5 R · menos aciertos, más ganancia por acierto</option></select><small>Cambiarlo recalcula la verificación en el próximo escaneo.</small></div>
     <div class="field"><label for="f-btc">Exigir que BTC acompañe</label>
-      <select id="f-btc"><option value="1">Sí (recomendado)</option><option value="0">No</option></select><small>Sin este filtro la regla perdió dinero en la prueba.</small></div>
+      <select id="f-btc"><option value="1">Sí (recomendado)</option><option value="0">No</option></select></div>
     <div class="field"><label for="f-force">Mostrar señales aunque la regla no tenga ventaja</label>
       <select id="f-force"><option value="0">No (recomendado)</option><option value="1">Sí, bajo mi responsabilidad</option></select></div>
     <div class="field"><label for="f-min">Puntaje mínimo para mostrar</label>
@@ -239,17 +251,24 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(13,16,21,.94);ba
 </nav>
 <script>
 "use strict";
-/* Radar Long · motor único espejado.
+/* Radar Cripto · motor único espejado (longs y shorts).
    DIR = 1 (long) o -1 (short). Para shorts las velas se reflejan (precio → −precio),
    así la misma lógica de "long" se aplica exactamente al revés y las R son idénticas. */
-const DIR = 1;
-const PFX = DIR===1 ? "rl5_" : "rs5_";
+let DIR = 1;
+const PFX = "rx6_";
 const HOR = 120;         // horizonte máximo de una operación: 120 velas de 4 h = 20 días
-const L = {chip:"LONG",chipCls:"l",tName:"Cruce EMA 20/50 alcista",slSwing:"Bajo el mínimo de las últimas 10 velas",slAtr:"A 1,5 ATR de la entrada (el mínimo estaba demasiado cerca)",trig:"La EMA 20 acaba de cruzar sobre la EMA 50 con el precio sobre la EMA 200",trendAligned:"EMA 50 sobre EMA 200: tendencia de fondo alcista",trendEarly:"La EMA 50 aún está bajo la EMA 200: tendencia joven",d50ok:"Precio sobre la EMA 50 diaria",d50bad:"Precio aún bajo la EMA 50 diaria",regimeBad:"BTC bajo su EMA 50 diaria: contexto más débil",qty:"Cantidad a comprar",btcOkT:"BTC a favor de los longs",btcBadT:"BTC en contra de los longs",btcOkD:"BTC está sobre su media de fondo (EMA 300 de 4 h). La regla puede operar.",btcBadD:"BTC está bajo su media de fondo. En esta situación la regla perdió dinero, así que no se buscan longs.",emptyWhy:"La regla es un cruce: aparece pocas veces (unas 1 o 2 por día entre 100 monedas). Mira la lista «Por activarse» y vuelve a escanear al cierre de la próxima vela de 4 h (00, 04, 08, 12, 16 y 20 h de Bolivia).",emptyNoEdge:"Cada escaneo vuelve a probar la regla con el historial real de todas las monedas. Si el resultado reciente sale negativo, la página no muestra señales. Revisa el panel de verificación. Cuando el mercado vuelva a favorecer la regla, las señales aparecerán solas.",watchTxt:"Monedas en tendencia con la EMA 20 a punto de cruzar la EMA 50 (distancia en ATR). Todavía no son señales.",moversT:"Las que más subieron en 24 h",dirWord:"alcista",moversTxt:"Por qué el radar no las dio (o sí). Un salto repentino por noticias o compras masivas no se puede anticipar con velas; ninguna app honesta lo avisa antes.",waitTxt:"Activaron el cruce, pero tienen un máximo previo a menos de 0,5 R. Con tan poco espacio la operación no compensa el riesgo.",fewTrend:"Hay pocas monedas en tendencia alcista: es normal que casi no salgan longs.",rsOk:x=>`Supera a BTC por ${x} puntos en 30 días`, rsBad:x=>`Rinde ${x} puntos menos que BTC en 30 días`,
+const LT = {1:{chip:"LONG",chipCls:"l",tName:"Cruce EMA 20/50 alcista",slSwing:"Bajo el mínimo de las últimas 10 velas",slAtr:"A 1,5 ATR de la entrada (el mínimo estaba demasiado cerca)",trig:"La EMA 20 acaba de cruzar sobre la EMA 50 con el precio sobre la EMA 200",trendAligned:"EMA 50 sobre EMA 200: tendencia de fondo alcista",trendEarly:"La EMA 50 aún está bajo la EMA 200: tendencia joven",d50ok:"Precio sobre la EMA 50 diaria",d50bad:"Precio aún bajo la EMA 50 diaria",regimeBad:"BTC bajo su EMA 50 diaria: contexto más débil",qty:"Cantidad a comprar",btcOkT:"BTC a favor de los longs",btcBadT:"BTC en contra de los longs",btcOkD:"BTC está sobre su media de fondo (EMA 300 de 4 h). La regla puede operar.",btcBadD:"BTC está bajo su media de fondo. En esta situación la regla perdió dinero, así que no se buscan longs.",emptyWhy:"La regla es un cruce: aparece pocas veces (unas 1 o 2 por día entre 100 monedas). Mira la lista «Por activarse» y vuelve a escanear al cierre de la próxima vela de 4 h (00, 04, 08, 12, 16 y 20 h de Bolivia).",emptyNoEdge:"Cada escaneo vuelve a probar la regla con el historial real de todas las monedas. Si el resultado reciente sale negativo, la página no muestra señales. Revisa el panel de verificación. Cuando el mercado vuelva a favorecer la regla, las señales aparecerán solas.",watchTxt:"Monedas en tendencia con la EMA 20 a punto de cruzar la EMA 50 (distancia en ATR). Todavía no son señales.",moversT:"Las que más subieron en 24 h",dirWord:"alcista",moversTxt:"Por qué el radar no las dio (o sí). Un salto repentino por noticias o compras masivas no se puede anticipar con velas; ninguna app honesta lo avisa antes.",waitTxt:"Activaron el cruce, pero tienen un máximo previo a menos de 0,5 R. Con tan poco espacio la operación no compensa el riesgo.",fewTrend:"Hay pocas monedas en tendencia alcista: es normal que casi no salgan longs.",rsOk:x=>`Supera a BTC por ${x} puntos en 30 días`, rsBad:x=>`Rinde ${x} puntos menos que BTC en 30 días`,
  fundOk:f=>`Funding ${f} %: los largos no están saturados`, fundHigh:f=>`Funding alto (${f} %): muchos largos apalancados`,
  oiGood:x=>`Open interest +${x} % en 5 días: entra dinero nuevo`, oiBad:x=>`Open interest ${x} % en 5 días: sale dinero`,
  ceilWarn:(p,r)=>`Hay un máximo previo en ${p} (a ${r} R), antes del TP1: el precio puede frenarse ahí`, tp1Std:k=>`${k} R (elegido en Ajustes y verificado con el historial)`,
- trailTxt:d=>`Stop dinámico: siempre ${d} (3 ATR) bajo el cierre más alto desde la entrada. Nunca baja. Actualízalo tras cada escaneo; la pestaña Seguimiento te dice dónde va`};
+ trailTxt:d=>`Stop dinámico: siempre ${d} (3 ATR) bajo el cierre más alto desde la entrada. Nunca baja. Actualízalo tras cada escaneo; la pestaña Seguimiento te dice dónde va`},'-1':{chip:"SHORT",chipCls:"s",tName:"Cruce EMA 20/50 bajista",slSwing:"Sobre el máximo de las últimas 10 velas",slAtr:"A 1,5 ATR de la entrada (el máximo estaba demasiado cerca)",trig:"La EMA 20 acaba de cruzar bajo la EMA 50 con el precio bajo la EMA 200",trendAligned:"EMA 50 bajo EMA 200: tendencia de fondo bajista",trendEarly:"La EMA 50 aún está sobre la EMA 200: tendencia joven",d50ok:"Precio bajo la EMA 50 diaria",d50bad:"Precio aún sobre la EMA 50 diaria",regimeBad:"BTC sobre su EMA 50 diaria: contexto más débil para shorts",qty:"Cantidad a vender",btcOkT:"BTC a favor de los shorts",btcBadT:"BTC en contra de los shorts",btcOkD:"BTC está bajo su media de fondo (EMA 300 de 4 h). La regla puede operar.",btcBadD:"BTC está sobre su media de fondo. Con BTC subiendo, los shorts pierden, así que no se buscan.",emptyWhy:"La regla es un cruce: aparece pocas veces. Mira la lista «Por activarse» y vuelve a escanear al cierre de la próxima vela de 4 h (00, 04, 08, 12, 16 y 20 h de Bolivia).",emptyNoEdge:"Cada escaneo vuelve a probar la regla con el historial real. En shorts, la cripto tiende a subir a largo plazo y los cortos sistemáticos suelen perder, salvo en mercados bajistas claros. Cuando el historial reciente muestre ventaja, las señales aparecerán solas.",watchTxt:"Monedas en tendencia bajista con la EMA 20 a punto de cruzar bajo la EMA 50. Todavía no son señales.",moversT:"Las que más cayeron en 24 h",dirWord:"bajista",moversTxt:"Por qué el radar no las dio (o sí). Una caída repentina por noticias o liquidaciones no se puede anticipar con velas; ninguna app honesta lo avisa antes.",waitTxt:"Activaron el cruce, pero tienen un mínimo previo a menos de 0,5 R. Con tan poco espacio la operación no compensa el riesgo.",fewTrend:"Hay pocas monedas en tendencia bajista: es normal que no salgan shorts. Con el mercado subiendo, abrir shorts es ir contra la corriente.",rsOk:x=>`Rinde ${x} puntos menos que BTC en 30 días (debilidad relativa)`, rsBad:x=>`Supera a BTC por ${x} puntos en 30 días`,
+ fundOk:f=>`Funding ${f} %: los cortos no están saturados`, fundHigh:f=>`Funding muy negativo (${f} %): riesgo de short squeeze`,
+ oiGood:x=>`Open interest +${x} % en 5 días: entran cortos nuevos`, oiBad:x=>`Open interest ${x} % en 5 días: sale dinero`,
+ ceilWarn:(p,r)=>`Hay un mínimo previo en ${p} (a ${r} R), antes del TP1: el precio puede frenarse ahí`, tp1Std:k=>`${k} R (elegido en Ajustes y verificado con el historial)`,
+ trailTxt:d=>`Stop dinámico: siempre ${d} (3 ATR) sobre el cierre más bajo desde la entrada. Nunca sube. Actualízalo tras cada escaneo; la pestaña Seguimiento te dice dónde va`}};
+LT[-1]=LT["-1"];
+let L = LT[1];
+function side(d){ DIR=d; L=LT[d]; }
 
 /* ============ Ajustes ============ */
 const DEF = {cap:1000, risk:1, min:0, ex:"auto", vol:20, btc:1, force:0, tp1:1};
@@ -347,23 +366,27 @@ function detect(D,i,btcOk){
 }
 /* Simulación de la gestión completa. Si una vela toca el stop, se asume que salió ahí (supuesto pesimista). */
 function simulate(D,s,last){
-  const {h,l,c,ATR}=D,e=s.e,R=s.R; let stop=s.sl,hc=c[s.i],got=0,rem=1,tp1=false,j=s.i+1;
+  const {h,l,c,ATR}=D,e=s.e,R=s.R; let stop=s.sl,hc=c[s.i],got=0,rem=1,tp1=false,j=s.i+1,b1=null,worst=0;
   const end=Math.min(s.i+MAXB,last);
   for(;j<=end;j++){
-    if(l[j]<=stop){ got+=rem*(stop-e)/R; return {r:got-0.0012*Math.abs(e)/R,tp1,x2:tp1?(stop-e)/R:null,how:tp1?(stop>e+1e-12?"trail":"be"):"stop",bars:j-s.i,open:false,stop}; }
-    const k1=s.tp1R||TP1R; if(!tp1&&h[j]>=e+k1*R){ got+=0.5*k1; rem=0.5; tp1=true; stop=Math.max(stop,e); }
+    if(l[j]<=stop){ got+=rem*(stop-e)/R; return {r:got-0.0012*Math.abs(e)/R,tp1,b1,worst,x2:tp1?(stop-e)/R:null,how:tp1?(stop>e+1e-12?"trail":"be"):"stop",bars:j-s.i,open:false,stop}; }
+    if(!tp1) worst=Math.min(worst,(l[j]-e)/R);
+    const k1=s.tp1R||TP1R; if(!tp1&&h[j]>=e+k1*R){ got+=0.5*k1; rem=0.5; tp1=true; b1=j-s.i; stop=Math.max(stop,e); }
     hc=Math.max(hc,c[j]); stop=Math.max(stop,hc-TRAIL*ATR[j]);
   }
   const jj=Math.min(j,end), open=s.i+MAXB>last;
   got+=rem*(c[jj]-e)/R;
-  return {r:got-0.0012*Math.abs(e)/R,tp1,x2:tp1?(c[jj]-e)/R:null,how:open?"open":"horizon",bars:jj-s.i,open,stop};
+  return {r:got-0.0012*Math.abs(e)/R,tp1,b1,worst,x2:tp1?(c[jj]-e)/R:null,how:open?"open":"horizon",bars:jj-s.i,open,stop};
 }
 function agg(a){
   const n=a.length; if(!n) return {n:0};
   const rs=a.map(x=>x.r).sort((p,q)=>p-q), avg=rs.reduce((s,x)=>s+x,0)/n;
   const sd=Math.sqrt(rs.reduce((s,x)=>s+(x-avg)**2,0)/n);
   const wins=a.filter(x=>x.r>0), wr=a.filter(x=>x.x2!=null).map(x=>x.x2).sort((p,q)=>p-q);
+  const b1=a.filter(x=>x.b1!=null).map(x=>x.b1*4).sort((p,q)=>p-q), w1=a.filter(x=>x.tp1);
   return {n,avg,se:sd/Math.sqrt(n),win:wins.length/n,tp1:a.filter(x=>x.tp1).length/n,
+    h1Med:b1.length?b1[Math.floor(b1.length/2)]:null,h1P75:b1.length?b1[Math.floor(b1.length*0.75)]:null,
+    dipShare:w1.length?w1.filter(x=>x.worst<-0.3).length/w1.length:null,
     xMed:wr.length?wr[Math.floor(wr.length/2)]:null,xP75:wr.length?wr[Math.floor(wr.length*0.75)]:null,bars:a.reduce((s,x)=>s+x.bars,0)/n};
 }
 /* Verificación del método en tres periodos consecutivos */
@@ -388,6 +411,34 @@ async function pool(items,n,fn){let idx=0;const run=async()=>{while(idx<items.le
 const ret=(c,bars)=>c.length>bars?c[c.length-1]/c[c.length-1-bars]-1:0;
 const tick=()=>new Promise(r=>setTimeout(r,0));
 
+
+function newSide(){ return {samples:[],cands:[],watch:[],late:[],recent:[],lite:new Map(),info:new Map(),trend:0}; }
+/* Procesa una moneda para un lado (DIR ya fijado). Todo síncrono: no hay await dentro. */
+function processSide(X,u,K,btcOk){
+  const D=prep(mirror(K)),n=D.n,i0=n-2;
+  const inTrend=D.c[i0]>D.E200[i0]&&D.E50[i0]>D.E200[i0]; if(inTrend) X.trend++;
+  X.info.set(u.sym,{ext:(D.c[n-1]-D.E20[i0])/D.ATR[i0],inTrend});
+  const mine=[];
+  for(let i=320;i<=n-2;i++){ const s=detect(D,i,btcOk); if(s){ const res=simulate(D,s,n-2); const x={sym:u.sym,t:D.t[i],s,res}; X.samples.push(x); mine.push(x); i+=Math.max(5,res.bars); } }
+  // Evidencia reciente: todos los cruces de los últimos 5 días, con y sin BTC a favor, y cómo van
+  for(let i=Math.max(320,n-31);i<=n-2;i++){ const s=detect(D,i,null); if(!s) continue; const r=simulate(D,s,n-1);
+    X.recent.push({base:u.base,h:(n-2-i)*4,btcOk:btcOk?btcOk.get(D.t[i])!==false:true,how:r.how,tp1:r.tp1,rNow:r.r}); }
+  let live=null;
+  for(const i of [n-2,n-3,n-4]){ const s=detect(D,i,btcOk); if(s){ live=s; break; } }
+  if(live){
+    let broken=false,hit1=false; for(let j=live.i+1;j<n;j++){ if(D.l[j]<=live.sl) broken=true; if(D.h[j]>=live.e+live.tp1R*live.R) hit1=true; }
+    const moved=(D.c[n-1]-live.e)/live.R;
+    if(broken) X.late.push({base:u.base,sym:u.sym,why:"broken"});
+    else if(hit1||moved>0.3) X.late.push({base:u.base,sym:u.sym,why:hit1?"tp1":"moved",moved});
+    else X.cands.push({u,D,s:live,mine,realC:K.map(x=>x.c)});
+  } else if((btcOk?btcOk.get(D.t[i0])!==false:true)&&D.c[i0]>D.E200[i0]&&D.E20[i0]<=D.E50[i0]){
+    const gap=(D.E50[i0]-D.E20[i0])/D.ATR[i0], slope=D.E20[i0]-D.E20[i0-3];
+    if(gap<0.35&&slope>0) X.watch.push({base:u.base,sym:u.sym,gap});
+  }
+  X.lite.set(u.sym,{D});
+  if(!X.cands.some(x=>x.D===D)) for(const k of Object.keys(D)) if(!["t","h","l","c","n","ATR"].includes(k)) delete D[k];
+}
+
 async function scan(){
   if(running) return; running=true;
   $("#scan").disabled=true; $("#error").hidden=true; $("#progress").hidden=false; setProg(0,"Conectando con el exchange…");
@@ -400,61 +451,44 @@ async function scan(){
     setProg(5,"Leyendo BTC…");
     const [b4,b1]=await Promise.all([EX.klines(btcSym,"4h",EX.max4h),EX.klines(btcSym,"1d",400)]);
     const bc1=b1.map(x=>x.c),be50=ema(bc1,50),be200=ema(bc1,200),bl=bc1.length-1;
-    const regime={above200:bc1[bl]>be200[bl],above50:bc1[bl]>be50[bl],price:bc1[bl]};
-    const bm=mirror(b4),bc=bm.map(x=>x.c),be300=ema(bc,300);
-    const btcOk=CFG.btc?new Map(bm.map((x,k)=>[x.t,k<300?true:bc[k]>be300[k]])):null;
-    const btcNow=btcOk?btcOk.get(bm[bm.length-2].t)!==false:true;
-    const btcRet30=ret(b4.map(x=>x.c),180);
-    renderRegime(regime,btcNow);
-    const samples=[],cands=[],watch=[],wait=[],late=[],lite=new Map(),info=new Map(); let done=0,trend=0;
+    const regime={above200:bc1[bl]>be200[bl],above50:bc1[bl]>be50[bl],price:b4[b4.length-1].c};
+    const br=b4.map(x=>x.c), b300=ema(br,300), bi=br.length-2;
+    const btcUp=br[bi]>b300[bi], btc7=(br[br.length-1]/br[Math.max(0,br.length-43)]-1)*100;
+    const BO={};
+    for(const d of [1,-1]){ side(d); const bm=mirror(b4),bc=bm.map(x=>x.c),be=ema(bc,300); BO[d]=CFG.btc?new Map(bm.map((x,k)=>[x.t,k<300?true:bc[k]>be[k]])):null; }
+    const btcRet30=ret(br,180);
+    const S={"1":newSide(),"-1":newSide()};
+    let done=0; const ch7=[];
     await pool(U,6,async(u)=>{
       try{
         const K=await EX.klines(u.sym,"4h",EX.max4h);
-        if(K.length>=400){
-          const D=prep(mirror(K)),n=D.n,i0=n-2;
-          const inTrend=D.c[i0]>D.E200[i0]&&D.E50[i0]>D.E200[i0]; if(inTrend) trend++;
-          const mine=[];
-          info.set(u.sym,{ext:(D.c[n-1]-D.E20[i0])/D.ATR[i0],inTrend});
-          for(let i=320;i<=n-2;i++){ const s=detect(D,i,btcOk); if(s&&!s.block){ const res=simulate(D,s,n-2); const x={sym:u.sym,t:D.t[i],s,res}; samples.push(x); mine.push(x); i+=Math.max(5,res.bars); } }
-          let live=null;
-          for(const i of [n-2,n-3,n-4]){ const s=detect(D,i,btcOk); if(s){ live=s; break; } }
-          if(live){
-            let broken=false,hit1=false; for(let j=live.i+1;j<n;j++){ if(D.l[j]<=live.sl) broken=true; if(!live.block&&D.h[j]>=live.e+live.tp1R*live.R) hit1=true; }
-            const moved=(D.c[n-1]-live.e)/live.R;
-            if(live.block&&!broken) wait.push({base:u.base,sym:u.sym,why:"ceil",ceil:M(live.ceil),ceilR:live.ceilR,e:M(live.e)});
-            else if(broken) late.push({base:u.base,sym:u.sym,why:"broken",e:M(live.e),sl:M(live.sl)});
-            else if(hit1||moved>0.3) late.push({base:u.base,sym:u.sym,why:hit1?"tp1":"moved",moved,e:M(live.e)});
-            else cands.push({u,D,s:live,mine,realC:K.map(x=>x.c)});
-          } else if(btcNow&&D.c[i0]>D.E200[i0]&&D.E20[i0]<=D.E50[i0]){
-            const gap=(D.E50[i0]-D.E20[i0])/D.ATR[i0], slope=D.E20[i0]-D.E20[i0-3];
-            if(gap<0.35&&slope>0) watch.push({base:u.base,sym:u.sym,gap});
-          }
-          lite.set(u.sym,{D});
-          if(!cands.some(x=>x.D===D)) for(const k of Object.keys(D)) if(!["t","h","l","c","n","ATR"].includes(k)) delete D[k];
-        }
+        if(K.length>=400){ ch7.push((K[K.length-1].c/K[K.length-43].c-1)*100); for(const d of [1,-1]){ side(d); processSide(S[d],u,K,BO[d]); } }
       }catch(e){}
-      done++; setProg(5+80*done/U.length,`Analizando ${u.base} · ${done}/${U.length}`);
+      done++; setProg(5+78*done/U.length,`Analizando ${u.base} · ${done}/${U.length}`);
       if(done%10===0) await tick();
     });
-    setProg(86,"Verificando el método con el historial real…"); await tick();
-    const ver=verify(samples);
-    const out=[]; let k2=0;
-    await pool(cands,4,async(cd)=>{
-      try{ const r=await deepen(cd,regime,btcRet30,ver); if(r) out.push(r); }catch(e){}
-      k2++; setProg(86+12*k2/Math.max(1,cands.length),`Revisando señales · ${k2}/${cands.length}`);
-    });
-    out.sort((a,b)=>b.score-a.score);
-    watch.sort((a,b)=>a.gap-b.gap);
-    const vOut={ok:ver.ok,all:ver.all,parts:ver.parts};
-    // Las que más se movieron a favor en 24 h y por qué el radar no las dio (o sí)
-    const now=Date.now();
-    const movers=U.filter(u=>info.has(u.sym)).sort((a,b)=>M(b.chg)-M(a.chg)).slice(0,6).filter(u=>M(u.chg)>3).map(u=>{
-      const sig=samples.filter(x=>x.sym===u.sym&&now-x.t<72*36e5).pop();
-      return {base:u.base,sym:u.sym,chg:u.chg,ext:info.get(u.sym).ext,inTrend:info.get(u.sym).inTrend,sigH:sig?Math.round((now-sig.t)/36e5)-4:null,sigE:sig?M(sig.s.e):null};
-    });
-    const state={ts:Date.now(),ex:EX.name,tv:EX.tv,regime,btcNow,analyzed:U.length,trend,ver:vOut,signals:out,watch:watch.slice(0,12),wait,late:late.slice(0,10),movers};
+    const sides={};
+    for(const d of [1,-1]){
+      side(d); const X=S[d];
+      setProg(d===1?84:91,`Verificando ${d===1?"longs":"shorts"} con el historial real…`); await tick();
+      const ver=verify(X.samples);
+      const out=[];
+      await pool(X.cands,4,async(cd)=>{ try{ const r=await deepen(cd,regime,btcRet30,ver); if(r) out.push(r); }catch(e){} });
+      out.sort((a,b)=>b.score-a.score); X.watch.sort((a,b)=>a.gap-b.gap);
+      const now=Date.now();
+      const movers=U.filter(u=>X.info.has(u.sym)).sort((a,b)=>M(b.chg)-M(a.chg)).slice(0,6).filter(u=>M(u.chg)>3).map(u=>{
+        const sig=X.samples.filter(x=>x.sym===u.sym&&now-x.t<72*36e5).pop();
+        return {base:u.base,sym:u.sym,chg:u.chg,ext:X.info.get(u.sym).ext,inTrend:X.info.get(u.sym).inTrend,sigH:sig?Math.max(0,Math.round((now-sig.t)/36e5)-4):null,sigE:sig?M(sig.s.e):null};
+      });
+      const rc=X.recent, rcF=rc.filter(x=>x.btcOk);
+      const sumR=a=>({n:a.length,stop:a.filter(x=>x.how==="stop").length,tp1:a.filter(x=>x.tp1).length,open:a.filter(x=>x.how==="open"&&!x.tp1).length});
+      sides[d]={ver:{ok:ver.ok,all:ver.all,parts:ver.parts},signals:out,watch:X.watch.slice(0,12),late:X.late.slice(0,10),movers,trend:X.trend,btcOk:d===1?btcUp:!btcUp,
+        recentAll:sumR(rc),recentF:sumR(rcF)};
+      updateTracking(X.lite,out,ver.ok,d);
+    }
+    const md=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[Math.floor(a.length/2)]:0;};
+    const state={ts:Date.now(),ex:EX.name,tv:EX.tv,regime,btcUp,btc7,coin7:md(ch7),analyzed:U.length,sides};
     lsSet("last",state);
-    updateTracking(lite,out,ver.ok);
     setProg(100,"Listo"); setTimeout(()=>$("#progress").hidden=true,600);
     render(state); renderTrack();
   }catch(e){
@@ -487,18 +521,20 @@ async function deepen({u,D,s,mine,realC},regime,btcRet30,ver){
   const A=ver.all, med=A.xMed??0.7, p75=A.xP75??1.8;
   return {sym:u.sym,base:u.base,t:D.t[i],price:M(D.c[n-1]),chg:u.chg,e:M(s.e),sl:M(s.sl),slSrc:s.slSrc,R:s.R,atr:s.a,
     tp1:M(s.e+s.tp1R*s.R),tp1R:s.tp1R,tp1Src:s.tp1Src,ceil:s.ceil==null?null:M(s.ceil),ceilR:s.ceilR,expires:D.t[i]+4*36e5*4,ref2:M(s.e+Math.max(med,0)*s.R),ref3:M(s.e+Math.max(p75,1.2)*s.R),rMed:med,rP75:p75,trail:M(Math.max(trail,s.sl)),trailDist:TRAIL*s.a,
-    limit:M(s.e+0.3*s.R),bars:n-2-i,own,score:sc,why,warn,valid:ver.ok};
+    limit:M(s.e+0.3*s.R),bars:n-2-i,own,score:sc,why,warn,valid:ver.ok,dir:DIR};
 }
 
+
 /* ============ Seguimiento ============ */
-function updateTracking(lite,signals,ok){
+function updateTracking(lite,signals,ok,d){
+  side(d);
   let tr=lsGet("track",[]); const now=Date.now();
   for(const s of signals.filter(x=>x.score>=CFG.min&&(ok||CFG.force))){
-    const id=s.sym+"@"+s.t; if(tr.some(x=>x.id===id)) continue;
-    tr.unshift({id,sym:s.sym,base:s.base,t:s.t,added:now,e:s.e,sl:s.sl,tp1:s.tp1,tp1R:s.tp1R,score:s.score,status:"open",r:0,how:"open",tp1hit:false,stopNow:s.sl});
+    const id=d+":"+s.sym+"@"+s.t; if(tr.some(x=>x.id===id)) continue;
+    tr.unshift({id,dir:d,sym:s.sym,base:s.base,t:s.t,added:now,e:s.e,sl:s.sl,tp1:s.tp1,tp1R:s.tp1R,score:s.score,status:"open",r:0,how:"open",tp1hit:false,stopNow:s.sl});
   }
   for(const x of tr){
-    if(x.status!=="open") continue;
+    if(x.status!=="open"||(x.dir||1)!==d) continue;
     const lt=lite.get(x.sym); if(!lt) continue;
     const D=lt.D,i=D.t.indexOf(x.t); if(i<0) continue;
     const s={i,e:M(x.e),sl:M(x.sl),R:M(x.e)-M(x.sl),tp1R:x.tp1R||1};
@@ -521,23 +557,20 @@ function setProg(p,t){ $("#bar").style.width=p+"%"; $("#ptext").textContent=t; }
 function showErr(m){ const e=$("#error"); e.textContent=m; e.hidden=false; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-function renderRegime(g,btcNow){
-  const el=$("#regime"); el.className="regime "+(btcNow?"bull":"bear");
-  const t=btcNow?L.btcOkT:L.btcBadT;
-  const d=(btcNow?L.btcOkD:L.btcBadD)+(CFG.btc?"":" (filtro de BTC desactivado en Ajustes)");
-  el.innerHTML=`<div class="dot"></div><div><b>${t}</b><span>${d} BTC <span class="num">${fp(g.price)}</span></span></div>`;
-}
 
-function renderCal(st){
-  const v=st.ver, el=$("#calib"); if(!v){el.hidden=true;return;} el.hidden=false;
+function calHtml(v,analyzed){
   const A=v.all;
-  if(!A.n){ el.className="calib neg"; el.innerHTML=`<b>Verificación</b><p>No hubo suficientes operaciones pasadas para verificar la regla.</p>`; return; }
-  el.className="calib"+(v.ok?"":" neg");
+  if(!A||!A.n) return `<div class="calib neg"><b>Verificación</b><p>No hubo suficientes operaciones pasadas para verificar la regla.</p></div>`;
   const cell=(p,k)=>`<div><span class="v" style="color:${p.n?(p.avg>0?"var(--long)":"var(--stop)"):"var(--muted)"}">${p.n?rr(p.avg):"–"}</span><span class="k">${k} · ${p.n||0} op.</span></div>`;
-  el.innerHTML=`<b>${v.ok?"Regla verificada hoy con datos reales":"La regla no tiene ventaja en este momento"}</b>
+  return `<div class="calib${v.ok?"":" neg"}"><b>${v.ok?"Regla verificada hoy con datos reales":"La regla no tiene ventaja en este momento"}</b>
     <div class="cal-grid">${cell(v.parts[0]||{n:0},"Periodo 1")}${cell(v.parts[1]||{n:0},"Periodo 2")}${cell(v.parts[2]||{n:0},"Reciente")}<div><span class="v">${pc0(A.win)}</span><span class="k">ganadoras</span></div></div>
-    <p>${A.n} operaciones simuladas en ${st.analyzed} monedas (~250 días), con comisiones. ${pc0(A.tp1)} llegó a TP1. Resultado medio ${rr(A.avg)} por operación.${v.ok?"":" <b style='color:var(--stop)'>Por eso no se muestran señales: operar ahora sería apostar sin ventaja comprobada.</b>"}</p>`;
+    <p>${A.n} operaciones simuladas en ${analyzed} monedas (~250 días), con comisiones. ${pc0(A.tp1)} llegó a TP1${A.h1Med!=null?`, en ${A.h1Med} h de mediana`:""}. Resultado medio ${rr(A.avg)} por operación.${v.ok?"":" <b style='color:var(--stop)'>Por eso no se muestran señales de este lado.</b>"}</p></div>`;
 }
+function timingBox(A){
+  if(!A||A.h1Med==null) return "";
+  return `<div class="timing"><b>Tiempos reales de esta regla</b><span>El TP1 llegó en ${A.h1Med} h de mediana; 3 de cada 4, en menos de ${A.h1P75} h. ${pc0(A.dipShare)} de las que terminaron ganando pasaron antes por −0,3 R o peor. Estar en rojo uno o dos días es normal: no cierres por nervios, solo el stop decide.</span></div>`;
+}
+let VIEW_SIDE=1;
 
 function ladder(s){
   const sl=M(s.sl),e=M(s.e),t1=M(s.tp1),t3=Math.max(M(s.ref3),t1+0.5*(t1-e)),pr=M(s.price);
@@ -599,25 +632,42 @@ function calcHtml(s){
     <div class="full">Con margen aislado y más de ${maxLev}× la liquidación quedaría antes que tu stop. Capital ${CFG.cap} USDT y riesgo ${CFG.risk} % (cámbialos en Ajustes).</div>`;
 }
 
+
 let LAST=null;
+function sideStatus(st,d){
+  const X=st.sides[d]; const list=X.signals.filter(s=>s.score>=CFG.min);
+  if(!X.btcOk&&CFG.btc) return {cls:"stop",t:d===1?"Longs: no operar":"Shorts: no operar",x:d===1?"BTC está bajo su media de fondo. En esa situación los longs perdieron.":"BTC está sobre su media de fondo. En esa situación los shorts perdieron."};
+  if(!(X.ver.ok||CFG.force)) return {cls:"stop",t:d===1?"Longs: no operar":"Shorts: no operar",x:`La regla salió con resultado negativo en el historial real (${rr(X.ver.all.avg||0)} por operación).`};
+  if(list.length) return {cls:"go",t:`${d===1?"Longs":"Shorts"}: ${list.length} señal${list.length>1?"es":""} para entrar`,x:"Revisa cada tarjeta: precio límite, stop, TP1 y hasta qué hora vale."};
+  return {cls:"wait",t:`${d===1?"Longs":"Shorts"}: permitidos, sin señal ahora`,x:"Espera. Escanea de nuevo al cierre de la próxima vela de 4 h."};
+}
 function render(st){
-  LAST=st; renderRegime(st.regime,st.btcNow); renderCal(st);
-  $("#stats").hidden=false; $("#s-an").textContent=st.analyzed; $("#s-tr").textContent=st.trend;
-  const show=st.ver&&st.ver.ok||CFG.force;
-  const list=show?st.signals.filter(s=>s.score>=CFG.min):[]; $("#s-si").textContent=list.length;
+  if(!st||!st.sides) return;
+  LAST=st;
   const when=new Date(st.ts),age=(Date.now()-st.ts)/36e5;
-  let html=`<p class="note" style="margin:0 0 12px">Escaneo de ${st.ex} a las ${when.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})} del ${when.toLocaleDateString("es-BO")}.${age>4?" <b style='color:var(--warn)'>Tiene más de 4 h: vuelve a escanear antes de entrar.</b>":""}${CFG.force&&!(st.ver&&st.ver.ok)?" <b style='color:var(--warn)'>Mostrando señales aunque la regla no tiene ventaja ahora (opción de Ajustes).</b>":""}</p>`;
-  if(!list.length){
-    html+=`<div class="empty"><b>${show?"Ninguna moneda activó la regla en las últimas 12 h":"Sin señales: la regla no tiene ventaja ahora"}</b>${show?L.emptyWhy:L.emptyNoEdge}<br><br>Monedas en tendencia ${L.dirWord} ahora: <b>${st.trend} de ${st.analyzed}</b>.${st.trend<st.analyzed*0.15?" "+L.fewTrend:""}</div>`;
-  } else html+=list.map((s,k)=>card(s,st.tv,k,st.ver)).join("");
+  const nxt=new Date(Math.ceil(Date.now()/144e5)*144e5);
+  const s1=sideStatus(st,1), s2=sideStatus(st,-1);
+  $("#market").innerHTML=`<div class="mk"><div class="mk-h"><b>Estado del mercado</b><span class="num">BTC ${fp(st.regime.price)} · 7 d ${sgn(st.btc7)}</span></div>
+    <p>${st.btcUp?"BTC está sobre su media de fondo (EMA 300 de 4 h): mercado alcista de fondo.":"BTC está bajo su media de fondo (EMA 300 de 4 h): mercado bajista de fondo."} De ${st.analyzed} monedas, <b>${st.sides[1].trend}</b> están en tendencia alcista y <b>${st.sides[-1].trend}</b> en tendencia bajista (4 h). La moneda típica va ${sgn(st.coin7)} en 7 días.${st.btcUp&&st.coin7<0?" Que muchas monedas caigan hoy no las vuelve bajistas: casi todas siguen en tendencia alcista y están corrigiendo. Shortear esas correcciones perdió dinero (mira la evidencia en Shorts).":""}</p>
+    <div class="st ${s1.cls}"><b>${s1.t}</b><span>${s1.x}</span></div>
+    <div class="st ${s2.cls}"><b>${s2.t}</b><span>${s2.x}</span></div>
+    <p class="note" style="margin:8px 0 0">Escaneo de ${st.ex}: ${when.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})} del ${when.toLocaleDateString("es-BO")}. Próximo cierre de vela de 4 h: ${nxt.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})}.${age>4?" <b style='color:var(--warn)'>Este escaneo tiene más de 4 h: vuelve a escanear.</b>":""}</p></div>`;
+  document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.s===VIEW_SIDE)));
+  const d=VIEW_SIDE; side(d); const X=st.sides[d];
+  const show=(X.ver.ok||CFG.force)&&(X.btcOk||!CFG.btc);
+  const list=show?X.signals.filter(s=>s.score>=CFG.min):[];
+  let html=calHtml(X.ver,st.analyzed);
+  if(list.length){ html+=timingBox(X.ver.all); html+=list.map((s,k)=>card(s,st.tv,k,X.ver)).join(""); }
+  else html+=`<div class="empty"><b>${show?"Ninguna moneda activó la regla en las últimas 12 h":(d===1?"No abras longs ahora":"No abras shorts ahora")}</b>${show?L.emptyWhy:L.emptyNoEdge} Monedas en tendencia ${L.dirWord}: <b>${X.trend} de ${st.analyzed}</b>.</div>`;
   const chipL=(sym,txt,sub)=>`<a class="wchip" href="https://www.tradingview.com/chart/?symbol=${st.tv}:${esc(sym)}.P" target="_blank" rel="noopener">${esc(txt)} <span>${sub}</span></a>`;
-  if(show&&st.late&&st.late.length) html+=`<div class="watch"><h4>Llegaste tarde: no entres</h4><p class="note" style="margin:0 0 8px">Dieron señal en las últimas 12 h, pero el precio ya se fue. Entrar ahora empeora el riesgo y el resultado.</p><div class="wlist">${st.late.map(w=>chipL(w.sym,w.base,w.why==="broken"?"tocó el stop":w.why==="tp1"?"ya tocó TP1":"ya avanzó "+nf(w.moved,1)+" R")).join("")}</div></div>`;
-  if(show&&st.wait&&st.wait.length) html+=`<div class="watch"><h4>Descartadas por techo cercano</h4><p class="note" style="margin:0 0 8px">${L.waitTxt}</p><div class="wlist">${st.wait.map(w=>chipL(w.sym,w.base,(DIR===1?"techo ":"piso ")+fp(w.ceil))).join("")}</div></div>`;
-  if(show&&st.watch&&st.watch.length) html+=`<div class="watch"><h4>Por activarse</h4><p class="note" style="margin:0 0 8px">${L.watchTxt}</p><div class="wlist">${st.watch.map(w=>`<a class="wchip" href="https://www.tradingview.com/chart/?symbol=${st.tv}:${esc(w.sym)}.P" target="_blank" rel="noopener">${esc(w.base)} <span>${nf(w.gap,2)} ATR</span></a>`).join("")}</div></div>`;
-  if(st.movers&&st.movers.length) html+=`<div class="watch"><h4>${L.moversT}</h4><p class="note" style="margin:0 0 8px">${L.moversTxt}</p><div class="mlist">${st.movers.map(m=>`<div class="mrow"><div><b>${esc(m.base)}</b> <span class="num" style="color:${m.chg>=0?"var(--long)":"var(--stop)"}">${sgn(m.chg)}</span></div><div class="muted">${m.sigH!=null?`El radar dio señal hace ${m.sigH} h en ${fp(m.sigE)}.`:`Sin señal del radar.`} ${Math.abs(m.ext)>2?`Está a ${nf(Math.abs(m.ext),1)} ATR de su EMA 20 de 4 h: entrar ahora es perseguir el precio. Espera un ${DIR===1?"retroceso":"rebote"} y una señal.`:m.inTrend?"Está en tendencia: vigílala en «Por activarse».":"No está en tendencia según la regla."}</div></div>`).join("")}</div></div>`;
+  if(show&&X.late.length) html+=`<div class="watch"><h4>Llegaste tarde: no entres</h4><p class="note" style="margin:0 0 8px">Dieron señal en las últimas 12 h, pero el precio ya se fue. Entrar ahora empeora el riesgo.</p><div class="wlist">${X.late.map(w=>chipL(w.sym,w.base,w.why==="broken"?"tocó el stop":w.why==="tp1"?"ya tocó TP1":"ya avanzó "+nf(w.moved,1)+" R")).join("")}</div></div>`;
+  if(show&&X.watch.length) html+=`<div class="watch"><h4>Por activarse</h4><p class="note" style="margin:0 0 8px">${L.watchTxt}</p><div class="wlist">${X.watch.map(w=>chipL(w.sym,w.base,nf(w.gap,2)+" ATR")).join("")}</div></div>`;
+  const ra=X.recentAll, rf=X.recentF;
+  html+=`<div class="watch"><h4>Evidencia de los últimos 5 días</h4><p class="note" style="margin:0">Todos los cruces de esta regla en ${d===1?"longs":"shorts"}: <b>${ra.n}</b> señales, <b>${ra.stop}</b> tocaron el stop, <b>${ra.tp1}</b> cobraron TP1 y <b>${ra.open}</b> siguen abiertas.${CFG.btc?` Solo las que tenían a BTC a favor: ${rf.n} señales, ${rf.stop} stops, ${rf.tp1} con TP1.`:""}</p></div>`;
+  if(X.movers.length) html+=`<div class="watch"><h4>${L.moversT}</h4><p class="note" style="margin:0 0 8px">${L.moversTxt}</p><div class="mlist">${X.movers.map(m=>`<div class="mrow"><div><b>${esc(m.base)}</b> <span class="num" style="color:${m.chg>=0?"var(--long)":"var(--stop)"}">${sgn(m.chg)}</span></div><div class="muted">${m.sigH!=null?`La regla dio señal hace ${m.sigH} h en ${fp(m.sigE)}.`:`Sin señal de la regla.`} ${Math.abs(m.ext)>2?`Está a ${nf(Math.abs(m.ext),1)} ATR de su EMA 20 de 4 h: entrar ahora es perseguir el precio.`:m.inTrend?"Está en tendencia: vigílala en «Por activarse».":"No está en tendencia según la regla."}</div></div>`).join("")}</div></div>`;
   $("#list").innerHTML=html;
   $("#list").querySelectorAll("[data-calc]").forEach(b=>b.addEventListener("click",()=>{
-    const k=+b.dataset.calc,box=$("#calc-"+k); if(box.hidden){box.innerHTML=calcHtml(list[k]);box.hidden=false;b.textContent="Ocultar cálculo";} else {box.hidden=true;b.textContent="Calcular posición";}
+    side(VIEW_SIDE); const k=+b.dataset.calc,box=$("#calc-"+k); if(box.hidden){box.innerHTML=calcHtml(list[k]);box.hidden=false;b.textContent="Ocultar cálculo";} else {box.hidden=true;b.textContent="Calcular posición";}
   }));
 }
 
@@ -629,7 +679,7 @@ function renderTrack(){
   const tot=cl.reduce((a,x)=>a+x.r,0), wins=cl.filter(x=>x.r>0).length;
   el.innerHTML=`<div class="stats"><div class="stat"><div class="v">${cl.length}</div><div class="k">Cerradas</div></div><div class="stat"><div class="v">${cl.length?Math.round(100*wins/cl.length)+" %":"–"}</div><div class="k">Ganadoras</div></div><div class="stat"><div class="v" style="color:${tot>=0?"var(--long)":"var(--stop)"}">${tot>=0?"+":""}${nf(tot,1)} R</div><div class="k">Total</div></div></div>
    <p class="note" style="margin:0 0 10px">Abiertas: ${op.length}. 1 R es lo que arriesgas por operación. Para las abiertas se muestra dónde debe estar tu stop ahora; actualízalo en el exchange después de cada escaneo.</p>
-   <div class="tlist">${tr.map(x=>{const d=new Date(x.t+4*36e5);const open=x.status!=="closed";return `<div class="trow"><div><b>${esc(x.base)}</b> <span class="muted">entrada ${fp(x.e)}</span><div class="muted small">${d.toLocaleDateString("es-BO")} ${d.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})}${open?` · stop ahora <b style="color:var(--fg)">${fp(x.stopNow)}</b>${x.tp1hit?" · TP1 cobrado":""}`:""}</div></div><div class="tr-r"><span class="chip ${open?"a":(x.r>0?"l":"s")}">${HOW[x.how]||x.how}</span><div class="num" style="color:${x.r>=0?"var(--long)":"var(--stop)"}">${x.r>=0?"+":""}${nf(x.r,2)} R</div></div></div>`;}).join("")}</div>
+   <div class="tlist">${tr.map(x=>{const d=new Date(x.t+4*36e5);const open=x.status!=="closed";return `<div class="trow"><div><b>${esc(x.base)}</b> <span class="chip ${(x.dir||1)===1?"l":"s"}">${(x.dir||1)===1?"LONG":"SHORT"}</span> <span class="muted">entrada ${fp(x.e)}</span><div class="muted small">${d.toLocaleDateString("es-BO")} ${d.toLocaleTimeString("es-BO",{hour:"2-digit",minute:"2-digit"})}${open?` · stop ahora <b style="color:var(--fg)">${fp(x.stopNow)}</b>${x.tp1hit?" · TP1 cobrado":""}`:""}</div></div><div class="tr-r"><span class="chip ${open?"a":(x.r>0?"l":"s")}">${HOW[x.how]||x.how}</span><div class="num" style="color:${x.r>=0?"var(--long)":"var(--stop)"}">${x.r>=0?"+":""}${nf(x.r,2)} R</div></div></div>`;}).join("")}</div>
    <button class="ghost" id="clr" style="margin-top:14px;width:100%">Borrar seguimiento</button>`;
   $("#clr").addEventListener("click",e=>{ const b=e.currentTarget; if(b.dataset.ok){ lsSet("track",[]); renderTrack(); } else { b.dataset.ok=1; b.textContent="Toca otra vez para confirmar"; } });
 }
@@ -674,6 +724,7 @@ async function checkPos(){
   }catch(err){ out.innerHTML=`<div class="err">No pude leer ${esc(base)}USDT (${esc(err.message||err)}). Revisa que la moneda exista como perpetuo en ${EX?EX.name:"el exchange"}.</div>`; }
 }
 
+
 /* ============ Pestañas y ajustes ============ */
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
@@ -681,18 +732,17 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
   if(t.dataset.v==="track") renderTrack();
   window.scrollTo(0,0);
 }));
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{ VIEW_SIDE=+b.dataset.s; try{localStorage.setItem(PFX+"side",String(VIEW_SIDE));}catch(e){} if(LAST) render(LAST); }));
+try{ const v=+localStorage.getItem(PFX+"side"); if(v===1||v===-1) VIEW_SIDE=v; }catch(e){}
 function bindCfg(){
   const m={cap:"#f-cap",risk:"#f-risk",min:"#f-min",ex:"#f-ex",vol:"#f-vol",btc:"#f-btc",force:"#f-force",tp1:"#f-tp1"};
   for(const [k,s] of Object.entries(m)){ const el=$(s); el.value=String(CFG[k]);
-    el.addEventListener("change",()=>{ const v=el.value; CFG[k]=k==="ex"?v:(parseFloat(v)); if(k!=="ex"&&!isFinite(CFG[k])) CFG[k]=DEF[k]; saveCfg(); $("#m-minvol").textContent=CFG.vol; if(LAST) render(LAST); }); }
-  $("#m-minvol").textContent=CFG.vol;
+    el.addEventListener("change",()=>{ const v=el.value; CFG[k]=k==="ex"?v:(parseFloat(v)); if(k!=="ex"&&!isFinite(CFG[k])) CFG[k]=DEF[k]; saveCfg(); if(LAST) render(LAST); }); }
 }
 bindCfg();
 $("#scan").addEventListener("click",scan);
 $("#p-check").addEventListener("click",checkPos);
-$("#p-side").value=DIR===1?"long":"short";
-{ const s=lsGet("last",null); if(s&&s.signals) render(s); }
-window.__R={prep,detect,simulate,verify,mirror};
+{ const s=lsGet("last",null); if(s&&s.sides) render(s); }
 
 </script>
 </body>
